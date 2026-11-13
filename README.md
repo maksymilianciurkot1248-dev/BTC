@@ -16,15 +16,15 @@ Kluczy i plików `.env`, `trader.env`, `ai.env` tu nie ma i nie może być: zost
 sudo btc-update
 ```
 
-## Jednorazowe podłączenie serwera do repozytorium
+## Jednorazowe podłączenie serwera (PowerShell, folder z kluczem)
+Krok 1: utworzenie klucza serwera i wypisanie jego części publicznej:
 ```bash
-sudo install -d -o btc -g btc /opt/btc-repo /opt/btc/.ssh
-sudo -u btc ssh-keygen -t ed25519 -N "" -f /opt/btc/.ssh/repo_key
-sudo cat /opt/btc/.ssh/repo_key.pub
+ssh -i .\ssh-key-2026-11-01.key ubuntu@141.147.29.90 "sudo install -d -o btc -g btc /opt/btc-repo /opt/btc/.ssh; sudo test -f /opt/btc/.ssh/repo_key || sudo -u btc ssh-keygen -q -t ed25519 -N '' -f /opt/btc/.ssh/repo_key; sudo cat /opt/btc/.ssh/repo_key.pub"
 ```
-Wypisany klucz publiczny dodaj w GitHub: repozytorium → Settings → Deploy keys → Add deploy key (bez „Allow write access”).
+Wypisaną linię dodaj w GitHub: repozytorium → Settings → Deploy keys → Add deploy key (bez „Allow write access”).
+
+Krok 2: pobranie repozytorium, pierwsza aktualizacja i włączenie automatu:
 ```bash
-sudo -u btc git -c core.sshCommand="ssh -i /opt/btc/.ssh/repo_key -o StrictHostKeyChecking=accept-new" clone git@github.com:maksymilianciurkot1248-dev/BTC.git /opt/btc-repo
-sudo -u btc git -C /opt/btc-repo config core.sshCommand "ssh -i /opt/btc/.ssh/repo_key"
-sudo install -m 755 /opt/btc-repo/btc-update /usr/local/bin/btc-update
+ssh -i .\ssh-key-2026-11-01.key ubuntu@141.147.29.90 "sudo -u btc git -c core.sshCommand='ssh -i /opt/btc/.ssh/repo_key -o UserKnownHostsFile=/opt/btc/.ssh/known_hosts -o StrictHostKeyChecking=accept-new' clone git@github.com:maksymilianciurkot1248-dev/BTC.git /opt/btc-repo && sudo -u btc git -C /opt/btc-repo config core.sshCommand 'ssh -i /opt/btc/.ssh/repo_key -o UserKnownHostsFile=/opt/btc/.ssh/known_hosts' && sudo install -m 755 /opt/btc-repo/btc-update /usr/local/bin/btc-update && sudo btc-update --force && sudo btc-update --auto-on"
 ```
+Od tej chwili serwer sam instaluje każdą zmianę z gałęzi `main` w ciągu 10 minut. Wyłączenie: `sudo btc-update --auto-off`.

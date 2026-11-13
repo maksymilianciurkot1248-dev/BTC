@@ -3,6 +3,29 @@
 set -euo pipefail
 [ "$(id -u)" -eq 0 ] || { echo "Uruchom: sudo btc-update"; exit 1; }
 REPO=/opt/btc-repo; APP=/opt/btc; U=btc
+case "${1:-}" in
+  --auto-on)     # serwer sam sprawdza repozytorium co 10 minut i instaluje zmiany
+    cat > /etc/systemd/system/btc-update.service <<EOT
+[Unit]
+Description=BTC aktualizacja z repozytorium
+Wants=network-online.target
+After=network-online.target
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/btc-update
+EOT
+    cat > /etc/systemd/system/btc-update.timer <<EOT
+[Unit]
+Description=BTC aktualizacja z repozytorium co 10 minut
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=10min
+[Install]
+WantedBy=timers.target
+EOT
+    systemctl daemon-reload; systemctl enable --now btc-update.timer; echo "Automatyczna aktualizacja wlaczona (co 10 min). Dziennik: sudo journalctl -u btc-update -n 30"; exit 0;;
+  --auto-off) systemctl disable --now btc-update.timer 2>/dev/null || true; echo "Automatyczna aktualizacja wylaczona"; exit 0;;
+esac
 cd $REPO
 G="sudo -u $U git"
 old=$($G rev-parse HEAD)
@@ -10,6 +33,10 @@ $G pull --ff-only
 new=$($G rev-parse HEAD)
 if [ "$old" = "$new" ] && [ "${1:-}" != "--force" ]; then echo "Brak zmian ($new). Wymuszenie: sudo btc-update --force"; exit 0; fi
 echo "Zmiany $old..$new:"; $G log --oneline "$old..$new" | head -20
+# zabezpieczenie: nic nie instalujemy, jesli ktorykolwiek plik ma blad skladni
+for f in btc_*.py; do $APP/venv/bin/python -m py_compile "$f" || { echo "BLAD skladni w $f: aktualizacja przerwana, serwer bez zmian"; exit 1; }; done
+bash -n install_bot.sh
+ls -t /opt/btc-backup-*.tar.gz 2>/dev/null | tail -n +11 | xargs -r rm -f      # zostaje 10 ostatnich kopii
 tar czf /opt/btc-backup-$(date +%Y%m%d-%H%M).tar.gz --exclude=venv --exclude='*.db*' -C /opt btc
 # moduly spoza instalatora bota (kolektor, dane na zywo itd.): podmieniamy tylko zmienione
 for f in btc_*.py; do

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pl" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Bitcoin — badania</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ui.css">
+<script src="ui.js"></script>
+<style>
+:root{--bg:#EDF0F4;--card:#fff;--card2:#F5F7FA;--line:#DCE2E9;--ink:#111D29;--muted:#5B6978;--accent:#E8830C;--bull:#12805A;--bear:#C1334A;--warn:#B7791F;--sans:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0F16;--card:#111A25;--card2:#16212E;--line:#223142;--ink:#E8EEF4;--muted:#93A1B1;--accent:#F7A234;--bull:#3DDC97;--bear:#FF6B81;--warn:#E5B567}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:1.4rem;margin:0} h2{font-size:1.05rem;margin:0 0 4px} h3{font-size:.9rem;margin:18px 0 6px;color:var(--muted)}
+a{color:var(--accent)} .sub{color:var(--muted);font-size:.85rem;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 14px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.tbl-w{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums;min-width:520px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:.74rem;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+tr:last-child td{border-bottom:0} .r{text-align:right}
+.up{color:var(--bull)} .down{color:var(--bear)}
+.chip{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.72rem;border:1px solid var(--line);color:var(--muted)}
+.chip.ok{color:var(--bull);border-color:var(--bull)} .chip.no{color:var(--warn);border-color:var(--warn)}
+.note{color:var(--muted);font-size:.82rem;margin:10px 0 0}
+.warn{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid var(--warn);border-radius:12px;padding:10px 14px;font-size:.85rem;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:90px;margin-top:8px}
+.bars div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;font-size:.68rem;color:var(--muted);height:100%}
+.bars i{display:block;width:100%;border-radius:4px 4px 0 0;min-height:2px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kv div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px} .kv b{display:block;font-size:1.1rem} .kv span{font-size:.75rem;color:var(--muted)}
+.btn{display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);text-decoration:none;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>Bitcoin — badania</h1><p class="sub" id="meta" style="margin:0">Wczytuję…</p></div>
+  <div><a class="btn" href="index.html">← Panel</a> <a class="btn" href="bot.html">Bot</a> <a class="btn" href="strategie.html" target="strategie" onclick="window.open(this.href,'strategie','width=1320,height=920');return false">Strategie</a></div>
+</header>
+<div class="warn"><b>Opis historii, nie prognoza.</b> To statystyka z kilku cykli rynkowych jednego aktywa. Wynik „istotny” przy setkach testów bywa przypadkiem — patrz kolumna q i stabilność. Nic tutaj nie steruje zleceniami.</div>
+<div id="app"></div>
+</div>
+<script>
+(() => {
+'use strict';
+const app = document.getElementById('app'), meta = document.getElementById('meta');
+const el = (t, a, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a || {})) if (v != null) e.setAttribute(n, v); for (const c of k.flat()) if (c != null) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
+const nf = (v, d = 2) => (v == null || Number.isNaN(v)) ? 'n/d' : new Intl.NumberFormat('pl-PL', {minimumFractionDigits: d, maximumFractionDigits: d}).format(v);
+const pc = (v, d = 2) => v == null ? 'n/d' : (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v), d) + '%';
+const cls = v => v > 0 ? 'up' : v < 0 ? 'down' : '';
+const card = (title, sub, ...k) => el('section', {class: 'card'}, el('h2', null, title), sub ? el('p', {class: 'sub'}, sub) : null, ...k);
+const table = (heads, rows) => el('div', {class: 'tbl-w'}, el('table', null, el('thead', null, el('tr', null, heads.map((h, i) => el('th', {class: i ? 'r' : ''}, h)))), el('tbody', null, rows)));
+const td = (v, c, r = true) => el('td', {class: (r ? 'r ' : '') + (c || '')}, v);
+const NAMES = {tech_: 'techniczne: ', fred_: 'FRED ', stooq_: 'Stooq ', gn_: 'Glassnode ', cmc_: 'CMC '};
+const fname = f => { const [b, t] = f.split('__'); return b + (t ? ' (zmiana ' + t.replace('chg', '') + ' d)' : ' (poziom)'); };
+
+function render(r) {
+  const d = r.data;
+  meta.textContent = `Dane ${d.from} → ${d.to} · ${d.days} dni · ${d.metrics} metryk · ${d.features} cech · wygenerowano ${new Date(r.generated_at).toLocaleString('pl-PL')}`;
+  const out = [];
+  out.push(card('Zależności cech z przyszłym zwrotem', `${r.tests} testów, ${r.significant} istotnych po korekcie (q < 0,10). IC = korelacja rang Spearmana; „stabilna” = ten sam znak w 3 podokresach.`,
+    table(['Cecha', 'Horyzont', 'IC', 'p', 'q', 'Stabilność'], r.ic.map(x => el('tr', null, td(fname(x.feature), '', false), td(x.h + ' d'), td((x.ic > 0 ? '+' : '') + nf(x.ic, 3), cls(x.ic)), td(nf(x.p, 4)), td(nf(x.q, 3)),
+      el('td', {class: 'r'}, el('span', {class: 'chip ' + (x.stable ? 'ok' : 'no')}, x.stable ? 'stabilna' : 'niestabilna')))))));
+  const wf = r.walkforward;
+  if (wf) {
+    const s = wf.strategy, b = wf.buy_hold, good = wf.permutation_p < 0.05;
+    out.push(card('Test walk-forward (poza próbą)', `Od ${wf.oos_from}, ${wf.oos_days} dni. Cechy wybierane tylko na danych treningowych, kompozyt ${wf.horizon_days}-dniowy, koszt ${nf(wf.cost_per_switch_pct)}% za zmianę pozycji (long/gotówka).`,
+      el('div', {class: 'kv'},
+        el('div', null, el('b', {class: cls(s.total_return_pct)}, pc(s.total_return_pct, 1)), el('span', null, 'strategia, wynik')),
+        el('div', null, el('b', {class: cls(b.total_return_pct)}, pc(b.total_return_pct, 1)), el('span', null, 'kup i trzymaj')),
+        el('div', null, el('b', null, nf(s.sharpe)), el('span', null, 'Sharpe strategii (kup i trzymaj: ' + nf(b.sharpe) + ')')),
+        el('div', null, el('b', {class: 'down'}, pc(s.max_dd_pct, 1)), el('span', null, 'maks. obsunięcie (kup i trzymaj: ' + pc(b.max_dd_pct, 1) + ')')),
+        el('div', null, el('b', null, nf(s.time_in_market_pct, 0) + '%'), el('span', null, 'czas w rynku, ' + s.switches + ' zmian')),
+        el('div', null, el('b', {class: good ? 'up' : 'down'}, nf(wf.permutation_p, 3)), el('span', null, 'p testu permutacyjnego'))),
+      el('p', {class: 'note'}, good ? 'Sygnał jest istotnie lepszy niż losowe przesunięcie, ale to nadal jedna historia danych.' : 'Sygnał nie odróżnia się wyraźnie od losowego przesunięcia: traktuj wynik jako przypadkowy.')));
+  }
+  const today = r.today || [];
+  if (today.length) out.push(card('Dziś na tle historii', 'Percentyl cechy w oknie 365 dni i średni zwrot po podobnych odczytach w przeszłości (±15 pkt percentyla).',
+    table(['Cecha', 'Percentyl', 'Horyzont', 'Śr. zwrot po podobnych', 'Średnia ogółem', 'Próbek'], today.map(t => el('tr', null, td(fname(t.feature), '', false), td(nf(t.percentile, 0) + '.'), td(t.h + ' d'),
+      td(pc(t.similar_mean_pct), cls(t.similar_mean_pct)), td(pc(t.base_mean_pct), cls(t.base_mean_pct)), td(t.similar_n))))));
+  const reg = Object.entries(r.regimes || {}).map(([name, rows]) => card('Reżim: ' + name, null,
+    table(['Stan', 'Dni', 'Śr. zwrot 7 d', '% dodatnich 7 d', 'Śr. zwrot 30 d', '% dodatnich 30 d'], rows.map(x => el('tr', null, td(x.label, '', false), td(x.n),
+      td(pc(x.mean_7d), cls(x.mean_7d)), td(x.hit_7d == null ? 'n/d' : nf(x.hit_7d, 0) + '%'), td(pc(x.mean_30d), cls(x.mean_30d)), td(x.hit_30d == null ? 'n/d' : nf(x.hit_30d, 0) + '%'))))));
+  out.push(el('div', {class: 'grid'}, ...reg));
+  const bars = (arr, lab) => { const mx = Math.max(...arr.map(x => Math.abs(x.mean || 0)), 0.01);
+    return el('div', {class: 'bars'}, arr.map(x => el('div', {title: `${x.label}: ${pc(x.mean, 3)} / dzień, dodatnich ${nf(x.hit, 0)}%`}, el('i', {style: `height:${Math.max(2, Math.abs(x.mean || 0) / mx * 70)}%;background:var(--${(x.mean || 0) >= 0 ? 'bull' : 'bear'})`}), x.label))); };
+  out.push(card('Sezonowość', 'Średni dzienny zwrot wg dnia tygodnia i miesiąca (najedź na słupek po szczegóły).', el('h3', null, 'Dzień tygodnia'), bars(r.seasonality.dow), el('h3', null, 'Miesiąc'), bars(r.seasonality.month)));
+  const qk = Object.entries(r.quintiles || {});
+  if (qk.length) out.push(card('Kwintyle najsilniejszych cech', 'Średni zwrot po wartościach cechy z kwintyla 1 (najniższe) … 5 (najwyższe). Opis całej próby, nie strategia.',
+    table(['Cecha | horyzont', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5'], qk.map(([k, qs]) => el('tr', null, td(fname(k.split('|')[0]) + ' | ' + k.split('|')[1], '', false), ...qs.map(q => td(pc(q.mean), cls(q.mean))))))));
+  out.push(card('Zasoby danych', 'Zakres każdej metryki w bazie.',
+    table(['Metryka', 'Od', 'Do', 'Wierszy'], d.inventory.map(m => el('tr', null, td(m.metric, '', false), td(m.from), td(m.to), td(m.rows))))));
+  out.push(card('Uwagi metodologiczne', null, el('ul', null, r.notes.map(n => el('li', {class: 'note'}, n)))));
+  app.replaceChildren(...out);
+}
+fetch('btc_research.json?t=' + Date.now(), {cache: 'no-store'}).then(x => { if (!x.ok) throw new Error('HTTP ' + x.status); return x.json(); }).then(render)
+  .catch(e => { meta.textContent = 'Brak danych badań.'; app.replaceChildren(el('div', {class: 'warn'}, 'Nie mogę wczytać btc_research.json (' + e.message + '). Uruchom: btc_collect.py backfill, potem btc_research.py.')); });
+})();
+</script>
+</body>
+</html>

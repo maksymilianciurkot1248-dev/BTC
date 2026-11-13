@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="pl" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Rynki — waluty i spółki</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ui.css">
+<script src="ui.js"></script>
+<style>
+:root{--bg:#EDF0F4;--card:#fff;--card2:#F5F7FA;--line:#DCE2E9;--ink:#111D29;--muted:#5B6978;--accent:#E8830C;--bull:#12805A;--bear:#C1334A;--warn:#B7791F;--sans:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0F16;--card:#111A25;--card2:#16212E;--line:#223142;--ink:#E8EEF4;--muted:#93A1B1;--accent:#F7A234;--bull:#3DDC97;--bear:#FF6B81;--warn:#E5B567}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+.wrap{max-width:1150px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+h1{font-size:1.4rem;margin:0} h2{font-size:1.05rem;margin:0 0 4px} h3{font-size:.9rem;margin:16px 0 6px;color:var(--muted)}
+a{color:var(--accent)} .sub{color:var(--muted);font-size:.85rem;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 14px;margin-bottom:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.tbl-w{overflow-x:auto} table{width:100%;border-collapse:collapse;font-size:.84rem;font-variant-numeric:tabular-nums;min-width:640px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:.74rem;padding:6px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap} tr:last-child td{border-bottom:0} .r{text-align:right}
+tr.click{cursor:pointer} tr.click:hover{background:var(--card2)}
+.up{color:var(--bull)} .down{color:var(--bear)}
+.chip{display:inline-block;padding:1px 8px;margin:0 3px 0 0;border-radius:999px;font-size:.7rem;border:1px solid var(--line);color:var(--muted)}
+.chip.w{color:var(--warn);border-color:var(--warn)} .chip.g{color:var(--bull);border-color:var(--bull)}
+.note{color:var(--muted);font-size:.82rem;margin:10px 0 0}
+.warn{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid var(--warn);border-radius:12px;padding:10px 14px;font-size:.85rem;margin-bottom:16px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:6px}
+.kv div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px} .kv b{display:block;font-size:1.1rem} .kv span{font-size:.75rem;color:var(--muted)}
+.sc{display:inline-block;width:70px;height:7px;background:var(--line);border-radius:4px;margin-right:6px;vertical-align:middle;overflow:hidden} .sc i{display:block;height:100%;background:var(--accent)}
+.seg{display:inline-flex;gap:4px;margin:0 0 10px} .seg button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:4px 12px;border-radius:999px;font-size:.8rem;cursor:pointer;font-family:inherit}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.live{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.lq{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 12px;font-size:.82rem;font-variant-numeric:tabular-nums;min-width:112px}
+.lq span{display:block;color:var(--muted);font-size:.7rem} .lq b{font-size:1rem} .lq i{font-style:normal;font-size:.72rem;margin-left:6px}
+.lq.fu{animation:fu 1s} .lq.fd{animation:fd 1s} @keyframes fu{from{background:color-mix(in srgb,var(--bull) 25%,var(--card))}} @keyframes fd{from{background:color-mix(in srgb,var(--bear) 25%,var(--card))}}
+.tone{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px} .tn{border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:10px;padding:7px 12px;font-size:.82rem;background:var(--card2);flex:1 1 260px}
+.tn.tailwind{border-left-color:var(--bull)} .tn.headwind{border-left-color:var(--bear)} .tn small{display:block;color:var(--muted)}
+.btn{display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);text-decoration:none;font-size:.85rem}
+.detail td{background:var(--card2);white-space:normal} .rk{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>Rynki — waluty i spółki</h1><p class="sub" id="meta" style="margin:0">Wczytuję…</p></div>
+  <div><a class="btn" href="index.html">← Panel</a> <a class="btn" href="badania.html">Badania</a> <a class="btn" href="okazje.html">Okazje</a> <a class="btn" href="bot.html">Bot</a> <a class="btn" href="sytuacje.html">Sytuacje</a> <a class="btn" href="strategie.html" target="strategie" onclick="window.open(this.href,'strategie','width=1320,height=920');return false">Strategie</a></div>
+</header>
+<div class="live" id="live" aria-label="Notowania na żywo"></div>
+<div class="warn"><b>To nie jest porada inwestycyjna.</b> Ranking spółek to model czynnikowy (momentum, trend, fundamenty), a nie prognoza. Lista pochodzi z watchlisty, więc test historyczny ma błąd przetrwania (wynik zawyżony).</div>
+<div id="app"></div>
+</div>
+<script>
+(() => {
+'use strict';
+const app = document.getElementById('app'), meta = document.getElementById('meta');
+const el = (t, a, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a || {})) if (v != null && v !== false) e.setAttribute(n, v === true ? '' : v); for (const c of k.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
+const nf = (v, d = 2) => (v == null || Number.isNaN(v)) ? 'n/d' : new Intl.NumberFormat('pl-PL', {minimumFractionDigits: d, maximumFractionDigits: d}).format(v);
+const pc = (v, d = 2, mul = 100) => v == null ? 'n/d' : (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v * mul), d) + '%';
+const cls = v => v > 0 ? 'up' : v < 0 ? 'down' : '';
+const card = (title, sub, ...k) => el('section', {class: 'card'}, el('h2', null, title), sub ? el('p', {class: 'sub'}, sub) : null, ...k);
+const table = (heads, rows, left = []) => el('div', {class: 'tbl-w'}, el('table', null, el('thead', null, el('tr', null, heads.map((h, i) => el('th', {class: i && !left.includes(i) ? 'r' : ''}, h)))), el('tbody', null, rows)));
+const td = (v, c, r = true) => el('td', {class: (r ? 'r ' : '') + (c || '')}, v);
+const FACTOR = {mom_12_1: 'momentum 12-1', mom_6: 'momentum 6 mies.', rel_6: 'siła vs indeks', trend: 'trend', prox_high: 'blisko szczytu', low_vol: 'niska zmienność', vol_trend: 'wolumen',
+  rev_growth: 'wzrost przychodów', eps_growth: 'wzrost zysku', net_margin: 'marża netto', roe: 'ROE', peg_inv: 'wycena (PEG)', debt_inv: 'niskie zadłużenie'};
+const MARKET = {US: 'USA', PL: 'GPW', DE: 'Niemcy'};
+
+function fxSection(fx) {
+  if (!fx) return card('Waluty (FX)', null, el('p', {class: 'note'}, 'Brak danych walutowych: uruchom btc_collect.py (źródło fx).'));
+  const out = [], u = fx.usd_index;
+  if (u) out.push(card('Indeks dolara (koszyk G10)', `Średnia geometryczna ${u.basket.join(', ')}; rośnie, gdy USD się umacnia. Dane na ${fx.as_of}.`,
+    el('div', {class: 'kv'},
+      el('div', null, el('b', null, u.trend), el('span', null, 'trend (cena vs SMA50/200)')),
+      el('div', null, el('b', {class: cls(u.chg_30d)}, pc(u.chg_30d)), el('span', null, 'zmiana 30 dni')),
+      el('div', null, el('b', {class: cls(u.chg_1y)}, pc(u.chg_1y)), el('span', null, 'zmiana 1 rok')),
+      el('div', null, el('b', null, nf(u.pctl_5y, 0) + '.'), el('span', null, 'percentyl w 5 latach')),
+      el('div', null, el('b', null, nf(u.corr_btc_90d, 2)), el('span', null, 'korelacja z BTC, 90 dni')),
+      el('div', null, el('b', null, nf(u.corr_btc_180d, 2)), el('span', null, 'korelacja z BTC, 180 dni'))),
+    el('p', {class: 'note'}, 'Ujemna korelacja z BTC oznacza, że bitcoin zwykle zyskuje, gdy dolar słabnie. Zależność zmienia się w czasie.')));
+  const rows = fx.currencies.map(r => el('tr', null, td(r.ccy, '', false), td(nf(r.per_usd, r.per_usd > 50 ? 2 : 4)), td(pc(r.chg_7d), cls(r.chg_7d)), td(pc(r.chg_30d), cls(r.chg_30d)), td(pc(r.chg_90d), cls(r.chg_90d)),
+    td(pc(r.chg_ytd), cls(r.chg_ytd)), td(pc(r.chg_1y), cls(r.chg_1y)), td(nf(r.vol_30d == null ? null : r.vol_30d * 100, 1) + '%'), td(nf(r.rsi14, 0)), td(r.trend), td(nf(r.pctl_5y, 0) + '.'), td(nf(r.corr_btc_90d, 2))));
+  out.push(card('Waluty wobec USD', `Zmiany pokazują siłę waluty względem dolara (dodatnie = waluta się umacnia). Najsilniejsze 30 dni: ${fx.strongest_30d.join(', ')}; najsłabsze: ${fx.weakest_30d.join(', ')}.`,
+    table(['Waluta', 'Za 1 USD', '7 d', '30 d', '90 d', 'YTD', '1 rok', 'Zmienność 30d', 'RSI', 'Trend', 'Percentyl 5l', 'Korel. BTC 90d'], rows, [9])));
+  if ((fx.pln_cross || []).length) out.push(card('Kursy w złotych', 'Ile PLN kosztuje jednostka waluty (JPY i HUF za 100). Wzrost = złoty słabnie.',
+    table(['Waluta', 'Kurs w PLN', '7 d', '30 d', '90 d', '1 rok', 'Percentyl 5l'], fx.pln_cross.map(r => el('tr', null, td((r.unit === 100 ? '100 ' : '') + r.ccy, '', false), td(nf(r.pln, 4)), td(pc(r.chg_7d), cls(r.chg_7d)), td(pc(r.chg_30d), cls(r.chg_30d)), td(pc(r.chg_90d), cls(r.chg_90d)), td(pc(r.chg_1y), cls(r.chg_1y)), td(nf(r.pctl_5y, 0) + '.'))))));
+  return out;
+}
+
+function stocksSection(st) {
+  if (!st) return card('Spółki', null, el('p', {class: 'note'}, 'Brak danych o spółkach: uruchom btc_collect.py (źródło stocks).'));
+  const out = [];
+  let market = 'ALL';
+  const holder = el('div');
+  const seg = el('div', {class: 'seg', role: 'group', 'aria-label': 'Rynek'});
+  const render = () => {
+    seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === market)));
+    const list = st.ranking.filter(r => market === 'ALL' || r.market === market);
+    const body = [];
+    list.forEach((r, i) => {
+      const detail = el('tr', {class: 'detail', hidden: true}, el('td', {colspan: 11}, el('div', {class: 'rk'}, Object.entries(r.ranks).filter(([, v]) => v != null).map(([k, v]) => el('span', null, (FACTOR[k] || k) + ': ', el('b', null, nf(v, 0)))), r.fundamentals && r.fundamentals.analyst != null ? el('span', null, 'ocena analityków: ', el('b', null, nf(r.fundamentals.analyst, 2))) : null)));
+      const row = el('tr', {class: 'click', tabindex: 0, title: 'Kliknij, by zobaczyć składowe wyniku'}, td(String(i + 1)), td(el('b', null, r.symbol.split('.')[0]), '', false), td(r.name, '', false), td(MARKET[r.market] || r.market, '', false),
+        td(el('span', null, el('span', {class: 'sc'}, el('i', {style: `width:${r.score}%`})), nf(r.score, 0))), td(r.fund_score == null ? 'tylko cena' : nf(r.fund_score, 0)),
+        td(pc(r.mom_12_1, 0), cls(r.mom_12_1)), td(pc(r.mom_6, 0), cls(r.mom_6)), td(pc(r.dd_1y, 0), cls(r.dd_1y)), td(nf(r.vol90 == null ? null : r.vol90 * 100, 0) + '%'),
+        td(el('span', null, r.flags.map(f => el('span', {class: 'chip ' + (f.startsWith('korekta w') ? 'g' : 'w')}, f))), '', false));
+      const toggle = () => { detail.hidden = !detail.hidden; };
+      row.addEventListener('click', toggle); row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+      body.push(row, detail);
+    });
+    holder.replaceChildren(table(['#', 'Symbol', 'Spółka', 'Rynek', 'Wynik 0-100', 'Fundamenty', 'Mom. 12-1', 'Mom. 6m', 'Od szczytu', 'Zmienność', 'Uwagi'], body, [1, 2, 3, 10]));
+  };
+  [['ALL', 'Wszystkie'], ['US', 'USA'], ['PL', 'GPW'], ['DE', 'Niemcy']].forEach(([m, label]) => { const b = el('button', {type: 'button', 'data-m': m}, label); b.addEventListener('click', () => { market = m; render(); }); seg.append(b); });
+  render();
+  out.push(card('Ranking spółek: potencjał wzrostu wg modelu czynnikowego', `${st.ranked} spółek w rankingu (z ${st.universe}), ${st.with_fundamentals} z fundamentami. Wynik to średni percentyl w uniwersum: momentum 12-1, 6 mies., siła vs indeks, trend, bliskość szczytu, zmienność, wolumen${st.with_fundamentals ? ' + wzrost przychodów i zysku, marże, ROE, PEG, zadłużenie' : ''}.`, seg, holder,
+    el('p', {class: 'note'}, 'Flaga „przegrzana” = RSI > 75 lub cena > 60% nad SMA200. Wysoki wynik oznacza silne dotychczasowe wyniki, nie gwarancję dalszego wzrostu.' + (st.with_fundamentals ? '' : ' Dodaj FINNHUB_API_KEY, aby włączyć fundamenty spółek z USA.'))));
+  if ((st.dips || []).length) out.push(card('Korekty w trendzie wzrostowym', 'Spółki w trendzie wzrostowym (cena > SMA50 > SMA200), 8-20% poniżej rocznego szczytu: historycznie częsty punkt obserwacji, ale też początek odwrócenia trendu.',
+    table(['Symbol', 'Spółka', 'Wynik', 'Od szczytu', 'Mom. 12-1'], st.dips.map(r => el('tr', null, td(el('b', null, r.symbol.split('.')[0]), '', false), td(r.name, '', false), td(nf(r.score, 0)), td(pc(r.dd_1y, 0), 'down'), td(pc(r.mom_12_1, 0), cls(r.mom_12_1)))), [1])));
+  const bt = st.backtest;
+  if (bt) out.push(card('Czy sam model coś mówi? Test historyczny wyniku cenowego', 'Co ~30 dni ranking liczony wyłącznie z cen z przeszłości; górny kwintyl vs całe uniwersum (równe wagi). Błąd przetrwania zawyża wynik.',
+    table(['Horyzont', 'Okresów', 'Górny kwintyl', 'Uniwersum', 'Dolny kwintyl', 'Nadwyżka', 'Pokonuje uniwersum', 't (nienakł.)'], Object.entries(bt).map(([k, v]) => el('tr', null, td(k, '', false), td(v.periods), td(pc(v.top_mean_pct, 1, 1), cls(v.top_mean_pct)), td(pc(v.universe_mean_pct, 1, 1), cls(v.universe_mean_pct)),
+      td(pc(v.bottom_mean_pct, 1, 1), cls(v.bottom_mean_pct)), td(pc(v.excess_mean_pct, 1, 1), cls(v.excess_mean_pct)), td(nf(v.beat_universe_pct, 0) + '%'), td(nf(v.t_stat, 1))))),
+    el('p', {class: 'note'}, '|t| poniżej 2 oznacza, że przewaga nie odróżnia się od przypadku. Nawet przy wysokim t pamiętaj o błędzie przetrwania i o tym, że momentum potrafi się nagle odwrócić.')));
+  if ((st.missing || []).length) out.push(card('Pominięte', 'Brak świeżych danych (zły symbol, limit zapytań, za krótka historia).', el('p', {class: 'note'}, st.missing.join(', '))));
+  return out;
+}
+
+
+function commoditiesSection(c) {
+  if (!c) return [card('Złoto i surowce', null, el('p', {class: 'note'}, 'Brak danych: uruchom btc_collect.py (źródło commodities).'))];
+  const out = [], g = c.gold || {};
+  const rows = c.assets.map(r => el('tr', null, td(r.label, '', false), td(nf(r.price, r.price > 1000 ? 0 : 2)), td(pc(r.chg_1d), cls(r.chg_1d)), td(pc(r.chg_7d), cls(r.chg_7d)), td(pc(r.chg_30d), cls(r.chg_30d)), td(pc(r.chg_90d), cls(r.chg_90d)),
+    td(pc(r.chg_ytd), cls(r.chg_ytd)), td(pc(r.chg_1y), cls(r.chg_1y)), td(nf(r.vol_30d == null ? null : r.vol_30d * 100, 1) + '%'), td(nf(r.rsi14, 0)), td(pc(r.dd_52w, 1), cls(r.dd_52w)), td(r.trend, '', false)));
+  const kv = [];
+  const add = (v, l, c) => v != null && kv.push(el('div', null, el('b', {class: c || ''}, v), el('span', null, l)));
+  if (g.gold_pln) add(nf(g.gold_pln.price, 0) + ' zł', 'złoto za uncję (90 dni ' + pc(g.gold_pln.chg_90d, 1) + ')');
+  if (g.gold_eur) add(nf(g.gold_eur.price, 0) + ' €', 'złoto za uncję (90 dni ' + pc(g.gold_eur.chg_90d, 1) + ')');
+  if (g.gold_silver_ratio) add(nf(g.gold_silver_ratio.now, 1), 'stosunek złoto/srebro (percentyl 5l: ' + nf(g.gold_silver_ratio.pctl_5y, 0) + ')');
+  if (g.btc_in_gold_oz) add(nf(g.btc_in_gold_oz.now, 1) + ' oz', 'cena BTC w uncjach złota (90 dni ' + pc(g.btc_in_gold_oz.chg_90d, 1) + ')');
+  if (g.real_yield) add(nf(g.real_yield.now, 2) + '%', 'realna rentowność USA 10Y (' + (g.real_yield.chg_90d_pp >= 0 ? '+' : '') + nf(g.real_yield.chg_90d_pp, 2) + ' pp / 90 dni)');
+  if (g.cot_noncomm_net) add(nf(g.cot_noncomm_net.pctl_3y, 0) + '.', 'pozycje spekulantów COT, percentyl 3 lat');
+  [['corr_btc_60d', 'korel. z BTC 60d'], ['corr_dxy_60d', 'korel. z dolarem 60d'], ['corr_spx_60d', 'korel. z S&P 60d'], ['corr_realyield_180d', 'korel. ze zmianą realnych stóp 180d']].forEach(([k, l]) => add(g[k] == null ? null : nf(g[k], 2), l));
+  out.push(card('Złoto i surowce', 'Złoto, srebro, platyna, miedź, ropa oraz ETF-y (Stooq, dzienne). Zmiany: 1 dzień … 1 rok; „od szczytu” liczone od 52-tygodniowego maksimum.',
+    table(['Aktywo', 'Cena', '1 d', '7 d', '30 d', '90 d', 'YTD', '1 rok', 'Zmienność 30d', 'RSI', 'Od szczytu 52t', 'Trend'], rows, [11]),
+    kv.length ? el('h3', null, 'Złoto: wskaźniki') : null, kv.length ? el('div', {class: 'kv'}, kv) : null,
+    (g.readings || []).length ? el('div', {class: 'tone'}, g.readings.map(r => el('div', {class: 'tn ' + r.tone, title: r.note}, el('b', null, r.label + ': ' + r.value), el('small', null, r.note)))) : null,
+    el('p', {class: 'note'}, 'Zielony pasek = czynnik historycznie sprzyjający złotu, czerwony = niesprzyjający. To opis układu danych, nie prognoza.')));
+  return out;
+}
+
+/* ---------- notowania na żywo: WebSocket Bybit (BTC, ETH, XAUT = złoto 24/7) + live.json (Stooq i reszta) ---------- */
+const liveBox = document.getElementById('live'), liveEls = {};
+const LABEL = {BTCUSDT: 'BTC/USDT', ETHUSDT: 'ETH/USDT', XAUTUSDT: 'Złoto (XAUT)', XAUUSD: 'Złoto XAU/USD', XAGUSD: 'Srebro', EURUSD: 'EUR/USD', USDPLN: 'USD/PLN', USDJPY: 'USD/JPY', SPX: 'S&P 500', DXY: 'Dolar DXY', WTI: 'Ropa WTI'};
+function setQuote(key, price, chg) {
+  if (!(price > 0)) return;
+  let q = liveEls[key];
+  if (!q) { q = liveEls[key] = {box: el('div', {class: 'lq'}, el('span', null, LABEL[key] || key), el('b', null, '…'), el('i', null, ''))}; liveBox.append(q.box); }
+  const [, b, i] = q.box.children;
+  b.textContent = nf(price, price > 1000 ? 0 : price > 10 ? 2 : 4);
+  if (chg != null) { i.textContent = pc(chg, 2, 1); i.className = cls(chg); }
+  if (q.last != null && q.last !== price) { q.box.classList.remove('fu', 'fd'); void q.box.offsetWidth; q.box.classList.add(price > q.last ? 'fu' : 'fd'); }
+  q.last = price;
+}
+async function pollLive() {
+  try {
+    const j = await (await fetch('live.json?t=' + Date.now(), {cache: 'no-store'})).json();
+    for (const [k, v] of Object.entries(j.quotes || {})) if (!(wsOk && v.src === 'bybit')) setQuote(k, v.price, v.src === 'bybit' ? v.chg24 : v.chg_open);
+  } catch (e) { /* live.json niedostępny: zostają ostatnie wartości */ }
+}
+let wsOk = false;
+function startWs() {
+  let ws; try { ws = new WebSocket('wss://stream.bybit.com/v5/public/spot'); } catch (e) { return; }
+  ws.onopen = () => { wsOk = true; ws.send(JSON.stringify({op: 'subscribe', args: ['tickers.BTCUSDT', 'tickers.ETHUSDT', 'tickers.XAUTUSDT']})); };
+  ws.onmessage = ev => { try { const m = JSON.parse(ev.data); if (m.data && m.data.symbol && m.data.lastPrice) setQuote(m.data.symbol, Number(m.data.lastPrice), m.data.price24hPcnt != null ? Number(m.data.price24hPcnt) * 100 : null); } catch (e) {} };
+  ws.onclose = () => { wsOk = false; setTimeout(startWs, 5000); };
+  ws.onerror = () => { try { ws.close(); } catch (e) {} };
+  setInterval(() => { try { ws.readyState === 1 && ws.send('{"op":"ping"}'); } catch (e) {} }, 20000);
+}
+pollLive(); setInterval(pollLive, 12000); startWs();
+
+function render(r) {
+  meta.textContent = 'Wygenerowano ' + new Date(r.generated_at).toLocaleString('pl-PL');
+  const out = [...commoditiesSection(r.commodities), ...[].concat(fxSection(r.fx)), ...[].concat(stocksSection(r.stocks)), card('Uwagi', null, el('ul', null, r.notes.map(n => el('li', {class: 'note'}, n))))];
+  app.replaceChildren(...out);
+}
+fetch('btc_markets.json?t=' + Date.now(), {cache: 'no-store'}).then(x => { if (!x.ok) throw new Error('HTTP ' + x.status); return x.json(); }).then(render)
+  .catch(e => { meta.textContent = 'Brak danych.'; app.replaceChildren(el('div', {class: 'warn'}, 'Nie mogę wczytać btc_markets.json (' + e.message + '). Uruchom: btc_collect.py backfill, potem btc_markets.py analyze.')); });
+})();
+</script>
+</body>
+</html>

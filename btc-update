@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Aktualizacja bota z repozytorium: pobiera zmiany i uruchamia instalator. Uzycie: sudo btc-update
+set -euo pipefail
+[ "$(id -u)" -eq 0 ] || { echo "Uruchom: sudo btc-update"; exit 1; }
+REPO=/opt/btc-repo; APP=/opt/btc; U=btc
+cd $REPO
+G="sudo -u $U git"
+old=$($G rev-parse HEAD)
+$G pull --ff-only
+new=$($G rev-parse HEAD)
+if [ "$old" = "$new" ] && [ "${1:-}" != "--force" ]; then echo "Brak zmian ($new). Wymuszenie: sudo btc-update --force"; exit 0; fi
+echo "Zmiany $old..$new:"; $G log --oneline "$old..$new" | head -20
+tar czf /opt/btc-backup-$(date +%Y%m%d-%H%M).tar.gz --exclude=venv --exclude='*.db*' -C /opt btc
+# moduly spoza instalatora bota (kolektor, dane na zywo itd.): podmieniamy tylko zmienione
+for f in btc_*.py; do
+  if ! cmp -s "$f" "$APP/$f"; then /opt/btc/venv/bin/python -m py_compile "$f" && install -m 700 -o $U -g $U "$f" $APP/; fi
+done
+bash install_bot.sh
+systemctl restart btc-scalp.service btc-ai.service 2>/dev/null || true
+install -m 755 btc-update /usr/local/bin/btc-update
+systemctl is-active btc-api btc-exec btc-ai btc-scalp || true

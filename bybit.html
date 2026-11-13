@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="pl" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Mój Bybit</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ui.css">
+<script src="ui.js"></script>
+<style>
+:root{--bg:#F5F5F7;--card:#fff;--card2:#F5F5F7;--line:#E5E5EA;--ink:#1D1D1F;--muted:#6E6E73;--accent:#0071E3;--bull:#248A3D;--bear:#D70015;--warn:#B25000;--sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable","Segoe UI",system-ui,Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--card:#1C1C1E;--card2:#2C2C2E;--line:#38383A;--ink:#F5F5F7;--muted:#98989D;--accent:#0A84FF;--bull:#30D158;--bear:#FF453A;--warn:#FF9F0A}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+.wrap{max-width:1150px;margin:0 auto;padding:18px 16px 70px}
+header{margin-bottom:14px} h1{margin:0}
+.sub{color:var(--muted);font-size:.86rem;margin:4px 0 0}
+.up{color:var(--bull)} .down{color:var(--bear)} .mut{color:var(--muted)}
+.hero{display:grid;grid-template-columns:minmax(260px,1.3fr) minmax(220px,1fr) minmax(260px,1.2fr);gap:22px;align-items:center}
+.hero .big{font-size:clamp(2.2rem,5vw,3.3rem);font-weight:700;letter-spacing:-.035em;line-height:1.05}
+.hero .big small{font-size:.45em;font-weight:600;color:var(--muted);margin-left:6px;letter-spacing:0}
+.hero .lbl{font-size:.74rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.hero .chg{font-size:.95rem;font-weight:600;margin-top:6px}
+.gwrap{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center} .gwrap small{color:var(--muted);font-size:.76rem}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:10px 0}
+.kv div{background:var(--card2);border-radius:14px;padding:10px 14px} .kv b{display:block;font-size:1.15rem;font-variant-numeric:tabular-nums} .kv span{font-size:.74rem;color:var(--muted)}
+.tbl-w{overflow-x:auto} table{width:100%;border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums;min-width:640px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:.72rem;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap} td{padding:8px;border-bottom:1px solid var(--line);white-space:nowrap} tr:last-child td{border-bottom:0} .r{text-align:right} th.r{text-align:right}
+.chip{display:inline-block;padding:1px 10px;border-radius:999px;font-size:.72rem;background:var(--card2);color:var(--muted);margin-right:4px;white-space:nowrap}
+.chip.bad{background:color-mix(in srgb,var(--bear) 14%,var(--card));color:var(--bear)} .chip.ok{background:var(--bull);color:#fff} .chip.w{background:color-mix(in srgb,var(--warn) 14%,var(--card));color:var(--warn)}
+.alert{border-radius:14px;padding:10px 14px;font-size:.86rem;margin:8px 0;background:color-mix(in srgb,var(--bear) 10%,var(--card));color:var(--ink);border-left:4px solid var(--bear)}
+.alert.w{background:color-mix(in srgb,var(--warn) 10%,var(--card));border-left-color:var(--warn)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:18px}
+.chart{width:100%;height:150px} .chart svg{width:100%;height:100%;display:block} .chart text{fill:var(--muted);font-size:10px;font-family:inherit}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 10px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem} .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.note{color:var(--muted);font-size:.8rem;margin:8px 0 0}
+.btn.ok{background:var(--bull)!important;color:#fff;font-weight:600;padding:9px 22px} .btn.no{color:var(--bear)} .btn.pri.short{background:var(--bear)}
+.frm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 14px;align-items:end;margin:10px 0} .frm .seg{flex-wrap:nowrap;width:max-content} .frm .seg button{white-space:nowrap;padding:6px 12px;font-size:.82rem} a.btn{text-decoration:none}
+.frm label{font-size:.76rem;color:var(--muted);display:block} .frm input{width:100%;margin-top:3px;padding:8px 10px;font-size:.92rem}
+.prev{background:var(--card2);border-radius:14px;padding:10px 14px;font-size:.86rem;margin:8px 0;font-variant-numeric:tabular-nums} .prev b{font-weight:650}
+.banner-live{background:var(--bear);color:#fff;border-radius:14px;padding:9px 14px;font-weight:600;font-size:.88rem;margin-bottom:12px} .banner-test{background:color-mix(in srgb,var(--warn) 12%,var(--card));border-radius:14px;padding:9px 14px;font-size:.86rem;margin-bottom:12px}
+.ord{display:grid;grid-template-columns:110px 1fr auto;gap:4px 12px;font-size:.82rem;padding:6px 0;border-bottom:1px solid var(--line)} .ord:last-child{border-bottom:0}
+.donut{display:grid;grid-template-columns:140px 1fr;gap:14px;align-items:center} .donut td,.donut th{padding:7px 5px} @media(max-width:560px){.donut{grid-template-columns:1fr}.hero{grid-template-columns:1fr}}
+h3.s{font-size:.88rem;margin:16px 0 4px;color:var(--muted);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><h1>Mój Bybit</h1><p class="sub"><span id="meta">Wczytuję…</span></p></header>
+<div id="top"><div class="card"><div class="ui-skel" style="height:140px"></div></div></div>
+<div id="ticket"></div>
+<div id="rest"></div>
+</div>
+<script>
+(() => {
+'use strict';
+const el = (t, a, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a || {})) if (v != null && v !== false) e.setAttribute(n, v === true ? '' : v); for (const c of k.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
+const NS = 'http://www.w3.org/2000/svg';
+const sv = (t, a, ...k) => { const e = document.createElementNS(NS, t); for (const [n, v] of Object.entries(a || {})) if (v != null) e.setAttribute(n, v); k.flat().forEach(c => c && e.append(c)); return e; };
+const nf = (v, d = 2) => (v == null || Number.isNaN(v)) ? 'n/d' : new Intl.NumberFormat('pl-PL', {minimumFractionDigits: d, maximumFractionDigits: d}).format(v);
+const sg = (v, d = 2) => v == null ? 'n/d' : (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v), d);
+const cls = v => v > 0 ? 'up' : v < 0 ? 'down' : '';
+const usd = (v, d = 2) => nf(v, d) + ' USDT';
+const api = async p => { const r = await fetch('api/' + p, {cache: 'no-store'}); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); return j; };
+const ago = s => s == null ? 'n/d' : s < 90 ? Math.round(s) + ' s temu' : s < 5400 ? Math.round(s / 60) + ' min temu' : Math.round(s / 3600) + ' h temu';
+const store = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }};
+const fmtD = t => new Date(t * 1000).toLocaleDateString('pl-PL', {day: '2-digit', month: '2-digit'});
+let period = store.get('bybit-period') || '30', last = null;
+
+function bars(daily, days) {       // wynik dzienny
+  const map = new Map(daily), end = new Date(); const arr = [];
+  for (let i = days - 1; i >= 0; i--) { const d = new Date(end.getTime() - i * 864e5).toISOString().slice(0, 10); arr.push([d, map.get(d) || 0]); }
+  const W = 640, H = 150, pad = 14, mx = Math.max(1, ...arr.map(x => Math.abs(x[1]))), z = H / 2, bw = (W - 2 * pad) / arr.length;
+  const s = sv('svg', {viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', role: 'img', 'aria-label': 'Wynik dzienny'});
+  s.append(sv('line', {x1: pad, x2: W - pad, y1: z, y2: z, stroke: 'var(--line)', 'stroke-width': 1}));
+  arr.forEach(([d, v], i) => { const h = Math.abs(v) / mx * (H / 2 - 8); const r = sv('rect', {x: pad + i * bw + 1, width: Math.max(1, bw - 2), y: v >= 0 ? z - h : z, height: Math.max(v ? 1.5 : 0, h), rx: 2, fill: v >= 0 ? 'var(--bull)' : 'var(--bear)', opacity: v ? 1 : 0}); r.append(sv('title', {}, `${d}: ${sg(v)} USDT`)); s.append(r); });
+  return s;
+}
+function area(curve) {           // krzywa wartości konta
+  const v = curve.map(x => x[1]); if (v.length < 2) return el('p', {class: 'mut'}, 'Krzywa wartości konta pojawi się po kilku dniach zbierania danych (zapis co minutę).');
+  const W = 640, H = 150, pad = 8, mn = Math.min(...v), mx = Math.max(...v), rg = mx - mn || 1;
+  const pts = v.map((y, i) => [pad + i / (v.length - 1) * (W - 2 * pad), H - 18 - (y - mn) / rg * (H - 34)]);
+  const d = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L'), col = v[v.length - 1] >= v[0] ? 'var(--bull)' : 'var(--bear)';
+  const s = sv('svg', {viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'none', role: 'img', 'aria-label': 'Krzywa wartości konta'});
+  s.append(sv('path', {d: d + `L${pts[pts.length - 1][0]} ${H}L${pts[0][0]} ${H}z`, fill: col, 'fill-opacity': .12}), sv('path', {d, fill: 'none', stroke: col, 'stroke-width': 2, 'vector-effect': 'non-scaling-stroke', 'stroke-linejoin': 'round'}));
+  return s;
+}
+const PAL = ['#0A84FF', '#30D158', '#FF9F0A', '#BF5AF2', '#FF453A', '#64D2FF', '#FFD60A', '#8E8E93'];
+function donut(coins) {
+  const tot = coins.reduce((a, c) => a + c.usd, 0) || 1, R = 52, C = 2 * Math.PI * R; let off = 0;
+  const s = sv('svg', {viewBox: '0 0 140 140', width: 140, height: 140, role: 'img', 'aria-label': 'Podział aktywów'});
+  s.append(sv('circle', {cx: 70, cy: 70, r: R, fill: 'none', stroke: 'var(--card2)', 'stroke-width': 18}));
+  coins.slice(0, 8).forEach((c, i) => { const len = c.usd / tot * C; s.append(sv('circle', {cx: 70, cy: 70, r: R, fill: 'none', stroke: PAL[i % 8], 'stroke-width': 18, 'stroke-dasharray': `${Math.max(0, len - 1.5)} ${C}`, 'stroke-dashoffset': -off, transform: 'rotate(-90 70 70)'})); off += len; });
+  return s;
+}
+function change(curve, days) {
+  if (!curve || curve.length < 2) return null; const now = curve[curve.length - 1], t0 = now[0] - days * 86400;
+  const ref = curve.find(x => x[0] >= t0) || curve[0]; return ref === now ? null : {abs: now[1] - ref[1], pct: ref[1] ? (now[1] / ref[1] - 1) * 100 : null, days: Math.round((now[0] - ref[0]) / 86400)};
+}
+
+function render(a) {
+  const root = document.getElementById('top'), rest = document.getElementById('rest'); last = a; rest.replaceChildren();
+  if (!a.ok && a.error === 'no_key') { root.replaceChildren(el('div', {class: 'card'}, el('h2', null, 'Połącz konto Bybit'), el('p', null, 'Ta zakładka pokazuje statystyki Twojego prawdziwego konta, wyłącznie do odczytu. Potrzebny jest klucz API z uprawnieniem tylko „Read-Only”.'),
+    el('ol', null, el('li', null, 'Bybit → Profil → API → Utwórz klucz → uprawnienia: odczyt (może być też handel; wypłaty zostaw wyłączone).'), el('li', null, 'Zalecane: ogranicz klucz do adresu IP serwera (141.147.29.90).'), el('li', null, ['Wpisz klucz i sekret w ', el('a', {href: 'klucze/'}, 'panelu kluczy'), ' w sekcji „Bybit: konto PRAWDZIWE” (BYBIT_LIVE_API_KEY i BYBIT_LIVE_API_SECRET) i zapisz.'])),
+    el('p', {class: 'note'}, 'To ten sam klucz prawdziwego konta, którego bot użyje w trybie live; klucz testowy jest osobny. Strona nigdy nie widzi kluczy: dane pobiera osobna usługa na serwerze.'))); document.getElementById('meta').textContent = 'brak klucza'; return; }
+  if (!a.ok) { root.replaceChildren(el('div', {class: 'card'}, el('h2', null, 'Nie udało się pobrać danych'), el('p', {class: 'down'}, a.error || 'nieznany błąd'), el('p', {class: 'note'}, 'Sprawdź klucz (uprawnienia, IP) oraz: sudo journalctl -u btc-account -n 30'))); document.getElementById('meta').textContent = 'błąd'; return; }
+  const w = a.wallet, ex = a.exposure || {}, k = a.key || {}, st = (a.stats || {})[period] || {trades: 0}, ch = change(a.equity_curve, 30), ch1 = change(a.equity_curve, 1);
+  document.getElementById('meta').textContent = `konto ${a.account_type} · dane sprzed ${ago(a.age_s)}${a.error ? ' · ostatnie odświeżenie z błędem: ' + a.error : ''}`;
+  const imr = Math.min(100, Math.max(0, w.im_rate || 0));
+  const gauge = window.UI ? UI.gauge(imr, {size: 130, label: 'depozyt %', color: imr < 50 ? 'var(--bull)' : imr < 80 ? 'var(--warn)' : 'var(--bear)'}) : el('b', null, nf(imr, 1) + '%');
+  const hero = el('div', {class: 'card'}, el('div', {class: 'hero'},
+    el('div', null, el('div', {class: 'lbl'}, 'Wartość konta'), el('div', {class: 'big'}, nf(w.equity, 2), el('small', null, 'USDT')),
+      el('div', {class: 'chg ' + cls(ch1 && ch1.abs)}, ch1 ? `${sg(ch1.abs)} USDT (${sg(ch1.pct, 2)}%) w 24 h` : 'zmiana 24 h: zbieram dane'), ch ? el('div', {class: 'chg ' + cls(ch.abs), style: 'font-weight:500'}, `${sg(ch.abs)} USDT (${sg(ch.pct, 2)}%) w ${ch.days} dni`) : null),
+    el('div', {class: 'gwrap'}, gauge, el('small', null, 'wykorzystany depozyt początkowy')),
+    el('div', {class: 'kv', style: 'margin:0'}, el('div', null, el('b', null, usd(w.available)), el('span', null, 'dostępne środki')), el('div', null, el('b', {class: cls(w.upl)}, sg(w.upl) + ' USDT'), el('span', null, 'niezrealizowany wynik')),
+      el('div', null, el('b', null, ex.x == null ? 'n/d' : '×' + nf(ex.x, 2)), el('span', null, `ekspozycja (${ex.positions || 0} poz.)`)), el('div', null, el('b', null, nf(w.mm_rate, 2) + '%'), el('span', null, 'wskaźnik maint. margin')))));
+  // pozycje
+  const pos = a.positions || [];
+  const posRows = pos.map(p => el('tr', null, el('td', null, p.symbol), el('td', {class: p.side === 'Buy' ? 'up' : 'down'}, p.side === 'Buy' ? 'LONG' : 'SHORT'), el('td', {class: 'r'}, p.size), el('td', {class: 'r'}, nf(p.entry, 2)), el('td', {class: 'r'}, nf(p.mark, 2)), el('td', {class: 'r ' + cls(p.upnl)}, sg(p.upnl)),
+    el('td', {class: 'r'}, p.stop ? nf(p.stop, 2) : el('span', {class: 'chip bad'}, 'BRAK')), el('td', {class: 'r'}, p.tp ? nf(p.tp, 2) : '–'), el('td', {class: 'r'}, 'x' + nf(p.leverage, 0)), el('td', {class: 'r'}, p.liq ? nf(p.liq, 2) + (p.liq_dist_pct != null ? ` (${nf(p.liq_dist_pct, 1)}%)` : '') : '–'), el('td', {class: 'r'}, (() => { const b = el('button', {class: 'btn no', type: 'button', style: 'padding:3px 12px;font-size:.78rem'}, 'Zamknij'); b.addEventListener('click', () => closePos(p, b)); return b; })())));
+  const posCard = el('div', {class: 'card'}, el('h2', null, `Pozycje (${pos.length})`), (ex.without_stop || []).length ? el('div', {class: 'alert'}, `Pozycje bez stop-lossa: ${ex.without_stop.join(', ')}. Ustaw stop w aplikacji Bybit.`) : null,
+    pos.length ? el('div', {class: 'tbl-w'}, el('table', null, el('thead', null, el('tr', null, ['Symbol', 'Kierunek', 'Ilość', 'Wejście', 'Cena', 'Wynik', 'Stop', 'Cel', 'Dźwignia', 'Likwidacja (odl.)', ''].map((h, i) => el('th', {class: i > 1 ? 'r' : ''}, h)))), el('tbody', null, posRows))) : el('p', {class: 'mut'}, 'Brak otwartych pozycji.'),
+    (a.orders || []).length ? el('h3', {class: 's'}, `Oczekujące zlecenia (${a.orders.length})`) : null,
+    ...(a.orders || []).map(o => el('div', {class: 'note', style: 'margin:3px 0'}, `${o.symbol} · ${o.side === 'Buy' ? 'kup' : 'sprzedaj'} ${o.qty} · ${o.type}${o.price ? ' @ ' + nf(o.price, 2) : ''}${o.trigger ? ' (wyzwalacz ' + nf(o.trigger, 2) + ')' : ''}${o.reduce_only ? ' · tylko redukcja' : ''}`)));
+  // statystyki
+  const seg = el('div', {class: 'seg', role: 'group', 'aria-label': 'Okres'}, ...['7', '30', '90'].map(d => { const b = el('button', {type: 'button', 'aria-pressed': String(d === period)}, d + ' dni'); b.addEventListener('click', () => { period = d; store.set('bybit-period', d); render(last); }); return b; }));
+  const sc = (a.by_symbol || {})[period] || [];
+  const statCard = el('div', {class: 'card'}, el('h2', null, 'Statystyki handlu'), el('div', {class: 'bar'}, seg, el('span', {class: 'mut', style: 'font-size:.8rem'}, 'zamknięte pozycje, wynik z Bybit (closedPnl)')),
+    st.trades ? [el('div', {class: 'kv'}, el('div', null, el('b', null, st.trades), el('span', null, `transakcje (${st.wins} zysk / ${st.losses} strata)`)), el('div', null, el('b', null, nf(st.win_rate, 1) + '%'), el('span', null, 'trafność')), el('div', null, el('b', {class: cls(st.total_pnl)}, sg(st.total_pnl) + ' USDT'), el('span', null, 'wynik łączny')),
+      el('div', null, el('b', null, st.profit_factor == null ? 'n/d' : nf(st.profit_factor, 2)), el('span', null, 'profit factor')), el('div', null, el('b', {class: 'up'}, sg(st.avg_win)), el('span', null, 'średni zysk')), el('div', null, el('b', {class: 'down'}, sg(st.avg_loss)), el('span', null, 'średnia strata')),
+      el('div', null, el('b', {class: 'down'}, '−' + nf(st.max_drawdown)), el('span', null, 'największy spadek wyniku')), el('div', null, el('b', null, usd(st.fees)), el('span', null, 'opłaty transakcyjne'))),
+      el('p', {class: 'note'}, `Long: ${st.by_side.long.trades} transakcji, ${sg(st.by_side.long.pnl)} USDT · Short: ${st.by_side.short.trades} transakcji, ${sg(st.by_side.short.pnl)} USDT`),
+      el('h3', {class: 's'}, 'Wynik dzienny'), el('div', {class: 'chart'}, bars(a.daily || [], Number(period))),
+      el('h3', {class: 's'}, 'Wynik według aktywa'), el('div', {class: 'tbl-w'}, el('table', {style: 'min-width:420px'}, el('thead', null, el('tr', null, ['Aktywo', 'Transakcje', 'Trafność', 'Wynik'].map((h, i) => el('th', {class: i ? 'r' : ''}, h)))), el('tbody', null, sc.map(r => el('tr', null, el('td', null, r.symbol), el('td', {class: 'r'}, r.trades), el('td', {class: 'r'}, nf(r.win_rate, 0) + '%'), el('td', {class: 'r ' + cls(r.pnl)}, sg(r.pnl)))))))] : el('p', {class: 'mut'}, 'Brak zamkniętych pozycji w tym okresie.'),
+    a.history_truncated ? el('p', {class: 'note'}, 'Uwaga: historia była bardzo duża i mogła zostać przycięta.') : null);
+  const curveCard = el('div', {class: 'card'}, el('h2', null, 'Krzywa wartości konta'), el('div', {class: 'chart'}, area(a.equity_curve || [])), el('p', {class: 'note'}, 'Wartość konta zapisywana co minutę (dziennie ostatni odczyt). Uwzględnia wpłaty i wypłaty, więc nie jest czystym wynikiem handlu.'));
+  // aktywa
+  const coins = (w.coins || []).filter(c => c.usd > 0.01), tot = coins.reduce((s, c) => s + c.usd, 0) || 1;
+  const assetCard = el('div', {class: 'card'}, el('h2', null, 'Aktywa na koncie'), coins.length ? el('div', {class: 'donut'}, donut(coins), el('div', {class: 'tbl-w'}, el('table', {style: 'min-width:0'}, el('thead', null, el('tr', null, ['Moneta', 'Ilość', 'Wartość', 'Udział'].map((h, i) => el('th', {class: i ? 'r' : ''}, h)))), el('tbody', null, coins.slice(0, 10).map((c, i) => el('tr', null, el('td', null, el('span', {style: `display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px;background:${PAL[i % 8]}`}), c.coin), el('td', {class: 'r'}, nf(c.balance, c.balance < 1 ? 5 : 2)), el('td', {class: 'r'}, usd(c.usd)), el('td', {class: 'r'}, nf(c.usd / tot * 100, 1) + '%'))))))) : el('p', {class: 'mut'}, 'Brak aktywów.'));
+  // koszty
+  const co = a.costs || {};
+  const costCard = el('div', {class: 'card'}, el('h2', null, 'Koszty (30 dni)'), co.error ? el('p', {class: 'mut'}, 'Niedostępne: ' + co.error) : el('div', {class: 'kv'}, el('div', null, el('b', null, usd(co.trading_fees_30d)), el('span', null, 'opłaty za transakcje')), el('div', null, el('b', {class: co.funding_30d > 0 ? 'down' : 'up'}, sg(-co.funding_30d) + ' USDT'), el('span', null, 'funding (+ otrzymany / − zapłacony)'))), el('p', {class: 'note'}, 'Z wypełnień z ostatnich 30 dni.'));
+  // klucz
+  const keyCard = el('div', {class: 'card'}, el('h2', null, 'Bezpieczeństwo klucza API'), k.error ? el('p', {class: 'mut'}, 'Nie udało się odczytać informacji o kluczu: ' + k.error) : [el('div', null, el('span', {class: 'chip ok'}, k.read_only ? 'tylko odczyt' : 'odczyt i handel'), el('span', {class: 'chip ' + (k.withdraw ? 'bad' : 'ok')}, k.withdraw ? 'uprawnienie do wypłat!' : 'bez wypłat'),
+      el('span', {class: 'chip ' + ((k.ips || []).length && k.ips[0] !== '*' ? 'ok' : 'w')}, (k.ips || []).length && k.ips[0] !== '*' ? 'IP ograniczone: ' + k.ips.join(', ') : 'bez ograniczenia IP'), k.days_left != null ? el('span', {class: 'chip ' + (k.days_left < 14 ? 'w' : '')}, `wygasa za ${k.days_left} dni`) : null),
+      ...(k.warnings || []).map(x => el('div', {class: 'alert w'}, x)), ...(k.notes || []).map(x => el('p', {class: 'note'}, x)), el('p', {class: 'note'}, 'Uprawnienia: ' + ((k.permissions || []).join(', ') || 'brak danych'))]);
+  root.replaceChildren(hero, botCard());
+  rest.replaceChildren(posCard, statCard, el('div', {class: 'two'}, curveCard, assetCard), el('div', {class: 'two'}, costCard, keyCard));
+}
+
+/* ---- bot na tym koncie, ticket zleceń, zamykanie ---- */
+let BOT = null, CATALOG = [], EXECSTATE = null;
+const post = (p, body) => fetch('api/' + p, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Requested-With': 'btc-ui'}, body: JSON.stringify(body)}).then(async r => { const j = await r.json(); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); return j; });
+const MODE = {dryrun: 'dryrun (bez zleceń)', testnet: 'TESTNET', demo: 'DEMO', live: 'LIVE: prawdziwe środki'};
+const execAlive = () => BOT && BOT.exec && BOT.exec.ts && (Date.now() / 1000 - BOT.exec.ts) < 90;
+const modeNow = () => (BOT && BOT.exec && BOT.exec.mode) || (BOT && BOT.status && BOT.status.mode) || null;
+const fmtTs = t => new Date(t * 1000).toLocaleString('pl-PL', {day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'});
+
+function botCard() {
+  if (!BOT) return el('div', {class: 'card'}, el('h2', null, 'Bot'), el('p', {class: 'mut'}, 'Brak danych bota.'));
+  const st = BOT.status || {}, e = st.effective || {}, m = modeNow(), live = m === 'live', paused = e.paused || BOT.stop_file, pend = (BOT.proposals || []).filter(p => p.status === 'pending');
+  const items = [live ? el('div', {class: 'banner-live'}, 'Bot jest w trybie LIVE: handluje prawdziwymi pieniędzmi na koncie powyżej.') : el('div', {class: 'banner-test'}, `Tryb bota: ${MODE[m] || m || 'nieznany'}. Bot (i zlecenia ze strony) działają na koncie testowym, a nie na tym prawdziwym, które widzisz u góry. Tryb live ustawiasz na serwerze (patrz instrukcja).`),
+    el('div', null, el('span', {class: 'chip ' + (live ? 'bad' : 'w')}, MODE[m] || m || '?'), el('span', {class: 'chip ' + (paused ? 'w' : 'ok')}, paused ? 'wstrzymany' : 'aktywny'), st.halted ? el('span', {class: 'chip bad'}, 'limit dzienny') : null,
+      el('span', {class: 'chip'}, `ryzyko ${e.risk_pct ?? '?'}%`), el('span', {class: 'chip'}, `dźwignia x${e.max_lev ?? '?'}`), el('span', {class: 'chip'}, `pozycje do ${e.max_positions ?? '?'}`), el('span', {class: 'chip'}, (e.directions || []).join('/') || ''),
+      BOT.settings && BOT.settings.require_approval ? el('span', {class: 'chip ok'}, 'wymaga Twojego zatwierdzenia') : null,
+      ...(((st.risk || BOT.risk || {}).breakers) || []).map(x => el('span', {class: 'chip bad', title: x.detail}, 'wyłącznik: ' + x.label))),
+    el('p', {class: 'note'}, 'Ostatnia decyzja: ' + (st.decision || 'brak')),
+    ...pend.map(p => el('div', {class: 'alert w', style: 'border-left-color:var(--accent);background:var(--card2)'}, el('b', null, `Wniosek: ${p.side === 'long' ? 'LONG' : 'SHORT'} ${p.symbol}`), ` · wartość ${nf(p.notional)} USDT · wejście ${nf(p.entry, 4)} · stop ${nf(p.stop, 4)} · ryzyko ${nf(p.risk_usdt)} USDT `,
+      (() => { const b = el('button', {class: 'btn ok', type: 'button', style: 'margin:0 6px;padding:5px 16px'}, 'Zatwierdź'); b.addEventListener('click', () => decideP(p, 'approve', b)); return b; })(), (() => { const b = el('button', {class: 'btn no', type: 'button', style: 'padding:5px 12px'}, 'Odrzuć'); b.addEventListener('click', () => decideP(p, 'reject', b)); return b; })()))];
+  const pb = el('button', {class: 'btn', type: 'button'}, paused && !BOT.stop_file ? 'Wznów bota' : 'Wstrzymaj bota'); pb.disabled = !!BOT.stop_file;
+  pb.addEventListener('click', async () => { if (paused && !confirm('Wznowić bota? Będzie otwierał nowe pozycje według ustawień.')) return; try { await post('bot/settings', {paused: !paused}); await load(); } catch (err) { alert('Nie udało się: ' + err.message); } });
+  return el('div', {class: 'card'}, el('h2', null, 'Bot na moim koncie'), ...items, el('div', {class: 'bar'}, pb, el('a', {class: 'btn', href: 'bot.html'}, 'Pełne ustawienia i statystyki bota →')));
+}
+async function decideP(p, decision, btn) { if (decision === 'approve' && !confirm(`Zatwierdzić ${p.side.toUpperCase()} ${p.symbol} (${nf(p.notional)} USDT)?`)) return; btn.disabled = true; try { await post('bot/proposal', {id: p.id, decision}); await load(); } catch (err) { alert('Nie udało się: ' + err.message); btn.disabled = false; } }
+async function closePos(p, btn) {
+  if (!confirm(`Zamknąć pozycję ${p.side === 'Buy' ? 'LONG' : 'SHORT'} ${p.symbol} (${p.size}) rynkowo?${modeNow() !== 'live' ? '\n\nUwaga: zlecenie trafi na konto trybu ' + (modeNow() || '?') + ', nie na prawdziwe.' : ''}`)) return;
+  btn.disabled = true; try { const r = await post('bot/order', {type: 'close', symbol: p.symbol}); watch(r.id); } catch (err) { alert('Nie udało się: ' + err.message); btn.disabled = false; }
+}
+
+/* ticket: budowany raz, żeby odświeżanie nie kasowało wpisywanych wartości */
+const T = {};
+function buildTicket() {
+  const box = document.getElementById('ticket'); if (box.firstChild) return;
+  const inp = (id, label, attrs) => { const i = el('input', Object.assign({id, 'aria-label': label}, attrs)); T[id] = i; return el('label', {for: id}, label, i); };
+  const side = {v: 'long'}; const sideBtns = el('div', {class: 'seg', role: 'group', 'aria-label': 'Kierunek'});
+  ['long', 'short'].forEach(v => { const b = el('button', {type: 'button', 'aria-pressed': String(v === 'long')}, v === 'long' ? 'Long (kupno)' : 'Short (sprzedaż)'); b.addEventListener('click', () => { side.v = v; sideBtns.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); T.go.classList.toggle('short', v === 'short'); preview(); }); sideBtns.append(b); });
+  const typ = {v: 'market'}; const typBtns = el('div', {class: 'seg', role: 'group', 'aria-label': 'Typ zlecenia'});
+  [['market', 'Rynkowe'], ['limit', 'Limit']].forEach(([v, t]) => { const b = el('button', {type: 'button', 'aria-pressed': String(v === 'market')}, t); b.addEventListener('click', () => { typ.v = v; typBtns.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); T.priceL.style.display = v === 'limit' ? '' : 'none'; preview(); }); typBtns.append(b); });
+  const dl = el('datalist', {id: 'syms'}); T.dl = dl;
+  const form = el('div', {class: 'frm'}, inp('sym', 'Aktywo (np. SOLUSDT)', {type: 'text', list: 'syms', value: 'SOLUSDT', autocomplete: 'off', spellcheck: 'false'}), el('div', null, el('label', null, 'Kierunek'), sideBtns), el('div', null, el('label', null, 'Typ'), typBtns),
+    inp('notional', 'Wartość pozycji (USDT)', {type: 'number', value: 15, min: 5, step: 1}), inp('stop', 'Stop-loss (% od wejścia)', {type: 'number', value: 3, min: 0.2, max: 50, step: 0.1}), inp('tp', 'Take-profit (%, puste = brak)', {type: 'number', value: 6, min: 0.2, step: 0.1}));
+  T.priceL = inp('price', 'Cena limit', {type: 'number', step: 'any'}); T.priceL.style.display = 'none'; form.append(T.priceL);
+  const prev = el('div', {class: 'prev', 'aria-live': 'polite'}, 'Wpisz dane, aby zobaczyć podsumowanie.'); T.prev = prev;
+  const go = el('button', {class: 'btn pri', type: 'button'}, 'Złóż pozycję'); T.go = go; T.msg = el('div', {class: 'note', role: 'status'}); T.list = el('div'); T.gate = el('div');
+  let px = null, pxSym = null;
+  async function getPx() { const s = T.sym.value.trim().toUpperCase(); if (!/^[A-Z0-9]{2,15}USDT$/.test(s)) { px = null; return; } if (s === pxSym && px) return; pxSym = s; px = null; try { const r = await fetch('api/quote?symbol=' + s, {cache: 'no-store'}); const j = await r.json(); px = r.ok ? (parseFloat(j.price) || null) : null; } catch (e) { px = null; } }
+  function params() { const n = parseFloat(T.notional.value), sp = parseFloat(T.stop.value), tp = parseFloat(T.tp.value), pr = parseFloat(T.price.value); return {n, sp, tp: isFinite(tp) && tp > 0 ? tp : null, entry: typ.v === 'limit' ? pr : px}; }
+  async function preview() {
+    await getPx(); const q = params(), sg = side.v === 'long' ? 1 : -1;
+    if (!(q.n >= 5) || !(q.sp >= 0.2) || !q.entry) { T.prev.textContent = q.entry ? 'Uzupełnij wartość (min. 5 USDT) i stop-loss.' : 'Nie mam ceny (sprawdź symbol albo wpisz cenę limit).'; return; }
+    const stop = q.entry * (1 - sg * q.sp / 100), tp = q.tp ? q.entry * (1 + sg * q.tp / 100) : null;
+    T.prev.replaceChildren(el('span', null, `cena ${nf(q.entry, q.entry >= 100 ? 2 : 4)} · stop `), el('b', {class: 'down'}, nf(stop, stop >= 100 ? 2 : 4)), el('span', null, tp ? ' · cel ' : ' · bez celu'), tp ? el('b', {class: 'up'}, nf(tp, tp >= 100 ? 2 : 4)) : null, el('span', null, ` · ryzyko do stopa `), el('b', null, nf(q.n * q.sp / 100) + ' USDT'), tp ? el('span', null, ' · potencjalny zysk ') : null, tp ? el('b', null, nf(q.n * q.tp / 100) + ' USDT') : null);
+  }
+  ['sym', 'notional', 'stop', 'tp', 'price'].forEach(k => T[k].addEventListener('input', () => { clearTimeout(T.t); T.t = setTimeout(preview, 350); }));
+  go.addEventListener('click', async () => {
+    const q = params(), m = modeNow(), s = T.sym.value.trim().toUpperCase();
+    const body = {type: 'open', symbol: s, side: side.v, order_type: typ.v, notional: q.n, stop_pct: q.sp}; if (q.tp) body.tp_pct = q.tp; if (typ.v === 'limit') body.price = q.entry;
+    if (!(q.n >= 5) || !(q.sp >= 0.2)) { T.msg.className = 'note down'; T.msg.textContent = 'Wartość min. 5 USDT i stop-loss min. 0,2% są wymagane.'; return; }
+    const txt = `${side.v === 'long' ? 'LONG' : 'SHORT'} ${s}\nwartość ${nf(q.n)} USDT, ${typ.v === 'limit' ? 'limit ' + nf(q.entry, 4) : 'rynkowo'}\nstop-loss ${q.sp}%${q.tp ? ', take-profit ' + q.tp + '%' : ', bez take-profit'}\nryzyko do stopa ok. ${nf(q.n * q.sp / 100)} USDT\n\nKonto: ${m === 'live' ? 'PRAWDZIWE (LIVE), prawdziwe pieniądze' : (MODE[m] || m || '?') + ' (nie prawdziwe)'}\n\nZłożyć zlecenie?`;
+    if (!confirm(txt)) return;
+    go.disabled = true; T.msg.className = 'note'; T.msg.textContent = 'Wysyłam do kolejki…';
+    try { const r = await post('bot/order', body); T.msg.textContent = 'W kolejce. Wykonawca sprawdzi limity i złoży zlecenie w ciągu kilku sekund.'; watch(r.id); } catch (err) { T.msg.className = 'note down'; T.msg.textContent = 'Nie przyjęto: ' + err.message; }
+    go.disabled = false;
+  });
+  box.replaceChildren(el('div', {class: 'card'}, el('h2', null, 'Złóż pozycję z tej strony'), T.gate, form, dl, prev, el('div', {class: 'bar'}, go), T.msg, el('h3', {class: 's'}, 'Ostatnie zlecenia ze strony'), T.list,
+    el('p', {class: 'note'}, 'Strona nie ma kluczy: zapisuje tylko prośbę, a zlecenie składa usługa na serwerze po sprawdzeniu limitów (stop-loss zawsze, dźwignia do x2, ryzyko do stopa i wolny limit kapitału).')));
+  preview();
+}
+function updateTicket() {
+  buildTicket(); if (!T.gate) return;
+  const m = modeNow(), on = BOT && BOT.exec && BOT.exec.web_orders && execAlive();
+  T.dl.replaceChildren(...(CATALOG || []).slice(0, 300).map(x => el('option', {value: x[0]})));
+  T.go.disabled = !on;
+  T.gate.replaceChildren(!BOT || !BOT.exec || !BOT.exec.ts ? el('div', {class: 'alert w'}, 'Wykonawca zleceń (usługa btc-exec) nie działa. Na serwerze: sudo systemctl enable --now btc-exec') :
+    !BOT.exec.web_orders ? el('div', {class: 'alert w'}, 'Zlecenia ze strony są wyłączone na serwerze. Włącz: dopisz TRADER_WEB_ORDERS=yes w pliku trader.env i zrestartuj usługę (sudo systemctl restart btc-exec).') :
+    !execAlive() ? el('div', {class: 'alert w'}, 'Wykonawca zleceń nie odpowiada (brak sygnału od ponad 90 s).') :
+    m === 'live' ? el('div', {class: 'banner-live'}, 'Zlecenia z tego formularza trafią na PRAWDZIWE konto (tryb LIVE).') : el('div', {class: 'banner-test'}, `Zlecenia z tego formularza trafią na konto ${MODE[m] || m}, nie na prawdziwe. Tryb live ustawiasz na serwerze.`));
+  const ord = ((BOT && BOT.orders) || []).slice().reverse().slice(0, 6), ST = {queued: ['w kolejce', 'w'], done: ['wykonane', 'ok'], rejected: ['odrzucone', 'bad'], error: ['błąd', 'bad']};
+  T.list.replaceChildren(...(ord.length ? ord.map(o => el('div', {class: 'ord'}, el('span', {class: 'mut'}, fmtTs(o.created)), el('span', null, o.type === 'close' ? `ZAMKNIJ ${o.symbol}` : `${o.side === 'long' ? 'LONG' : 'SHORT'} ${o.symbol} · ${nf(o.notional)} USDT · stop ${o.stop_pct}%${o.tp_pct ? ' · cel ' + o.tp_pct + '%' : ''}`, el('br'), el('small', {class: 'mut'}, o.result || '')), el('span', {class: 'chip ' + (ST[o.status] || ['', ''])[1]}, (ST[o.status] || [o.status])[0]))) : [el('p', {class: 'mut'}, 'Brak zleceń.')]));
+}
+async function watch(id) {       // odpytywanie kolejki do czasu wyniku
+  for (let i = 0; i < 20; i++) { await new Promise(r => setTimeout(r, 2000)); try { BOT = await (await fetch('api/bot', {cache: 'no-store'})).json(); updateTicket(); const o = (BOT.orders || []).find(x => x.id === id); if (o && o.status !== 'queued') { if (T.msg) { T.msg.className = 'note ' + (o.status === 'done' ? 'up' : 'down'); T.msg.textContent = o.result || o.status; } load(); return; } } catch (e) { /* kolejna próba */ } }
+}
+
+async function load() {
+  try { BOT = await api('bot'); } catch (e) { BOT = null; }
+  if (!CATALOG.length) { try { CATALOG = (await api('catalog')).symbols || []; } catch (e) { /* katalog jest dodatkiem */ } }
+  try { render(await api('account')); } catch (e) { document.getElementById('meta').textContent = 'Błąd: ' + e.message; }
+  updateTicket();
+}
+load(); setInterval(() => { if (!document.hidden) load(); }, 15000);
+})();
+</script>
+</body>
+</html>

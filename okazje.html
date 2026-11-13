@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="pl" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Okazje zakupowe</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ui.css">
+<script src="ui.js"></script>
+<style>
+:root{--bg:#EDF0F4;--card:#fff;--card2:#F5F7FA;--line:#DCE2E9;--ink:#111D29;--muted:#5B6978;--accent:#E8830C;--bull:#12805A;--bear:#C1334A;--warn:#B7791F;--sans:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0F16;--card:#111A25;--card2:#16212E;--line:#223142;--ink:#E8EEF4;--muted:#93A1B1;--accent:#F7A234;--bull:#3DDC97;--bear:#FF6B81;--warn:#E5B567}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+.wrap{max-width:1250px;margin:0 auto;padding:18px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+h1{font-size:1.4rem;margin:0} h2{font-size:1.05rem;margin:0 0 4px} h3{font-size:.88rem;margin:14px 0 6px;color:var(--muted)}
+a{color:var(--accent)} .sub{color:var(--muted);font-size:.84rem;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px 12px;margin-bottom:14px}
+.tbl-w{overflow-x:auto} table{width:100%;border-collapse:collapse;font-size:.83rem;font-variant-numeric:tabular-nums;min-width:900px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:.72rem;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap} tr:last-child td{border-bottom:0} .r{text-align:right}
+tr.row{cursor:pointer} tr.row:hover,tr.row.sel{background:var(--card2)} tr.row:focus{outline:2px solid var(--accent)}
+.up{color:var(--bull)} .down{color:var(--bear)} .mut{color:var(--muted)}
+.chip{display:inline-block;padding:1px 9px;border-radius:999px;font-size:.72rem;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.ok{color:#fff;background:var(--bull);border-color:var(--bull)} .chip.w{color:var(--warn);border-color:var(--warn)} .chip.bad{color:var(--bear);border-color:var(--bear)}
+.sc{display:inline-block;width:54px;height:7px;background:var(--line);border-radius:4px;margin-right:6px;vertical-align:middle;overflow:hidden} .sc i{display:block;height:100%;background:var(--accent)}
+.seg{display:flex;flex-wrap:wrap;gap:4px} .seg button,.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:5px 13px;border-radius:999px;font-size:.8rem;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px} .bar input{border:1px solid var(--line);background:var(--card2);color:var(--ink);border-radius:8px;padding:5px 9px;font-family:inherit;font-size:.82rem;width:120px}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:8px 0} .kv div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 12px} .kv b{display:block;font-size:1.02rem} .kv span{font-size:.73rem;color:var(--muted)}
+.lv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0} .lv div{border-radius:12px;padding:9px 12px;border:1px solid var(--line);background:var(--card2)} .lv.g div{border-left:4px solid var(--bull)} .lv b{display:block;font-size:1.05rem} .lv span{font-size:.73rem;color:var(--muted)}
+.lv .sl{border-left:4px solid var(--bear)} .lv .en{border-left:4px solid var(--accent)} .lv .tp{border-left:4px solid var(--bull)}
+ul.rs{margin:6px 0;padding-left:20px;font-size:.86rem} ul.rs li{margin:3px 0}
+.warn{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid var(--warn);border-radius:12px;padding:9px 14px;font-size:.83rem;margin-bottom:12px}
+.note{color:var(--muted);font-size:.8rem;margin:8px 0 0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px}
+.pulse{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--bull);margin-right:6px} .pulse.stale{background:var(--bear)}
+.pos{border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:12px;padding:9px 12px;margin:8px 0;background:var(--card2);font-size:.84rem}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px}
+.flow>div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 12px;transition:background .6s} .flow b{display:block;font-size:1.02rem;font-variant-numeric:tabular-nums} .flow span{font-size:.72rem;color:var(--muted)}
+.flow .src{display:flex;gap:10px;flex-wrap:wrap;font-size:.72rem;color:var(--muted);align-items:center} .flow .src i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bear);margin-right:4px} .flow .src i.on{background:var(--bull)}
+.pos.STOP,.pos.pod{border-left-color:var(--bear)} .pos.CEL{border-left-color:var(--bull)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>Okazje zakupowe</h1><p class="sub" style="margin:0"><span class="pulse" id="pulse"></span><span id="meta">Wczytuję…</span></p></div>
+  <div><a class="btn" href="index.html">← Panel</a> <a class="btn" href="rynki.html">Rynki</a> <a class="btn" href="bot.html">Bot</a> <a class="btn" href="sytuacje.html">Sytuacje</a> <a class="btn" href="strategie.html" target="strategie" onclick="window.open(this.href,'strategie','width=1320,height=920');return false">Strategie</a></div>
+</header>
+<div class="warn"><b>Analiza statystyczna, nie porada inwestycyjna.</b> System nie składa zleceń. Notowania akcji są opóźnione (ok. 15 min), krypto i waluty bliżej czasu rzeczywistego. Prawdopodobieństwa pochodzą z historii i mogą się nie sprawdzić.</div>
+<div class="flow" id="flow" aria-live="off"></div>
+<div class="card">
+  <div class="bar"><div class="seg" id="seg" role="group" aria-label="Klasa aktywów"></div><input id="q" type="search" placeholder="Szukaj…" aria-label="Szukaj aktywa"><label class="mut" style="font-size:.8rem"><input type="checkbox" id="onlyDip"> tylko dołki</label></div>
+  <div class="tbl-w"><table id="tbl"><tbody><tr><td><div class="ui-skel" style="height:230px"></div></td></tr></tbody></table></div>
+  <p class="note" id="evs"></p>
+</div>
+<div id="report"></div>
+<div class="two"><div class="card" id="positions"></div><div class="card" id="perf"></div></div>
+</div>
+<script>
+(() => {
+'use strict';
+const el = (t, a, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a || {})) if (v != null && v !== false) e.setAttribute(n, v === true ? '' : v); for (const c of k.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
+const nf = (v, d = 2) => (v == null || Number.isNaN(v)) ? 'n/d' : new Intl.NumberFormat('pl-PL', {minimumFractionDigits: d, maximumFractionDigits: d}).format(v);
+const px = v => v == null ? 'n/d' : nf(v, v >= 1000 ? 1 : v >= 10 ? 2 : v >= 1 ? 3 : 5);
+const pc = (v, d = 1, mul = 100) => v == null ? 'n/d' : (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v * mul), d) + '%';
+const cls = v => v > 0 ? 'up' : v < 0 ? 'down' : '';
+const store = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
+const api = async (path, opt) => { const r = await fetch('api/' + path, Object.assign({cache: 'no-store'}, opt)); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); return j; };
+const post = (path, body) => api(path, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Requested-With': 'btc-ui'}, body: JSON.stringify(body)});
+const CLS_ICON = {crypto: 'bitcoin', commodity: 'gold', fx: 'currency', stock: 'building'};
+const STATUS_ICON = {'okazja': 'check', 'obserwuj': 'eye', 'za wcześnie (brak stabilizacji)': 'clock', 'spadający nóż': 'knife', 'brak dołka': 'pause', 'błąd': 'alert'};
+const prevPx = {}, prevStatus = {};
+let firstScan = true;
+const STATUS = {'okazja': ['okazja', 'ok'], 'obserwuj': ['obserwuj', 'w'], 'za wcześnie (brak stabilizacji)': ['za wcześnie', 'w'], 'spadający nóż': ['spadający nóż', 'bad'], 'brak dołka': ['brak dołka', ''], 'błąd': ['błąd', 'bad']};
+let items = [], filter = '', sel = null, onlyDip = false, lastOk = 0;
+
+const sparkSeen = {};
+function flash(x) { const p = prevPx[x.key]; prevPx[x.key] = x.price; return p != null && p !== x.price ? (x.price > p ? ' ui-flash-up' : ' ui-flash-down') : ''; }
+function renderTable() {
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const rows = items.filter(x => (!filter || x.cls === filter) && (!onlyDip || x.in_dip) && (!q || (x.key + ' ' + x.name).toLowerCase().includes(q)));
+  const heads = ['Aktywo', 'Klasa', 'Trend 30 d', 'Cena', 'Dzień', 'Od szczytu', 'RSI', 'Wynik', 'Status', 'Wejście (strefa)', 'Stop', 'Cel 1', 'P(cel 1)', 'Czas do celu'];
+  const thead = el('thead', null, el('tr', null, heads.map((h, i) => el('th', {class: i > 1 ? 'r' : ''}, h))));
+  const body = rows.map(x => {
+    const st = STATUS[x.status] || [x.status, ''], p = x.plan, t = x.days_tp1;
+    const tr = el('tr', {class: 'row' + (x.key === sel ? ' sel' : ''), tabindex: 0},
+      el('td', null, UI.badge(CLS_ICON[x.cls] || 'bars', x.status === 'okazja' ? 'up' : x.status === 'spadający nóż' ? 'down' : '', true), el('b', null, x.key.replace('USDT', '').replace('.US', '').replace('.PL', '').replace('.DE', '')), ' ', el('span', {class: 'mut'}, x.name)), el('td', {class: 'mut'}, x.cls_pl),
+      el('td', {class: 'r'}, UI.spark(x.spark, {animate: !sparkSeen[x.key]})),
+      el('td', {class: 'r' + flash(x)}, px(x.price), x.delayed ? el('span', {class: 'mut', title: 'notowanie opóźnione'}, ' ⏱') : null), el('td', {class: 'r ' + cls(x.chg_1d)}, pc(x.chg_1d)),
+      el('td', {class: 'r ' + cls(x.dd60)}, pc(x.dd60)), el('td', {class: 'r'}, x.rsi == null ? 'n/d' : nf(x.rsi, 0)),
+      el('td', {class: 'r'}, el('span', {class: 'sc'}, el('i', {style: `width:${Math.min(100, x.score)}%`})), nf(x.score, 0)), el('td', {class: 'r'}, el('span', {class: 'chip ' + st[1]}, UI.icon(STATUS_ICON[x.status] || 'bars'), ' ', st[0])),
+      el('td', {class: 'r'}, p && x.in_dip ? `${px(p.entry_lo)} – ${px(p.entry_hi)}` : '–'), el('td', {class: 'r down'}, p && x.in_dip ? px(p.stop) : '–'), el('td', {class: 'r up'}, p && x.in_dip ? px(p.tp1) : '–'),
+      el('td', {class: 'r'}, x.p_tp1 != null && x.in_dip ? nf(x.p_tp1 * 100, 0) + '%' : '–'), el('td', {class: 'r'}, t && x.in_dip ? `~${t.median} (${t.p25}–${t.p75}) sesji` : '–'));
+    sparkSeen[x.key] = true;
+    tr.addEventListener('click', () => select(x.key)); tr.addEventListener('keydown', e => { if (e.key === 'Enter') select(x.key); });
+    return tr;
+  });
+  document.getElementById('tbl').replaceChildren(thead, el('tbody', null, body.length ? body : el('tr', null, el('td', {colspan: heads.length, class: 'mut'}, UI.icon('search'), ' Brak aktywów spełniających filtr.'))));
+}
+function notifyNew(list) {
+  for (const x of list) {
+    const was = prevStatus[x.key];
+    if (!firstScan && was && was !== x.status) {
+      if (x.status === 'okazja') UI.toast(`${x.name}: nowa okazja (wynik ${Math.round(x.score)}). Strefa wejścia ${px(x.plan.entry_lo)}–${px(x.plan.entry_hi)}, stop ${px(x.plan.stop)}.`, {title: 'Nowa okazja', kind: 'good', icon: 'target'});
+      else if (x.status === 'spadający nóż') UI.toast(`${x.name}: wzorzec spadającego noża, nie kupuj.`, {title: 'Ostrzeżenie', kind: 'bad', icon: 'alert'});
+    }
+    prevStatus[x.key] = x.status;
+  }
+  firstScan = false;
+}
+async function loadScan() {
+  try {
+    const j = await api('scan');
+    notifyNew(j.items);
+    items = j.items; lastOk = Date.now();
+    const c = j.counts || {};
+    document.getElementById('meta').textContent = `${items.length} aktywów · okazji: ${c['okazja'] || 0}, do obserwacji: ${c['obserwuj'] || 0} · notowania sprzed ${j.live_age_s == null ? '?' : Math.round(j.live_age_s)} s · odświeżanie co 10 s`;
+    document.getElementById('pulse').className = 'pulse' + (j.live_age_s != null && j.live_age_s > 120 ? ' stale' : '');
+    document.getElementById('evs').textContent = (j.events || []).length ? 'Zdarzenia w ciągu 5 dni: ' + j.events.map(e => `${e.label} (${e.days === 0 ? 'dziś' : 'za ' + e.days + ' dni'})`).join(', ') + '. Rynki bywają wtedy gwałtowne.' : '';
+    renderTable();
+  } catch (e) { document.getElementById('meta').textContent = 'Brak połączenia z API: ' + e.message; document.getElementById('pulse').className = 'pulse stale'; }
+}
+const seg = document.getElementById('seg');
+[['', 'Wszystko'], ['crypto', 'Krypto'], ['commodity', 'Surowce'], ['fx', 'Waluty'], ['stock', 'Akcje']].forEach(([k, l]) => { const b = el('button', {type: 'button', 'aria-pressed': String(k === filter)}, l); b.addEventListener('click', () => { filter = k; seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); renderTable(); }); seg.append(b); });
+document.getElementById('q').addEventListener('input', renderTable);
+document.getElementById('onlyDip').addEventListener('change', e => { onlyDip = e.target.checked; renderTable(); });
+
+/* ---------- raport ---------- */
+const box = document.getElementById('report');
+const card = (title, sub, ...k) => el('section', {class: 'card'}, el('h2', null, title), sub ? el('p', {class: 'sub'}, sub) : null, ...k);
+const lv = (cls_, label, v, sub) => el('div', {class: cls_}, el('span', null, label), el('b', null, v), sub ? el('span', null, sub) : null);
+async function select(key) {
+  sel = key; renderTable();
+  const cap = parseFloat(document.getElementById('cap') ? document.getElementById('cap').value : store.get('cap') || '0') || 0;
+  const risk = parseFloat(document.getElementById('risk') ? document.getElementById('risk').value : store.get('risk') || '1') || 1;
+  box.replaceChildren(card('Analiza…', 'Liczę raport dla ' + key, el('div', {class: 'ui-skel', style: 'height:160px'})));
+  try { renderReport(await api(`report?symbol=${encodeURIComponent(key)}&capital=${cap}&risk=${risk}`), cap, risk); box.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+  catch (e) { box.replaceChildren(card('Błąd', null, el('p', {class: 'note'}, e.message))); }
+}
+function renderReport(r, cap, risk) {
+  const p = r.plan_full, v = r.verdict, st = STATUS[r.status] || [r.status, ''], out = [];
+  const inputs = el('div', {class: 'bar', style: 'margin-top:14px'}, el('label', {class: 'mut'}, 'Kapitał: ', el('input', {id: 'cap', type: 'number', min: '0', step: 'any', value: cap || ''})), el('label', {class: 'mut'}, 'Ryzyko na transakcję %: ', el('input', {id: 'risk', type: 'number', min: '0.05', max: '10', step: '0.05', value: risk})),
+    (() => { const b = el('button', {class: 'btn', type: 'button'}, 'Przelicz'); b.addEventListener('click', () => { store.set('cap', document.getElementById('cap').value); store.set('risk', document.getElementById('risk').value); select(r.key); }); return b; })());
+  out.push(card(`${r.name} (${r.key}): ${v.headline}`, `Cena ${px(r.price)} ${r.age_s != null ? '· notowanie sprzed ' + Math.round(r.age_s) + ' s ' : ''}· dane do ${r.as_of} · wynik ${nf(r.score, 0)}/100 (próg okazji ${v.threshold})`,
+    el('div', {style: 'display:flex;gap:18px;align-items:center;flex-wrap:wrap'}, UI.gauge(r.score, {size: 150, label: 'wynik', good: v.threshold}), el('div', null, el('span', {class: 'chip ' + st[1]}, UI.icon(STATUS_ICON[r.status] || 'bars'), ' ', st[0]), r.p_tp1 != null && r.in_dip ? el('div', {style: 'margin-top:8px;min-width:220px'}, el('span', {class: 'sub'}, 'Szansa celu 1 przed stopem: ' + nf(r.p_tp1 * 100, 0) + '%'), UI.bar(r.p_tp1, r.p_tp1 >= 0.4 ? 'up' : 'down')) : null)), inputs));
+  if (p && r.in_dip) {
+    const cells = [lv('en', 'Strefa wejścia (limit)', `${px(p.entry_lo)} – ${px(p.entry_hi)}`, 'dolna granica = najbliższe wsparcie'), lv('sl', 'Stop-loss', px(p.stop), `−${nf(p.stop_pct, 1)}% od ceny, ${nf(p.stop_dist / p.atr, 1)} ATR`),
+      lv('tp', 'Cel 1 (sprzedaż 50%)', px(p.tp1), `1,5R · ${pc((p.tp1 / p.entry_hi) - 1)}`), lv('tp', 'Cel 2', px(p.tp2), `${nf(p.rr2, 1)}R · zniesienie 61,8%`), lv('tp', 'Cel 3', px(p.tp3), `${nf(p.rr3, 1)}R · szczyt 60 sesji`)];
+    out.push(card('Gdzie kupić i gdzie sprzedać', 'Ceny, po których warto złożyć zlecenia. Po osiągnięciu celu 1 przesuń stop na wejście, resztę prowadź trailing-stopem (2 ATR lub SMA20).', UI.ladder(r.closes90, p, r.price, {px}), el('div', {class: 'lv'}, cells),
+      p.rr1_at_pref ? el('p', {class: 'note'}, `Wejście przy dolnej granicy strefy daje R:R ${nf(p.rr1_at_pref, 2)} do celu 1 (przy cenie bieżącej 1,50). Koszt transakcji ok. ${nf(p.cost_r, 2)}R.`) : null));
+    const pr = r.probabilities, m = pr.model, cal = pr.calibrated_tp1, tm = r.timing;
+    out.push(card('Ile czekać i z jakim prawdopodobieństwem', `Źródło statystyk: ${pr.source}${m ? `, ${m.n} podobnych dołków w historii` : ''}.`,
+      el('div', {class: 'kv'}, ...[[cal != null ? nf(cal * 100, 0) + '%' : 'n/d', 'szansa celu 1 przed stopem (po korekcie)'], [m ? nf(m.p_stop * 100, 0) + '%' : 'n/d', 'szansa stopu przed celem'], [m ? nf(m.p_timeout * 100, 0) + '%' : 'n/d', `bez rozstrzygnięcia w ${tm.horizon_sessions} sesjach`],
+        [r.exp_r != null ? (r.exp_r > 0 ? '+' : '') + nf(r.exp_r, 2) + 'R' : 'n/d', 'oczekiwana wartość na transakcję'], [tm.to_tp1 ? `${tm.to_tp1.median} sesji (${tm.to_tp1.p25}–${tm.to_tp1.p75})` : 'n/d', 'typowy czas do celu 1'], [tm.to_stop ? `${tm.to_stop.median} sesji` : 'n/d', 'typowy czas do stopu'],
+        [`${tm.time_stop} sesji`, 'zamknij, jeśli brak postępu (limit czasu)']].map(([b, s]) => el('div', null, el('b', null, b), el('span', null, s)))),
+      el('h3', null, 'Czy cena zejdzie do strefy wejścia?'),
+      el('div', {class: 'kv'}, tm.wait_for_entry ? tm.wait_for_entry.map(w => el('div', null, el('b', null, w.prob == null ? 'n/d' : nf(w.prob * 100, 0) + '%'), el('span', null, `w ciągu ${w.sessions} ${w.sessions === 1 ? 'sesji' : 'sesji'}`))) : null),
+      el('p', {class: 'note'}, 'Szansa, że minimum ceny dotknie dolnej granicy strefy (z historii tego aktywa). Jeśli zlecenie limit nie wejdzie w kilka sesji, układ zwykle się zmienia: przelicz raport.')));
+    if (r.sizing) { const z = r.sizing; out.push(card('Wielkość pozycji', `Kapitał ${nf(z.capital, 0)}, ryzyko ${z.risk_pct}% = ${nf(z.risk_amount, 2)} na transakcję.`, el('div', {class: 'kv'},
+      el('div', null, el('b', null, nf(z.qty, z.qty < 1 ? 5 : 3)), el('span', null, 'ilość')), el('div', null, el('b', null, nf(z.position_value, 2)), el('span', null, `wartość pozycji (${nf(z.pct_of_capital, 0)}% kapitału)`)),
+      el('div', null, el('b', {class: 'down'}, '−' + nf(z.loss_at_stop, 2)), el('span', null, 'strata przy stopie')), el('div', null, el('b', {class: 'up'}, '+' + nf(z.gain_tp1, 2)), el('span', null, 'zysk przy celu 1')), el('div', null, el('b', {class: 'up'}, '+' + nf(z.gain_tp2, 2)), el('span', null, 'zysk przy celu 2'))),
+      z.needs_leverage ? el('p', {class: 'note down'}, 'Uwaga: ta wielkość wymaga dźwigni (wartość pozycji > kapitał). Zmniejsz ryzyko na transakcję albo pomiń okazję.') : null,
+      (() => { const b = el('button', {class: 'btn', type: 'button'}, 'Śledź tę pozycję (wpisz cenę wejścia w sekcji obok)'); b.addEventListener('click', () => { document.getElementById('f_sym').value = r.key; document.getElementById('f_entry').value = px(p.entry_hi).replace(/\s/g, '').replace(',', '.'); document.getElementById('f_stop').value = String(p.stop); document.getElementById('f_entry').focus(); }); return b; })())); }
+  }
+  out.push(card('Dlaczego', 'Co wskazuje na dołek i dlaczego (lub dlaczego nie).', el('ul', {class: 'rs'}, r.reasons.map(t => el('li', null, t))), r.risks.length ? el('h3', null, 'Ryzyka') : null, r.risks.length ? el('ul', {class: 'rs'}, r.risks.map(t => el('li', {class: 'down'}, t))) : null));
+  if (r.scenarios) out.push(card('Scenariusze', null, el('ul', {class: 'rs'}, r.scenarios.map(s => el('li', null, el('b', null, s.name + ': '), s.text)))));
+  const c = r.context;
+  out.push(card('Kontekst', null, el('div', {class: 'kv'}, ...[['SMA20', c.indicators.sma20], ['SMA50', c.indicators.sma50], ['SMA200', c.indicators.sma200]].map(([l, v2]) => el('div', null, el('b', null, px(v2)), el('span', null, l))),
+    el('div', null, el('b', null, c.indicators.atr_pct == null ? 'n/d' : nf(c.indicators.atr_pct, 2) + '%'), el('span', null, 'ATR (dzienna zmienność)')), ...c.macro.map(m => el('div', null, el('b', null, nf(m.value, 1)), el('span', null, `${m.label} (20 dni: ${pc(m.chg_20d)})`)))),
+    c.levels.supports.length ? el('p', {class: 'note'}, 'Wsparcia: ' + c.levels.supports.map(px).join(' · ') + (c.levels.resistances.length ? '  |  Opory: ' + c.levels.resistances.map(px).join(' · ') : '')) : null,
+    c.events.length ? el('p', {class: 'note'}, 'Najbliższe zdarzenia: ' + c.events.map(e => `${e.label} ${e.date}`).join(', ')) : null));
+  out.push(card('Korekty systemu wynikające z reakcji rynku', 'System uczy się na wynikach poprzednich okazji (osobno dla klasy aktywów).', el('ul', {class: 'rs'}, r.adjustments.map(t => el('li', null, t))), el('p', {class: 'note'}, r.disclaimer)));
+  box.replaceChildren(...out);
+}
+
+/* ---------- pozycje i skuteczność ---------- */
+async function loadPositions() {
+  const host = document.getElementById('positions');
+  try {
+    const j = await api('positions');
+    const list = j.positions.map(p => { const bad = p.status === 'STOP' || p.status === 'pod presją', good = p.status.startsWith('CEL');
+      const del = el('button', {class: 'btn', type: 'button'}, 'Zakończ śledzenie'); del.addEventListener('click', async () => { await post('untrack', {id: p.id}); loadPositions(); });
+      return el('div', {class: 'pos ' + (p.status === 'STOP' ? 'STOP' : bad ? 'pod' : good ? 'CEL' : '')}, el('b', null, `${p.name} (${p.key}) · ${p.status}`), el('div', null, `Wejście ${px(p.entry)}, cena ${px(p.price)} (${pc(p.pnl_pct / 100)}), ${nf(p.r_now, 2)}R, ${p.days} sesji` + (p.pnl_amount != null ? `, wynik ${nf(p.pnl_amount, 2)}` : '')),
+        el('div', {class: 'mut'}, `Stop ${px(p.stop)} · cel 1 ${px(p.tp1)} · cel 2 ${px(p.tp2)}` + (p.suggested_stop ? ` · proponowany stop: ${px(p.suggested_stop)}` : '')), el('ul', {class: 'rs'}, p.actions.map(a => el('li', null, a))), del); });
+    const f = el('form', {class: 'bar'}, el('input', {id: 'f_sym', placeholder: 'Symbol np. XAUUSD', list: 'symlist', required: true}), el('input', {id: 'f_entry', placeholder: 'Cena wejścia', inputmode: 'decimal', required: true}), el('input', {id: 'f_stop', placeholder: 'Stop', inputmode: 'decimal', required: true}), el('input', {id: 'f_qty', placeholder: 'Ilość (opc.)', inputmode: 'decimal'}), el('button', {class: 'btn', type: 'submit'}, 'Śledź'));
+    f.addEventListener('submit', async e => { e.preventDefault(); const n = id => parseFloat(document.getElementById(id).value.replace(',', '.'));
+      try { await post('track', {symbol: document.getElementById('f_sym').value.trim().toUpperCase(), entry: n('f_entry'), stop: n('f_stop'), qty: document.getElementById('f_qty').value ? n('f_qty') : null}); loadPositions(); } catch (err) { alert(err.message); } });
+    const dl = el('datalist', {id: 'symlist'}, items.map(x => el('option', {value: x.key}, x.name)));
+    host.replaceChildren(el('h2', null, 'Twoje pozycje'), el('p', {class: 'sub'}, 'Wpisz pozycję, którą otworzyłeś: system na bieżąco ocenia reakcję rynku i podpowiada, co zrobić ze stopem i wyjściem. Nic nie jest wysyłane na giełdę.'), f, dl, ...(list.length ? list : [el('p', {class: 'note'}, 'Brak śledzonych pozycji.')]));
+  } catch (e) { host.replaceChildren(el('h2', null, 'Twoje pozycje'), el('p', {class: 'note'}, 'Błąd: ' + e.message)); }
+}
+async function loadPerf() {
+  const host = document.getElementById('perf');
+  try {
+    const j = await api('performance');
+    const tbl = (d, title) => { const keys = Object.keys(d).filter(k => k !== '_open'); if (!keys.length) return el('p', {class: 'note'}, title + ': brak rozstrzygniętych okazji.');
+      return el('div', {class: 'tbl-w'}, el('h3', null, title + (d._open ? ` (otwartych: ${d._open})` : '')), el('table', {style: 'min-width:420px'}, el('thead', null, el('tr', null, ['Klasa', 'Okazji', 'Trafiony cel 1', 'Model zakładał', 'Śr. R', 'Nie weszło'].map((h, i) => el('th', {class: i ? 'r' : ''}, h)))),
+        el('tbody', null, keys.map(k => { const v = d[k]; return el('tr', null, el('td', null, k), el('td', {class: 'r'}, v.n), el('td', {class: 'r'}, v.win_rate == null ? 'n/d' : nf(v.win_rate * 100, 0) + '%'), el('td', {class: 'r'}, v.avg_p_model == null ? 'n/d' : nf(v.avg_p_model * 100, 0) + '%'), el('td', {class: 'r ' + cls(v.avg_r)}, v.avg_r == null ? 'n/d' : nf(v.avg_r, 2)), el('td', {class: 'r'}, v.missed)); })))); };
+    const pr = j.params || {}, notes = pr.notes || [];
+    host.replaceChildren(el('h2', null, 'Skuteczność systemu'), el('p', {class: 'sub'}, 'Porównanie tego, co model zakładał, z tym, co zrobił rynek. Różnice napędzają korekty.'), tbl(j.live || {}, 'Okazje rzeczywiste (od uruchomienia)'), tbl(j.replay || {}, 'Symulacja na historii (walk-forward)'),
+      el('h3', null, 'Bieżące korekty'), el('ul', {class: 'rs'}, (notes.length ? notes : ['Brak korekt: za mało rozstrzygniętych okazji (potrzeba min. 8 na klasę).']).map(n => el('li', null, n))),
+      el('p', {class: 'note'}, 'Poszerzenie stopów: ' + Object.entries(pr.stop_mult || {}).map(([k, v]) => `${k} ×${v}`).join(', ') + '. Progi wyniku: ' + Object.entries(pr.min_score || {}).map(([k, v]) => `${k} ${v}`).join(', ') + '.'));
+  } catch (e) { host.replaceChildren(el('h2', null, 'Skuteczność systemu'), el('p', {class: 'note'}, 'Błąd: ' + e.message)); }
+}
+const mln = v => v == null ? 'n/d' : (v < 0 ? '−' : v > 0 ? '+' : '') + nf(Math.abs(v) / 1e6, 2) + ' mln';
+let prevFlow = {};
+async function loadFlow() {
+  const box = document.getElementById('flow');
+  try {
+    const j = await api('stream');
+    if (!j.flow) { box.replaceChildren(el('div', null, el('b', {class: 'mut'}, 'brak strumienia'), el('span', null, 'uruchom btc-stream (WebSocket)'))); return; }
+    const f = j.flow.btc, m = j.mark || {}, b = j.block || {}, ps = j.providers || {};
+    const tile = (id, label, val, cls_, hint) => { const d = el('div', {title: hint || ''}, el('b', {class: cls_ || ''}, val), el('span', null, label)); if (prevFlow[id] != null && prevFlow[id] !== val) d.style.background = 'color-mix(in srgb,var(--accent) 16%,var(--card))'; prevFlow[id] = val; return d; };
+    box.replaceChildren(
+      tile('dvol', 'DVOL (zmienność BTC)', j.dvol ? nf(j.dvol.value, 1) : 'n/d', '', 'Implikowana zmienność opcji BTC (Deribit), na żywo'),
+      tile('cvd', 'BTC: CVD 5 min (USD)', mln(f['5m'].cvd_usd), f['5m'].cvd_usd > 0 ? 'up' : 'down', 'Przewaga agresywnych kupujących (+) lub sprzedających (−)'),
+      tile('whale', 'duże zlecenia 5 min', `${f['5m'].whale_trades} (${mln(f['5m'].whale_net_usd)})`, f['5m'].whale_net_usd > 0 ? 'up' : f['5m'].whale_net_usd < 0 ? 'down' : '', `Zlecenia ≥ ${nf(j.flow.btc.whale_threshold_usd, 0)} USD, wynik netto`),
+      tile('liq', 'likwidacje 1 h: long / short', `${nf(f['1h'].liq_long_usd / 1e6, 2)} / ${nf(f['1h'].liq_short_usd / 1e6, 2)} mln`, '', 'Wymuszone zamknięcia pozycji (Bybit). Duże wartości po jednej stronie często kończą ruch'),
+      tile('fund', 'funding / OI (Bybit)', `${m.funding_pct == null ? 'n/d' : nf(m.funding_pct, 4) + '%'} / ${m.oi_usd ? nf(m.oi_usd / 1e9, 2) + ' mld' : 'n/d'}`),
+      tile('blk', 'ostatni blok BTC', b.height ? `${nf(b.height, 0)} · ${b.seen ? Math.max(0, Math.round((Date.now() / 1000 - b.seen) / 60)) + ' min temu' : ''}` : 'n/d', '', j.fees ? `Opłata (30 min): ${j.fees.halfHourFee} sat/vB` : ''),
+      el('div', null, el('div', {class: 'src'}, ...Object.entries(ps).map(([k, v]) => el('span', {title: v.error || ''}, el('i', {class: v.connected && v.age != null && v.age < 30 ? 'on' : ''}), k))), el('span', null, `strumień sprzed ${j.age_s == null ? '?' : Math.round(j.age_s)} s`)));
+  } catch (e) { box.replaceChildren(el('div', null, el('b', {class: 'mut'}, 'strumień niedostępny'), el('span', null, e.message))); }
+}
+loadScan().then(() => { loadPositions(); loadPerf(); loadFlow(); });
+setInterval(() => { if (!document.hidden) loadFlow(); }, 5000);
+setInterval(() => { if (!document.hidden) loadScan(); }, 10000);
+setInterval(() => { if (!document.hidden) loadPositions(); }, 15000);
+setInterval(() => { if (!document.hidden) loadPerf(); }, 120000);
+})();
+</script>
+</body>
+</html>

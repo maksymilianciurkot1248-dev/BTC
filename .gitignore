@@ -1,0 +1,18 @@
+# klucze i konfiguracja z sekretami: tylko na serwerze
+.env
+*.env
+!trader.env.example
+*.key
+*.pem
+# dane i stan
+*.db
+*.db-wal
+*.db-shm
+*.json
+*.jsonl
+*.lock
+*.tmp
+*.bak-*
+ai_jobs/
+__pycache__/
+*.tar.gz

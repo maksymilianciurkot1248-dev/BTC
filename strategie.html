@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pl" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Strategie portfelowe</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ui.css">
+<script src="ui.js"></script>
+<style>
+:root{--bg:#EDF0F4;--card:#fff;--card2:#F5F7FA;--line:#DCE2E9;--ink:#111D29;--muted:#5B6978;--accent:#E8830C;--bull:#12805A;--bear:#C1334A;--warn:#B7791F;--sans:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0F16;--card:#111A25;--card2:#16212E;--line:#223142;--ink:#E8EEF4;--muted:#93A1B1;--accent:#F7A234;--bull:#3DDC97;--bear:#FF6B81;--warn:#E5B567}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+.wrap{max-width:1250px;margin:0 auto;padding:18px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+h1{font-size:1.4rem;margin:0} h2{font-size:1.05rem;margin:0 0 4px} h3{font-size:.88rem;margin:14px 0 6px;color:var(--muted)}
+a{color:var(--accent)} .sub{color:var(--muted);font-size:.84rem;margin:0 0 10px} .mut{color:var(--muted)} .note{color:var(--muted);font-size:.8rem;margin:8px 0 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px 12px;margin-bottom:14px}
+.tbl-w{overflow-x:auto} table{width:100%;border-collapse:collapse;font-size:.83rem;font-variant-numeric:tabular-nums;min-width:640px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:.72rem;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap} tr:last-child td{border-bottom:0} .r{text-align:right}
+.up{color:var(--bull)} .down{color:var(--bear)}
+.btn,.seg button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:5px 13px;border-radius:999px;font-size:.8rem;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
+.warn{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid var(--warn);border-radius:12px;padding:9px 14px;font-size:.83rem;margin-bottom:12px}
+.profiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;margin-bottom:14px}
+.pf{position:relative;text-align:left;font-family:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;cursor:pointer;transition:transform .25s var(--ui-ease,ease),border-color .25s,box-shadow .25s}
+.pf:hover{transform:translateY(-3px)} .pf[aria-pressed=true]{border-color:var(--accent);box-shadow:0 14px 34px -18px var(--accent)}
+.pf b{font-size:1rem} .pf p{margin:6px 0;font-size:.78rem;color:var(--muted);min-height:3.6em}
+.dots{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle} .dots i{width:7px;height:7px;border-radius:50%;background:var(--line)} .dots i.on{background:var(--accent)} .dots.hi i.on{background:var(--bear)}
+.mini{display:flex;gap:10px;font-size:.74rem;color:var(--muted);margin-top:6px} .mini b{display:block;color:var(--ink);font-size:.9rem}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0} .kv div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 12px} .kv b{display:block;font-size:1.05rem} .kv span{font-size:.73rem;color:var(--muted)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:14px}
+.chart{position:relative} .chart svg text{font-family:inherit;font-size:11px;fill:var(--muted)} .tip{position:absolute;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 10px;font-size:.78rem;box-shadow:0 10px 26px -12px rgba(0,0,0,.5);white-space:nowrap;z-index:5;opacity:0;transition:opacity .12s}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 2px;font-size:.78rem} .legend label{cursor:pointer;display:inline-flex;align-items:center;gap:5px} .legend i{display:inline-block;width:14px;height:3px;border-radius:2px}
+.stack{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--line);margin:8px 0}.stack i{display:block;height:100%;width:0;transition:width 1s var(--ui-ease,ease)}
+.bar2{display:inline-block;width:70px;height:7px;background:var(--line);border-radius:4px;vertical-align:middle;margin-right:6px;overflow:hidden}.bar2 i{display:block;height:100%;background:var(--accent)}
+input[type=number]{border:1px solid var(--line);background:var(--card2);color:var(--ink);border-radius:8px;padding:5px 9px;font-family:inherit;font-size:.85rem;width:130px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>Strategie portfelowe</h1><p class="sub" style="margin:0" id="meta">Wczytuję…</p></div>
+  <div><a class="btn" href="okazje.html" target="_blank">Okazje</a> <a class="btn" href="rynki.html" target="_blank">Rynki</a> <button class="btn" id="close" type="button">Zamknij okno</button></div>
+</header>
+<div class="warn"><b>Test historyczny, nie prognoza ani porada inwestycyjna.</b> Lista aktywów to Twój watchlist (błąd przetrwania zawyża wyniki), a koszty i podatki są uproszczone. Strategie nie składają żadnych zleceń.</div>
+<div id="warns"></div>
+<div class="profiles" id="profiles"></div>
+<div id="detail"></div>
+</div>
+<script>
+(() => {
+'use strict';
+const el = (t, a, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a || {})) if (v != null && v !== false) e.setAttribute(n, v === true ? '' : v); for (const c of k.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
+const nf = UI.nf;
+const pc = (v, d = 1) => v == null ? 'n/d' : (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v * 100), d) + '%';
+const pcu = (v, d = 1) => v == null ? 'n/d' : nf(v * 100, d) + '%';
+const cls = v => v > 0 ? 'up' : v < 0 ? 'down' : '';
+const store = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }};
+const RISK = ['', 'bardzo niskie', 'niskie', 'umiarkowane', 'wysokie', 'bardzo wysokie'];
+const CLS_COL = {'Krypto': '#F7931A', 'Akcje': '#2A6FDB', 'Surowce': '#C9A227', 'Obligacje': '#7A4FA3', 'Indeksy': '#12A5A0', 'Gotówka': '#8794A2'};
+const BENCH_COL = {'Bitcoin (kup i trzymaj)': '#F7931A', 'S&P 500': '#2A6FDB', 'Złoto': '#C9A227', '60/40 (S&P 500 + obligacje)': '#7A4FA3', 'Równe wagi (całe uniwersum)': '#8794A2'};
+const REASON = {crypto: 'krypto w trendzie', stock: 'akcje w trendzie', commodity: 'surowiec w trendzie', bond: 'obligacje w trendzie', index: 'indeks w trendzie'};
+let data = null, sel = 'balanced', capital = parseFloat(store.get('st_cap') || '10000') || 10000, hiddenBench = new Set(), logScale = false;
+const ts = d => Date.parse(d + 'T00:00:00Z');
+
+/* ---------- wykres liniowy z podpowiedzią ---------- */
+function lineChart(series, o = {}) {
+  const W = 900, H = o.h || 330, L = 52, R = 14, T = 10, B = 26, host = el('div', {class: 'chart'});
+  const vis = series.filter(s => !s.hidden && s.pts.length);
+  if (!vis.length) return host;
+  const xs = vis[0].pts.map(p => ts(p[0])), x0 = xs[0], x1 = xs[xs.length - 1];
+  let lo = Math.min(...vis.flatMap(s => s.pts.map(p => p[1]))), hi = Math.max(...vis.flatMap(s => s.pts.map(p => p[1])));
+  if (o.zero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); }
+  const useLog = o.log && lo > 0, tr = v => useLog ? Math.log(v) : v, a = tr(lo), b = tr(hi), pad = (b - a) * 0.05 || 1;
+  const X = t => L + (t - x0) / (x1 - x0 || 1) * (W - L - R), Y = v => T + (1 - (tr(v) - (a - pad)) / ((b + pad) - (a - pad))) * (H - T - B);
+  const svg = UI_svg('svg', {viewBox: `0 0 ${W} ${H}`, class: 'ui-chart', role: 'img', 'aria-label': o.label || 'wykres'});
+  for (let i = 0; i <= 4; i++) { const v = useLog ? Math.exp(a - pad + i / 4 * (b - a + 2 * pad)) : (a - pad) + i / 4 * (b - a + 2 * pad), y = Y(v); svg.append(UI_svg('line', {x1: L, x2: W - R, y1: y, y2: y, class: 'grid'}), txt(4, y + 4, (o.fmt || (x => nf(x, 2)))(v))); }
+  const y0 = new Date(x0).getUTCFullYear(), y1 = new Date(x1).getUTCFullYear();
+  for (let y = y0 + 1; y <= y1; y++) { const t = Date.UTC(y, 0, 1); if (t > x0 && t < x1) svg.append(txt(X(t) - 12, H - 8, String(y))); }
+  if (o.zero) svg.append(UI_svg('line', {x1: L, x2: W - R, y1: Y(0), y2: Y(0), stroke: 'var(--muted)', 'stroke-width': 1, opacity: 0.5}));
+  vis.forEach((s, k) => {
+    const pts = s.pts.map(p => [X(ts(p[0])), Y(p[1])]), d = 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L');
+    if (s.area) svg.append(UI_svg('path', {d: d + `L${pts[pts.length - 1][0]} ${Y(0)}L${pts[0][0]} ${Y(0)}z`, fill: s.color, 'fill-opacity': 0.16, class: 'ui-fadein'}));
+    const p = UI_svg('path', {d, fill: 'none', stroke: s.color, 'stroke-width': s.w || 1.6, 'stroke-linejoin': 'round', class: 'ui-draw', opacity: s.w ? 1 : 0.85, 'stroke-dasharray': null});
+    let len = 0; for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+    p.style.setProperty('--len', String(Math.ceil(len) + 6)); p.style.animationDelay = (k * 0.08) + 's'; svg.append(p);
+  });
+  const cross = UI_svg('line', {y1: T, y2: H - B, stroke: 'var(--muted)', 'stroke-width': 1, opacity: 0}), dots = vis.map(s => UI_svg('circle', {r: 3.8, fill: s.color, stroke: 'var(--card)', 'stroke-width': 1.5, opacity: 0}));
+  svg.append(cross, ...dots);
+  const tip = el('div', {class: 'tip'}), cap = UI_svg('rect', {x: L, y: T, width: W - L - R, height: H - T - B, fill: 'transparent'});
+  svg.append(cap); host.append(svg, tip);
+  const move = e => {
+    const r = svg.getBoundingClientRect(), px = (e.clientX - r.left) / r.width * W; let i = 0, best = 1e18;
+    xs.forEach((t, j) => { const dd = Math.abs(X(t) - px); if (dd < best) { best = dd; i = j; } });
+    const x = X(xs[i]); cross.setAttribute('x1', x); cross.setAttribute('x2', x); cross.setAttribute('opacity', 0.6);
+    vis.forEach((s, k) => { dots[k].setAttribute('cx', x); dots[k].setAttribute('cy', Y(s.pts[i][1])); dots[k].setAttribute('opacity', 1); });
+    tip.replaceChildren(el('b', null, vis[0].pts[i][0]), ...vis.map(s => el('div', null, el('span', {style: `color:${s.color}`}, '● '), s.name + ': ' + (o.fmtTip || o.fmt || (v => nf(v, 2)))(s.pts[i][1]))));
+    tip.style.opacity = 1; const left = x / W * r.width; tip.style.left = (left > r.width * 0.6 ? left - tip.offsetWidth - 12 : left + 12) + 'px'; tip.style.top = '8px';
+  };
+  cap.addEventListener('mousemove', move); cap.addEventListener('touchmove', e => move(e.touches[0]), {passive: true});
+  cap.addEventListener('mouseleave', () => { tip.style.opacity = 0; cross.setAttribute('opacity', 0); dots.forEach(d => d.setAttribute('opacity', 0)); });
+  return host;
+}
+function UI_svg(tag, attrs) { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const [k, v] of Object.entries(attrs || {})) if (v != null) e.setAttribute(k, v); return e; }
+function txt(x, y, t) { const e = UI_svg('text', {x, y}); e.textContent = t; return e; }
+
+/* ---------- wachlarz symulacji ---------- */
+function fanChart(mc) {
+  const W = 900, H = 280, L = 52, R = 14, T = 12, B = 26, ks = Object.keys(mc.fan).map(Number).sort((x, y) => x - y), rows = [[0, 0, 0, 0, 0, 0], ...ks.map(k => [k, ...mc.fan[k]])];
+  const lo = Math.min(...rows.map(r => r[1])), hi = Math.max(...rows.map(r => r[5])), pad = (hi - lo) * 0.08 || 0.05;
+  const X = k => L + k / ks[ks.length - 1] * (W - L - R), Y = v => T + (1 - (v - (lo - pad)) / ((hi + pad) - (lo - pad))) * (H - T - B);
+  const svg = UI_svg('svg', {viewBox: `0 0 ${W} ${H}`, class: 'ui-chart', role: 'img', 'aria-label': 'Symulacja wyniku na kolejne 12 miesięcy'});
+  for (let i = 0; i <= 4; i++) { const v = (lo - pad) + i / 4 * (hi - lo + 2 * pad), y = Y(v); svg.append(UI_svg('line', {x1: L, x2: W - R, y1: y, y2: y, class: 'grid'}), txt(4, y + 4, pc(v, 0))); }
+  svg.append(UI_svg('line', {x1: L, x2: W - R, y1: Y(0), y2: Y(0), stroke: 'var(--muted)', opacity: 0.5}));
+  const band = (i, j, op) => { const top = rows.map(r => `${X(r[0]).toFixed(1)} ${Y(r[j]).toFixed(1)}`), bot = rows.slice().reverse().map(r => `${X(r[0]).toFixed(1)} ${Y(r[i]).toFixed(1)}`); return UI_svg('path', {d: 'M' + top.join('L') + 'L' + bot.join('L') + 'z', fill: 'var(--accent)', 'fill-opacity': op, class: 'ui-fadein'}); };
+  svg.append(band(1, 5, 0.14), band(2, 4, 0.26));
+  const med = UI_svg('path', {d: 'M' + rows.map(r => `${X(r[0]).toFixed(1)} ${Y(r[3]).toFixed(1)}`).join('L'), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2.4, class: 'ui-draw'}); med.style.setProperty('--len', '1400'); svg.append(med);
+  ks.forEach(k => { if (k % 63 === 0 || k === 252) svg.append(txt(X(k) - 14, H - 8, Math.round(k / 21) + ' mies.')); });
+  const last = rows[rows.length - 1]; [[1, '5%'], [3, 'mediana'], [5, '95%']].forEach(([i, l]) => svg.append(txt(W - R - 74, Y(last[i]) - 4, l + ' ' + pc(last[i], 0))));
+  return el('div', {class: 'chart'}, svg);
+}
+
+/* ---------- widoki ---------- */
+function dots(n) { return el('span', {class: 'dots' + (n >= 4 ? ' hi' : ''), title: 'Ryzyko: ' + RISK[n]}, [1, 2, 3, 4, 5].map(i => el('i', {class: i <= n ? 'on' : ''}))); }
+function renderProfiles() {
+  const host = document.getElementById('profiles');
+  host.replaceChildren(...data.profiles.map(p => {
+    const s = p.stats, b = el('button', {class: 'pf', type: 'button', 'aria-pressed': String(p.id === sel)},
+      el('div', {style: 'display:flex;align-items:center'}, UI.badge(p.icon, p.risk >= 4 ? 'down' : p.risk <= 2 ? 'up' : ''), el('b', null, p.name), dots(p.risk)), el('p', null, p.desc),
+      UI.spark(p.equity.map(x => x[1]), {w: 190, h: 34, animate: true, color: 'var(--accent)'}),
+      el('div', {class: 'mini'}, el('div', null, el('b', {class: cls(s.cagr)}, pc(s.cagr)), 'rocznie'), el('div', null, el('b', null, pcu(s.vol, 0)), 'zmienność'), el('div', null, el('b', {class: 'down'}, pc(s.max_dd, 0)), 'maks. spadek')));
+    b.addEventListener('click', () => { sel = p.id; store.set('st_sel', sel); renderProfiles(); renderDetail(); });
+    return b;
+  }));
+}
+const card = (title, sub, ...k) => el('section', {class: 'card'}, el('h2', null, title), sub ? el('p', {class: 'sub'}, sub) : null, ...k);
+const kpi = (label, v, f, c) => { const d = el('div', null, el('b', {class: c || ''}, '…'), el('span', null, label)); const b = d.firstChild; if (v == null) b.textContent = 'n/d'; else UI.countTo(b, v, f); return d; };
+
+function renderDetail() {
+  const p = data.profiles.find(x => x.id === sel), s = p.stats, host = document.getElementById('detail'), out = [];
+  const ci = s.sharpe_ci;
+  out.push(card(`${p.name}: statystyki z ${data.data.years} lat testu`, `${data.data.from} → ${data.data.to}. Równoważenie co miesiąc, koszty uwzględnione. Ryzyko: ${RISK[p.risk]}.`,
+    el('div', {class: 'kv'}, kpi('średni zysk roczny (CAGR)', s.cagr * 100, {decimals: 1, suffix: '%'}, cls(s.cagr)), kpi('zmienność roczna', s.vol * 100, {decimals: 1, suffix: '%'}), kpi('maksymalne obsunięcie', s.max_dd * 100, {decimals: 1, suffix: '%'}, 'down'),
+      kpi('Sharpe' + (ci ? ` (przedz. ${nf(ci[0], 2)}–${nf(ci[1], 2)})` : ''), s.sharpe, {decimals: 2}), kpi('Sortino', s.sortino, {decimals: 2}), kpi('Calmar', s.calmar, {decimals: 2}),
+      kpi('miesięcy na plusie', s.pos_months * 100, {decimals: 0, suffix: '%'}), kpi('najgorszy miesiąc', s.worst_month * 100, {decimals: 1, suffix: '%'}, 'down'), kpi('najlepszy miesiąc', s.best_month * 100, {decimals: 1, suffix: '%'}, 'up'),
+      kpi('VaR 95% (miesiąc)', s.var95_month * 100, {decimals: 1, suffix: '%'}, 'down'), kpi('CVaR 95% (miesiąc)', s.cvar95_month * 100, {decimals: 1, suffix: '%'}, 'down'), kpi('najgorsze 12 miesięcy', s.worst_12m == null ? null : s.worst_12m * 100, {decimals: 1, suffix: '%'}, 'down'),
+      kpi('obrót roczny', p.turnover_year * 100, {decimals: 0, suffix: '%'})),
+    el('p', {class: 'note'}, `Najdłuższe obsunięcie: ${s.max_dd_days} sesji, ` + (s.recovery_days == null ? 'jeszcze nieodrobione.' : `odrobione po ${s.recovery_days} sesjach od szczytu.`) + ` Średnio ${nf(p.avg_holdings, 1)} pozycji i ${nf(p.avg_cash * 100, 0)}% gotówki.`)));
+  // wykres kapitału
+  const legend = el('div', {class: 'legend'}), eqHost = el('div'), logBox = el('label', {class: 'mut'}, el('input', {type: 'checkbox'}), ' skala logarytmiczna');
+  const drawEq = () => {
+    const series = [{name: p.name, color: 'var(--accent)', pts: p.equity, w: 2.8}, ...Object.entries(data.benchmarks).map(([n, v]) => ({name: n, color: BENCH_COL[n] || '#888', pts: v.equity, hidden: hiddenBench.has(n)}))];
+    legend.replaceChildren(el('span', null, el('i', {style: 'background:var(--accent)'}), ' ' + p.name), ...Object.keys(data.benchmarks).map(n => { const cb = el('input', {type: 'checkbox'}); cb.checked = !hiddenBench.has(n); cb.addEventListener('change', () => { cb.checked ? hiddenBench.delete(n) : hiddenBench.add(n); drawEq(); }); return el('label', null, cb, el('i', {style: `background:${BENCH_COL[n] || '#888'}`}), n); }), logBox);
+    eqHost.replaceChildren(lineChart(series, {log: logScale, fmt: v => 'x' + nf(v, 2), label: 'Wartość 1 jednostki kapitału w czasie'}));
+  };
+  logBox.firstChild.addEventListener('change', e => { logScale = e.target.checked; drawEq(); });
+  logBox.firstChild.checked = logScale;
+  out.push(card('Wzrost kapitału na tle benchmarków', 'Wartość 1 jednostki kapitału na starcie testu. Najedź kursorem, żeby zobaczyć wartości w danym dniu.', legend, eqHost)); drawEq();
+  out.push(el('div', {class: 'two'},
+    card('Obsunięcia (spadek od szczytu)', 'Jak głęboko i jak długo kapitał był poniżej poprzedniego szczytu.', lineChart([{name: p.name, color: 'var(--bear)', pts: p.drawdown, area: true, w: 2}], {h: 230, zero: true, fmt: v => pc(v, 0), fmtTip: v => pc(v, 1), label: 'Obsunięcia'})),
+    card('Symulacja kolejnych 12 miesięcy', `${p.montecarlo.paths} losowań bloków z historii strategii (rozrzut, nie prognoza). Pasma: 5–95% i 25–75%.`, fanChart(p.montecarlo),
+      el('div', {class: 'kv'}, el('div', null, el('b', null, pc(p.montecarlo.median)), el('span', null, 'mediana wyniku roku')), el('div', null, el('b', {class: 'down'}, pc(p.montecarlo.p5)), el('span', null, 'pesymistycznie (5%)')), el('div', null, el('b', {class: 'up'}, pc(p.montecarlo.p95)), el('span', null, 'optymistycznie (95%)')),
+        el('div', null, el('b', null, pcu(p.montecarlo.prob_loss, 0)), el('span', null, 'szansa straty w roku')), el('div', null, el('b', null, pcu(p.montecarlo.prob_loss_10, 0)), el('span', null, 'szansa straty > 10%')), el('div', null, el('b', null, pcu(p.montecarlo.prob_dd_20, 0)), el('span', null, 'szansa obsunięcia > 20%'))))));
+  // alokacja
+  const cur = p.current, capIn = el('input', {type: 'number', min: '0', step: '100', value: capital}), tbody = el('tbody'), stack = el('div', {class: 'stack'}), summary = el('div', {class: 'kv'});
+  const fill = () => {
+    const cap = parseFloat(capIn.value) || 0; capital = cap; store.set('st_cap', String(cap));
+    const rows = cur.weights.map(w => el('tr', null, el('td', null, el('b', null, w.key.replace('USDT', '').replace('.US', '').replace('.PL', '').replace('.DE', '')), ' ', el('span', {class: 'mut'}, w.name)), el('td', {class: 'mut'}, w.cls_pl),
+      el('td', {class: 'r'}, el('span', {class: 'bar2'}, el('i', {style: `width:${Math.min(100, w.weight * 250)}%`})), pcu(w.weight, 1)), el('td', {class: 'r'}, nf(w.weight * cap, 0)), el('td', {class: 'r'}, pcu(w.vol, 0)), el('td', {class: 'r ' + cls(w.mom12)}, pc(w.mom12, 0)), el('td', {class: 'r ' + cls(w.dist200)}, pc(w.dist200, 0))));
+    rows.push(el('tr', null, el('td', null, el('b', null, 'Gotówka'), ' ', el('span', {class: 'mut'}, 'rezerwa, oprocentowanie ≈ stopa Fed')), el('td', {class: 'mut'}, 'Gotówka'), el('td', {class: 'r'}, pcu(cur.cash, 1)), el('td', {class: 'r'}, nf(cur.cash * cap, 0)), el('td', {class: 'r'}, '–'), el('td', {class: 'r'}, '–'), el('td', {class: 'r'}, '–')));
+    tbody.replaceChildren(...rows);
+    stack.replaceChildren(...[...Object.entries(cur.by_class), ['Gotówka', cur.cash]].map(([c, v]) => { const i = el('i', {title: `${c} ${pcu(v, 0)}`, style: `background:${CLS_COL[c] || '#888'}`}); requestAnimationFrame(() => requestAnimationFrame(() => { i.style.width = v * 100 + '%'; })); return i; }));
+    summary.replaceChildren(el('div', null, el('b', null, pcu(cur.expected_vol, 1)), el('span', null, 'oczekiwana zmienność roczna portfela')), el('div', null, el('b', {class: 'down'}, '−' + nf(cur.var95_month * cap, 0)), el('span', null, 'VaR 95% na miesiąc (kwota)')), el('div', null, el('b', null, String(cur.n)), el('span', null, 'pozycji')), el('div', null, el('b', null, data.data.next_rebalance), el('span', null, 'następne równoważenie')));
+  };
+  capIn.addEventListener('input', fill);
+  out.push(card('Skład portfela na dziś', 'Wagi z algorytmu na ostatnich danych. Wpisz kapitał, a zobaczysz kwoty. Zmiany wykonuj dopiero przy najbliższym równoważeniu.', el('div', {class: 'legend'}, el('label', null, 'Kapitał: ', capIn)), stack,
+    el('div', {class: 'legend'}, ...[...Object.keys(cur.by_class), 'Gotówka'].map(c => el('span', null, el('i', {style: `background:${CLS_COL[c] || '#888'}`}), ' ' + c))), summary,
+    cur.weights.length ? el('div', {class: 'tbl-w'}, el('table', null, el('thead', null, el('tr', null, ['Aktywo', 'Klasa', 'Waga', 'Kwota', 'Zmienność', 'Momentum 12-1', 'Od SMA200'].map((h, i) => el('th', {class: i > 1 ? 'r' : ''}, h)))), tbody)) : el('div', null, el('p', {class: 'note'}, 'Dziś żadne aktywo nie spełnia warunków tego profilu (trend i momentum): portfel jest w gotówce.'), el('div', {class: 'tbl-w'}, el('table', null, tbody))),
+    el('p', {class: 'note'}, 'Kolejność wyboru: ranking momentum skorygowanego o zmienność z udziałem niskiej zmienności zależnym od profilu; wagi odwrotnie do zmienności, limity na aktywo i klasę, skala do docelowej zmienności ' + pcu(p.params.target_vol, 0) + '.'))); fill();
+  // tabele
+  out.push(el('div', {class: 'two'},
+    card('Wyniki roczne', null, el('div', {class: 'tbl-w'}, el('table', {style: 'min-width:300px'}, el('thead', null, el('tr', null, ['Rok', p.name, 'S&P 500', 'Bitcoin'].map((h, i) => el('th', {class: i ? 'r' : ''}, h)))),
+      el('tbody', null, Object.keys(s.years).map(y => { const g = n => data.benchmarks[n] && data.benchmarks[n].stats.years[y]; return el('tr', null, el('td', null, y), el('td', {class: 'r ' + cls(s.years[y])}, pc(s.years[y])), el('td', {class: 'r ' + cls(g('S&P 500'))}, pc(g('S&P 500'))), el('td', {class: 'r ' + cls(g('Bitcoin (kup i trzymaj)'))}, pc(g('Bitcoin (kup i trzymaj)')))); }))))),
+    card('Okresy stresu', 'Jak strategia zachowała się w znanych kryzysach (jeśli test obejmuje dany okres).', p.stress.length ? el('div', {class: 'tbl-w'}, el('table', {style: 'min-width:300px'}, el('thead', null, el('tr', null, ['Okres', 'Wynik', 'Maks. spadek'].map((h, i) => el('th', {class: i ? 'r' : ''}, h)))),
+      el('tbody', null, p.stress.map(x => el('tr', null, el('td', null, x.name), el('td', {class: 'r ' + cls(x.ret)}, pc(x.ret)), el('td', {class: 'r down'}, pc(x.max_dd))))))) : el('p', {class: 'note'}, 'Test nie obejmuje okresów stresu (za krótka historia).'))));
+  // porównanie
+  out.push(card('Porównanie wszystkich strategii i benchmarków', null, el('div', {class: 'tbl-w'}, el('table', null, el('thead', null, el('tr', null, ['', 'Zysk roczny', 'Zmienność', 'Sharpe', 'Maks. spadek', 'Calmar', 'Miesiące +', 'Najgorszy miesiąc'].map((h, i) => el('th', {class: i ? 'r' : ''}, h)))),
+    el('tbody', null, [...data.profiles.map(q => [q.name, q.stats, q.id === sel]), ...Object.entries(data.benchmarks).map(([n, v]) => [n, v.stats, false])].map(([n, st, on]) => el('tr', {style: on ? 'background:var(--card2)' : ''}, el('td', null, on ? el('b', null, n) : n), el('td', {class: 'r ' + cls(st.cagr)}, pc(st.cagr)), el('td', {class: 'r'}, pcu(st.vol, 0)), el('td', {class: 'r'}, nf(st.sharpe, 2)),
+      el('td', {class: 'r down'}, pc(st.max_dd, 0)), el('td', {class: 'r'}, nf(st.calmar, 2)), el('td', {class: 'r'}, pcu(st.pos_months, 0)), el('td', {class: 'r down'}, pc(st.worst_month)))))))));
+  out.push(card('Uwagi metodologiczne', null, el('ul', null, data.notes.map(n => el('li', {class: 'note'}, n)))));
+  host.replaceChildren(...out);
+}
+document.getElementById('close').addEventListener('click', () => { window.close(); setTimeout(() => { location.href = 'index.html'; }, 150); });
+fetch('btc_strategies.json?t=' + Date.now(), {cache: 'no-store'}).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }).then(d => {
+  data = d; sel = store.get('st_sel') && d.profiles.some(p => p.id === store.get('st_sel')) ? store.get('st_sel') : 'balanced';
+  document.getElementById('meta').textContent = `Dane ${d.data.from} → ${d.data.to} (${d.data.years} lat) · ${d.data.assets.length} aktywów · wygenerowano ${new Date(d.generated_at).toLocaleString('pl-PL')}`;
+  document.getElementById('warns').replaceChildren(...(d.data.warnings || []).map(w => el('div', {class: 'warn'}, UI.icon('alert'), ' ' + w)));
+  renderProfiles(); renderDetail();
+}).catch(e => { document.getElementById('meta').textContent = 'Brak danych.'; document.getElementById('detail').replaceChildren(el('div', {class: 'warn'}, 'Nie mogę wczytać btc_strategies.json (' + e.message + '). Uruchom: btc_collect.py backfill, potem btc_strategies.py.')); });
+})();
+</script>
+</body>
+</html>

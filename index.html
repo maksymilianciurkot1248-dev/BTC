@@ -1,0 +1,2482 @@
+<!doctype html>
+<html lang="pl" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0A0F16">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>Bitcoin — analiza</title>
+<script>
+try { var t = localStorage.getItem('btc-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+</script>
+<style>
+:root{
+  --bg:#EDF0F4; --bg-glass:rgba(237,240,244,.82); --card:#FFFFFF; --card2:#F5F7FA; --line:#DCE2E9;
+  --ink:#111D29; --muted:#5B6978; --accent:#E8830C; --accent2:#F5B040;
+  --glow1:rgba(232,131,12,.16); --glow2:rgba(31,95,168,.14); --grid:rgba(17,29,41,.045);
+  --price:#1F5FA8; --sma20:#C47A0C; --sma50:#7A4FA3; --sma200:#3A4756;
+  --bull:#12805A; --bear:#C1334A; --neutral:#8794A2; --focus:#1B64C8;
+  --shadow:0 1px 2px rgba(17,29,41,.05),0 10px 28px -14px rgba(17,29,41,.20);
+  --sans:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+  --r:18px;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300; --s7:#6250d6; --s8:#e34948;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A0F16; --bg-glass:rgba(10,15,22,.78); --card:#111A25; --card2:#16212E; --line:#223142;
+    --ink:#E8EEF4; --muted:#93A1B1; --accent:#F7A234; --accent2:#FFC46B;
+    --glow1:rgba(247,162,52,.16); --glow2:rgba(95,163,238,.14); --grid:rgba(232,238,244,.04);
+    --price:#5FA3EE; --sma20:#E0A040; --sma50:#B792E0; --sma200:#AEB9C5;
+    --bull:#3DD39A; --bear:#FF6B80; --neutral:#7E8B99; --focus:#7DB2F5;
+    --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 14px 34px -16px rgba(0,0,0,.65);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A0F16; --bg-glass:rgba(10,15,22,.78); --card:#111A25; --card2:#16212E; --line:#223142;
+  --ink:#E8EEF4; --muted:#93A1B1; --accent:#F7A234; --accent2:#FFC46B;
+  --glow1:rgba(247,162,52,.16); --glow2:rgba(95,163,238,.14); --grid:rgba(232,238,244,.04);
+  --price:#5FA3EE; --sma20:#E0A040; --sma50:#B792E0; --sma200:#AEB9C5;
+  --bull:#3DD39A; --bear:#FF6B80; --neutral:#7E8B99; --focus:#7DB2F5;
+  --shadow:0 1px 0 rgba(255,255,255,.03) inset,0 14px 34px -16px rgba(0,0,0,.65);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+}
+*{box-sizing:border-box}
+html{color-scheme:light dark;scroll-behavior:smooth}
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans);-webkit-font-smoothing:antialiased;min-height:100vh}
+h1,h2,h3,p{margin:0}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:6px}
+.up{color:var(--bull)} .down{color:var(--bear)}
+.tab{font-variant-numeric:tabular-nums}
+
+/* tło */
+.bg{position:fixed;inset:0;z-index:-2;overflow:hidden;pointer-events:none}
+.bg::before,.bg::after{content:"";position:absolute;width:62vmax;height:62vmax;border-radius:50%;filter:blur(90px);will-change:transform;animation:drift 32s ease-in-out infinite alternate}
+.bg::before{background:radial-gradient(closest-side,var(--glow1),transparent);top:-28vmax;left:-18vmax}
+.bg::after{background:radial-gradient(closest-side,var(--glow2),transparent);bottom:-34vmax;right:-22vmax;animation-delay:-11s}
+.bg-grid{position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:52px 52px;-webkit-mask-image:radial-gradient(ellipse 80% 55% at 50% 0%,#000,transparent);mask-image:radial-gradient(ellipse 80% 55% at 50% 0%,#000,transparent)}
+@keyframes drift{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(6vmax,4vmax,0) scale(1.12)}}
+
+/* nagłówek */
+.top{position:sticky;top:0;z-index:30;background:var(--bg-glass);-webkit-backdrop-filter:saturate(1.5) blur(16px);backdrop-filter:saturate(1.5) blur(16px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1160px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.logo{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.15rem;
+  background:linear-gradient(145deg,var(--accent2),var(--accent));box-shadow:0 4px 14px -4px var(--accent)}
+.brand h1{font-size:1.02rem;font-weight:700;letter-spacing:-.01em;line-height:1.15}
+.brand small{display:block;color:var(--muted);font-size:.74rem;letter-spacing:.04em}
+.mini{display:none;align-items:baseline;gap:8px;margin-left:8px;font-variant-numeric:tabular-nums;font-weight:650;animation:fadein .4s both}
+.past-hero .mini{display:flex}
+.mini span{font-size:.82rem;font-weight:600}
+.spacer{flex:1}
+.status{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.82rem;text-align:right}
+.live{flex:none;width:9px;height:9px;border-radius:50%;background:var(--bull);position:relative}
+.live::after{content:"";position:absolute;inset:0;border-radius:50%;background:inherit;animation:ping 2.2s ease-out infinite}
+.live.stale{background:var(--bear)}
+@keyframes ping{0%{transform:scale(1);opacity:.7}100%{transform:scale(3.2);opacity:0}}
+.btn{font:inherit;font-size:.85rem;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:border-color .2s,transform .2s,background .2s}
+.btn:hover{border-color:var(--accent)}
+a.btn{text-decoration:none}
+.btn.pri{border-color:var(--accent);font-weight:600}
+.btn:active{transform:scale(.96)}
+.btn svg{width:14px;height:14px}
+.btn.spin svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* układ */
+.wrap{max-width:1160px;margin:0 auto;padding:22px 20px 80px}
+.stack{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:18px}
+.stack>*{grid-column:span 12;min-width:0}
+@media (min-width:960px){.stack>.half{grid-column:span 6}}
+section[id]{scroll-margin-top:84px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px 20px;flex-wrap:wrap;margin-bottom:18px}
+.card h2{font-size:1.08rem;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--muted);font-size:.86rem;margin-top:2px}
+.note{color:var(--muted);font-size:.86rem;margin-top:14px;max-width:75ch}
+h3{font-size:.92rem;font-weight:650;margin:22px 0 6px}
+.eyebrow{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* pojawianie się */
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .8s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--d,0)*80ms)}
+.reveal.in{opacity:1;transform:none}
+
+/* hero */
+.hero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:center;padding:30px}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(70% 100% at 100% 0%,var(--glow1),transparent 70%);pointer-events:none}
+.hero>*{position:relative}
+.coinline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.now{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 10px;margin:14px 0 6px;font-size:clamp(2.7rem,8.5vw,4.6rem);line-height:1;font-weight:760;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.now .cur{font-size:1rem;font-weight:500;letter-spacing:0;color:var(--muted)}
+.flash-up{animation:fu 1.4s ease-out}
+.flash-down{animation:fd 1.4s ease-out}
+@keyframes fu{0%{color:var(--bull)}100%{color:var(--ink)}}
+@keyframes fd{0%{color:var(--bear)}100%{color:var(--ink)}}
+.alts{display:flex;flex-wrap:wrap;gap:4px 20px;color:var(--muted);font-variant-numeric:tabular-nums;font-size:.95rem}
+.alts b{color:var(--ink);font-weight:600}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 12px;border-radius:999px;background:var(--card2);border:1px solid var(--line);font-size:.86rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.pill b{font-weight:650}
+.spark{display:block;width:100%;height:auto;color:var(--bull);overflow:visible}
+.spark.down{color:var(--bear)}
+.spark .sl{fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.spark-area{opacity:0;transition:opacity 1.2s ease .5s}
+.in .spark-area{opacity:1}
+.spark-cap{display:flex;justify-content:space-between;color:var(--muted);font-size:.78rem;margin-top:6px}
+
+/* kpi */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:14px}
+.kpi{padding:16px 18px;border-radius:14px;background:var(--card);border:1px solid var(--line);box-shadow:var(--shadow);transition:transform .25s,border-color .25s;opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1),border-color .25s;transition-delay:calc(var(--i,0)*70ms),calc(var(--i,0)*70ms),0s}
+.in .kpi{opacity:1;transform:none}
+.in .kpi:hover{transform:translateY(-3px);border-color:var(--accent);transition-delay:0s}
+.kpi .v{font-size:1.5rem;font-weight:720;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:3px;line-height:1.2}
+.kpi .s{font-size:.8rem;color:var(--muted);margin-top:1px}
+
+/* nawigacja */
+.nav{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex:none;color:var(--muted);text-decoration:none;font-size:.86rem;font-weight:550;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);transition:color .2s,border-color .2s,background .2s}
+.nav a:hover{color:var(--ink);border-color:var(--accent)}
+
+.banner{padding:12px 16px;border-radius:12px;border:1px solid var(--bear);border-left-width:5px;background:var(--card)}
+
+/* kontrolki */
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button,.chip{font:inherit;font-size:.82rem;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .2s}
+.seg button:hover{color:var(--ink);border-color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.chip.static{cursor:default}
+.legend button[aria-pressed="false"]{opacity:.5;text-decoration:line-through}
+.legend button[aria-pressed="true"]{background:transparent;color:var(--ink);border-color:var(--line)}
+.sw{width:12px;height:3px;border-radius:2px;display:inline-block}
+
+/* wykres */
+.cstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 20px;margin-bottom:12px}
+.cstats div{display:flex;flex-direction:column}
+.cstats span{font-size:.76rem;color:var(--muted)}
+.cstats b{font-size:1.05rem;font-weight:680;font-variant-numeric:tabular-nums}
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;touch-action:pan-y;user-select:none}
+.axis{font:11px var(--sans);fill:var(--muted)}
+.g{stroke:var(--line);stroke-width:1}
+.l-price{stroke:var(--price);stroke-width:2.2;fill:none;stroke-linejoin:round;stroke-linecap:round}
+.l-sma20{stroke:var(--sma20);stroke-width:1.5;fill:none}
+.l-sma50{stroke:var(--sma50);stroke-width:1.5;fill:none}
+.l-sma200{stroke:var(--sma200);stroke-width:1.5;fill:none;stroke-dasharray:5 4}
+.t-sma20{fill:var(--sma20);font:600 11px var(--sans)}
+.t-sma50{fill:var(--sma50);font:600 11px var(--sans)}
+.t-sma200{fill:var(--sma200);font:600 11px var(--sans)}
+.tagbg{fill:var(--price)} .tagtx{fill:var(--card);font:700 11px var(--sans)}
+.lastline{stroke:var(--price);stroke-width:1;stroke-dasharray:2 4;opacity:.6}
+.cross{stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3}
+.dot{fill:var(--price);stroke:var(--card);stroke-width:2.5}
+.ext{fill:var(--card);stroke:var(--price);stroke-width:2}
+.extl{font:600 11px var(--sans);fill:var(--ink)}
+.pulse{fill:var(--price);transform-box:fill-box;transform-origin:center;animation:pulse 2.2s ease-out infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.55}100%{transform:scale(3.4);opacity:0}}
+.draw{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1.6s cubic-bezier(.3,.6,.2,1)}
+.draw.go{stroke-dashoffset:0}
+.area.draw{stroke-dasharray:none;stroke-dashoffset:0;opacity:0;transition:opacity 1.4s ease .3s}
+.area.draw.go{opacity:1}
+.fade{animation:fadein 1s ease .9s both}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.tip{position:absolute;top:6px;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:.8rem;line-height:1.55;white-space:nowrap;font-variant-numeric:tabular-nums;box-shadow:var(--shadow);z-index:2}
+.tip b{font-weight:650}
+.tip .r{display:flex;justify-content:space-between;gap:16px}
+
+/* zegary / mierniki */
+.split{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:26px 36px;align-items:center}
+.gauge-wrap{max-width:290px;margin:0 auto;width:100%}
+.gauge{display:block;width:100%;height:auto;color:var(--ink);overflow:visible}
+.zone{opacity:.92}
+.needle{transform:rotate(-90deg);transition:transform 1.6s cubic-bezier(.3,1.35,.5,1)}
+.in .needle{transform:rotate(var(--rot))}
+.gauge-c{text-align:center;margin-top:-2px}
+.gauge-c b{display:block;font-size:2.1rem;font-weight:760;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.gauge-c span{font-size:.84rem;color:var(--muted)}
+.mb{margin-bottom:18px}
+.mb .mh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;font-size:.88rem}
+.mb .mh span{color:var(--muted)} .mb .mh b{font-variant-numeric:tabular-nums;font-weight:650}
+.meter-track{position:relative;height:10px;border-radius:99px;background:linear-gradient(90deg,var(--bear),var(--neutral) 50%,var(--bull));opacity:.85}
+.meter-track.plain{background:var(--line);opacity:1}
+.meter-band{position:absolute;top:0;bottom:0;background:var(--price);opacity:.35;border-radius:99px}
+.meter-pin{position:absolute;top:50%;left:0;width:18px;height:18px;border-radius:50%;background:var(--card);border:3px solid var(--ink);transform:translate(-50%,-50%);transition:left 1.4s cubic-bezier(.2,.8,.2,1);box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.in .meter-pin{left:var(--x)}
+.meter-scale{display:flex;justify-content:space-between;font-size:.74rem;color:var(--muted);margin-top:7px;font-variant-numeric:tabular-nums}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.fill{display:block;height:100%;width:0;border-radius:99px;background:var(--price);transition:width 1.3s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--i,0)*70ms)}
+.in .fill{width:var(--w)}
+.fill.bull{background:var(--bull)} .fill.bear{background:var(--bear)} .fill.accent{background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.dbar{position:relative;height:10px;background:var(--line);border-radius:99px;overflow:hidden}
+.dfill{position:absolute;top:0;bottom:0;left:var(--l);width:0;background:var(--price);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.in .dfill{width:var(--w)}
+.dfill.bull{background:var(--bull)} .dfill.bear{background:var(--bear)}
+.dmid{position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--muted);opacity:.6}
+.drow{display:grid;grid-template-columns:5.4rem 1fr 4.6rem;gap:12px;align-items:center;margin-bottom:11px;font-size:.88rem}
+.drow span:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.drow span:first-child{color:var(--muted)}
+
+/* bilans sygnałów */
+.balance{display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--line);gap:2px;margin:18px 0 10px}
+.balance span{display:block;flex:0 0 0;flex-grow:0;transition:flex-grow 1.3s cubic-bezier(.2,.8,.2,1)}
+.in .balance span{flex-grow:var(--f)}
+.s-plus{background:var(--bull)} .s-minus{background:var(--bear)} .s-zero{background:var(--neutral)}
+.counts{display:flex;gap:8px;flex-wrap:wrap}
+.counts .pill b{color:var(--ink)}
+.ledger{list-style:none;margin:0;padding:0}
+.ledger li{display:grid;grid-template-columns:9.4rem 11rem 1fr;gap:4px 14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);opacity:0;transform:translateX(-10px);transition:opacity .5s ease,transform .5s ease;transition-delay:calc(var(--i)*55ms)}
+.in .ledger li{opacity:1;transform:none}
+.ledger li:last-child{border-bottom:0}
+.badge{display:inline-flex;align-items:center;gap:7px;font-weight:650;font-size:.84rem;padding:3px 11px;border-radius:999px;justify-self:start}
+.v-plus{color:var(--bull);background:color-mix(in srgb,var(--bull) 13%,transparent)}
+.v-minus{color:var(--bear);background:color-mix(in srgb,var(--bear) 13%,transparent)}
+.v-zero{color:var(--muted);background:color-mix(in srgb,var(--neutral) 15%,transparent)}
+.ledger .lbl{font-weight:600}
+.ledger .detail{color:var(--muted);font-size:.9rem}
+
+/* kafelki */
+.sigs{list-style:none;margin:14px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+.sigs li{padding:11px 14px;border:1px solid var(--line);border-left:4px solid var(--neutral);border-radius:12px;background:var(--card2);font-size:.88rem}
+.sigs li.bull{border-left-color:var(--bull)} .sigs li.bear{border-left-color:var(--bear)}
+.sigs b{display:block;font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:3px}
+.tally{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.srcs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:.74rem;color:var(--muted)}
+.srcs span{padding:2px 8px;border-radius:999px;border:1px solid var(--line)} .srcs .bad{color:var(--bear);border-color:var(--bear)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:24px}
+.tiles.small{margin-top:20px}
+.tile{padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card2);transition:border-color .25s,transform .25s}
+.tile:hover{border-color:var(--accent);transform:translateY(-2px)}
+.tile .l{font-size:.78rem;color:var(--muted)}
+.tile .v{font-size:1.25rem;font-weight:700;font-variant-numeric:tabular-nums;margin:2px 0 4px;letter-spacing:-.01em}
+.tile .h{font-size:.78rem;color:var(--muted)}
+.tile .bar,.tile .dbar{margin-top:8px}
+
+/* fibonacci */
+.fib{position:relative;height:330px;margin-top:4px}
+.fl{position:absolute;left:0;right:0;top:calc(12px + (100% - 24px)*var(--f));height:0;border-top:1px dashed var(--line);transform-origin:left;transform:scaleX(0);transition:transform 1s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--i)*70ms)}
+.in .fl{transform:scaleX(1)}
+.fl.edge{border-top-style:solid;border-top-color:var(--muted)}
+.fl span{position:absolute;top:-10px;font-size:.78rem;background:var(--card);padding:0 8px;font-variant-numeric:tabular-nums;color:var(--muted)}
+.fl .a{left:0}.fl .b{left:4.8rem;color:var(--ink);font-weight:600}
+.fp{position:absolute;left:0;right:0;top:calc(12px + (100% - 24px)*var(--f));height:0;border-top:2px solid var(--accent);z-index:2;opacity:0;transition:opacity .8s ease 1s}
+.in .fp{opacity:1}
+.fp span{position:absolute;right:0;top:-13px;background:var(--accent);color:#fff;font-weight:700;font-size:.78rem;padding:2px 10px;border-radius:999px;font-variant-numeric:tabular-nums}
+
+/* rankingi */
+.rank{list-style:none;margin:0;padding:0}
+.rank li{display:grid;grid-template-columns:minmax(100px,160px) minmax(0,1fr) auto;gap:6px 14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.rank li:last-child{border-bottom:0}
+.rank .nm{font-weight:600;line-height:1.25}
+.rank .nm small{display:block;color:var(--muted);font-weight:400;font-size:.76rem}
+.rank .val{text-align:right;font-variant-numeric:tabular-nums;font-size:.9rem;white-space:nowrap}
+.rank .val small{display:block;color:var(--muted);font-size:.76rem}
+.chipf{display:inline-block;font-size:.76rem;font-weight:650;padding:1px 8px;border-radius:99px;font-variant-numeric:tabular-nums;margin-left:6px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0 44px}
+
+/* donut */
+.donuts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:22px;align-items:start}
+.donut{display:block;width:100%;max-width:190px;margin:0 auto}
+.arc{fill:none;stroke-width:13;stroke-linecap:butt;stroke-dasharray:0 999;transition:stroke-dasharray 1.6s cubic-bezier(.2,.8,.2,1)}
+.in .arc{stroke-dasharray:var(--da)}
+.arc-bg{fill:none;stroke:var(--line);stroke-width:13}
+.dtx{font:740 20px var(--sans);fill:var(--ink);text-anchor:middle;font-variant-numeric:tabular-nums}
+.dtx2{font:500 9.5px var(--sans);fill:var(--muted);text-anchor:middle}
+.dleg{list-style:none;margin:12px 0 0;padding:0;font-size:.84rem}
+.dleg li{display:flex;align-items:center;gap:8px;padding:2px 0;color:var(--muted)}
+.dleg i{width:10px;height:10px;border-radius:3px;flex:none}
+.dleg b{margin-left:auto;color:var(--ink);font-variant-numeric:tabular-nums}
+.dcap{text-align:center;font-size:.84rem;color:var(--muted);margin-top:6px}
+
+/* zwroty */
+.hist{display:block;width:100%;height:auto}
+.hbar{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(0);transition:transform .9s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--i)*35ms)}
+.in .hbar{transform:scaleY(1)}
+.hbar.bull{fill:var(--bull);opacity:.85} .hbar.bear{fill:var(--bear);opacity:.85}
+.hbar:hover{opacity:1}
+.varl{stroke:var(--accent);stroke-width:2;stroke-dasharray:4 4}
+.vart{font:700 11px var(--sans);fill:var(--accent)}
+.wipe{clip-path:inset(0 100% 0 0);transition:clip-path 1.8s cubic-bezier(.3,.6,.2,1)}
+.in .wipe{clip-path:inset(0 0 0 0)}
+.dd-line{fill:none;stroke:var(--bear);stroke-width:2;stroke-linejoin:round}
+.readout{font-size:.9rem;color:var(--muted);margin-bottom:8px;font-variant-numeric:tabular-nums;min-height:1.5em}
+.readout b{color:var(--ink)}
+.heatw{display:flex;gap:10px}
+.heatl{display:grid;grid-template-rows:repeat(7,1fr);gap:4px;font-size:.7rem;color:var(--muted);align-items:center}
+.heat{flex:1;display:grid;grid-template-rows:repeat(7,1fr);grid-auto-flow:column;grid-auto-columns:1fr;gap:4px}
+.cell{display:block;aspect-ratio:1;border-radius:5px;background:var(--c);opacity:var(--a);transition:transform .2s}
+.cell:hover{transform:scale(1.35);position:relative;z-index:2;opacity:1}
+.in .cell{animation:pop .55s cubic-bezier(.2,.9,.3,1.3) both;animation-delay:calc(var(--i)*9ms)}
+@keyframes pop{from{opacity:0;transform:scale(.2)}to{opacity:var(--a);transform:none}}
+.hl{display:flex;align-items:center;gap:8px;font-size:.76rem;color:var(--muted);margin-top:12px}
+.hl i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+/* tabele / listy */
+dl.rows{display:grid;grid-template-columns:1fr;margin:0}
+dl.rows .row{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid var(--line)}
+dl.rows .row:last-child{border-bottom:0}
+dt{color:var(--muted)}
+dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;font-weight:550}
+
+/* newsy */
+.news{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.news li{display:grid;grid-template-columns:4px 1fr;gap:0 14px;padding:12px 14px 12px 0;border-radius:12px;background:var(--card2);overflow:hidden;opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease,background .2s;transition-delay:calc(var(--i)*60ms)}
+.in .news li{opacity:1;transform:none}
+.news li:hover{background:color-mix(in srgb,var(--card2) 70%,var(--line))}
+.news .bar4{border-radius:0 4px 4px 0;background:var(--c)}
+.news a{color:var(--ink);text-decoration:none;font-weight:600;line-height:1.35}
+.news a:hover{text-decoration:underline;text-underline-offset:3px}
+.news .meta{color:var(--muted);font-size:.82rem;margin-top:3px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.news .vd{font-weight:650}
+
+details{margin-top:4px}
+summary{cursor:pointer;padding:4px 0;font-weight:600}
+pre{white-space:pre-wrap;word-break:break-word;font:.8rem/1.55 var(--mono);margin:12px 0 0;padding:16px;border:1px solid var(--line);border-radius:12px;background:var(--card2);overflow-x:auto}
+footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem}
+footer ul{margin:6px 0 0;padding-left:1.2rem}
+
+.loading,.failure{margin:60px 0;color:var(--muted);text-align:center}
+.failure strong{color:var(--ink)}
+.skel{height:160px;border-radius:var(--r);background:linear-gradient(100deg,var(--card) 30%,var(--card2) 50%,var(--card) 70%);background-size:300% 100%;animation:sh 1.6s linear infinite;border:1px solid var(--line);margin-bottom:16px}
+@keyframes sh{from{background-position:100% 0}to{background-position:-100% 0}}
+
+/* bybit */
+.keyrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.warnlist{list-style:none;margin:0 0 14px;padding:10px 14px;border-left:4px solid var(--bear);background:var(--card2);border-radius:0 10px 10px 0;font-size:.88rem}
+.warnlist li+li{margin-top:4px}
+.chips{margin-top:5px;display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.chips .chipf{margin-left:0}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px;margin-top:20px}
+.pcard{--c:var(--neutral);position:relative;background:var(--card2);border:1px solid var(--line);border-left:5px solid var(--c);border-radius:14px;padding:16px 18px;overflow:hidden}
+.pcard.win{--c:var(--bull)} .pcard.loss{--c:var(--bear)}
+.pcard::before{content:"";position:absolute;inset:0;background:var(--c);opacity:.07;pointer-events:none}
+.pcard>*{position:relative}
+.ph{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.ph .sym{font-weight:700;font-size:1.08rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ph small{display:block;color:var(--muted);font-size:.78rem;margin-top:3px}
+.ppnl{text-align:right;font-size:1.5rem;font-weight:750;line-height:1.1;color:var(--c);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ppnl small{display:block;font-size:.8rem;font-weight:600;color:var(--c);margin-top:3px}
+.plv{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px;margin-top:14px}
+.plv span{display:block;font-size:.74rem;color:var(--muted);letter-spacing:.02em}
+.plv b{display:block;font-size:.97rem;font-variant-numeric:tabular-nums;font-weight:650}
+.plv b small{color:var(--muted);font-weight:500;font-size:.76rem}
+.plv .liq b{color:var(--bear)} .plv .tp b{color:var(--bull)} .plv .none b{color:var(--muted);font-weight:500}
+.olist{list-style:none;margin:10px 0 0;padding:0}
+.olist li{display:grid;grid-template-columns:104px minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.olist li:last-child{border-bottom:0}
+.olist .chipf{margin:0;text-align:center}
+.olist .d small{display:block;color:var(--muted);font-size:.76rem}
+.olist .r{text-align:right;font-variant-numeric:tabular-nums;font-size:.92rem;white-space:nowrap}
+.olist .r small{display:block;color:var(--muted);font-size:.76rem}
+.plan{--c:var(--neutral);position:relative;border:1px solid var(--line);border-left:6px solid var(--c);border-radius:16px;padding:18px 20px;background:var(--card2);overflow:hidden}
+.plan.buy{--c:var(--bull)} .plan.sell{--c:var(--bear)}
+.plan::before{content:"";position:absolute;inset:0;background:var(--c);opacity:.06;pointer-events:none}
+.plan>*{position:relative}
+.plan-top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px 28px;flex-wrap:wrap}
+.plan-act{font-size:1.75rem;font-weight:800;letter-spacing:-.015em;color:var(--c);line-height:1.1}
+.plan-act small{display:block;font-size:.84rem;font-weight:550;color:var(--muted);letter-spacing:0;margin-top:6px;max-width:46ch}
+.conf{min-width:200px;flex:0 1 260px}
+.conf .mh{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);margin-bottom:6px}
+.conf .mh b{color:var(--ink);font-size:1.05rem}
+.ticket{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:18px}
+.ticket>div{padding:10px 13px;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.ticket span{display:block;font-size:.74rem;color:var(--muted)}
+.ticket b{display:block;font-size:1.12rem;font-variant-numeric:tabular-nums;margin:1px 0}
+.ticket small{display:block;color:var(--muted);font-size:.74rem}
+.ticket .en b{color:var(--price)} .ticket .sl b{color:var(--bear)} .ticket .tp b{color:var(--bull)}
+.why{list-style:none;margin:14px 0 0;padding:0}
+.why li{position:relative;padding:3px 0 3px 22px;font-size:.9rem;max-width:90ch}
+.why li::before{content:"✓";position:absolute;left:2px;color:var(--bull);font-weight:800}
+.why.warn li::before{content:"!";color:var(--accent)}
+.why.wait li::before{content:"•";color:var(--muted)}
+.why.goal li::before{content:"→";color:var(--price)}
+.tbl-w{overflow-x:auto;margin-top:6px}
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem;font-variant-numeric:tabular-nums;min-width:560px}
+.tbl th{text-align:left;font-weight:600;color:var(--muted);font-size:.74rem;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .r{text-align:right}
+.tbl .chipf{margin:0}
+.flow{margin-top:14px;font-variant-numeric:tabular-nums}
+.fhead{display:grid;grid-template-columns:1fr 96px 1fr;gap:8px;font-size:.76rem;font-weight:650;margin-bottom:4px}
+.fhead span:first-child{text-align:right;color:var(--bull)} .fhead span:last-child{color:var(--bear)} .fhead span:nth-child(2){text-align:center;color:var(--muted)}
+.frow{display:grid;grid-template-columns:1fr 96px 1fr;align-items:center;gap:8px;min-height:24px;font-size:.76rem;border-radius:6px}
+.frow .px{text-align:center;color:var(--muted)}
+.frow .bl,.frow .br{display:flex;align-items:center;gap:6px;min-width:0}
+.frow .bl{justify-content:flex-end}
+.frow .bl>span,.frow .br>span{color:var(--muted);white-space:nowrap;font-size:.72rem}
+.frow i{display:block;height:13px;width:calc((100% - 84px) * var(--f));min-width:2px;flex:none}
+.frow .bl i{background:var(--bull);border-radius:7px 0 0 7px}
+.frow .br i{background:var(--bear);border-radius:0 7px 7px 0}
+.frow i.pend{background:transparent;box-sizing:border-box;border:1.5px dashed currentColor;height:13px}
+.frow .bl i.pend{color:var(--bull)} .frow .br i.pend{color:var(--bear)}
+.frow.cur{background:color-mix(in srgb,var(--price) 14%,transparent)}
+.frow.cur .px{color:var(--ink);font-weight:700}
+.legend2{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:.78rem;margin-top:10px}
+.legend2 i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+.lvl{pointer-events:none}
+.lvl line{fill:none;stroke-width:1.6}
+.lvl text{font-size:11px;font-weight:650;font-variant-numeric:tabular-nums}
+.lvl rect{fill:var(--card);fill-opacity:.92;stroke-width:1}
+@media (max-width:640px){.ticket{grid-template-columns:repeat(2,minmax(0,1fr))}.fhead,.frow{grid-template-columns:1fr 74px 1fr}.plan{padding:16px 14px}.plan-act{font-size:1.5rem}.olist li{grid-template-columns:90px minmax(0,1fr)}.olist .r{grid-column:2;text-align:left}}
+
+/* plany długoterminowe i kalkulator */
+.ml{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.mchart{position:relative}
+.mchart svg{display:block;width:100%;height:auto;touch-action:pan-y;user-select:none}
+.mchart svg:focus-visible{outline-offset:4px}
+.mchart .tip{position:absolute;top:6px;z-index:3;pointer-events:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 11px;box-shadow:var(--shadow);font-size:.8rem;min-width:150px;max-width:260px}
+.mchart .tip .d{color:var(--muted);font-size:.74rem;margin-bottom:4px}
+.mchart .tip .tr{display:flex;align-items:center;gap:8px;line-height:1.55}
+.mchart .tip .tr i{flex:none;width:12px;height:3px;border-radius:2px}
+.mchart .tip .tr b{margin-left:auto;padding-left:10px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.mchart .tip .tr span{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lablegend{margin:2px 0 12px}
+.tw{margin-top:10px;font-size:.84rem}
+.tw summary{cursor:pointer;color:var(--muted);width:max-content}
+.tw summary:hover{color:var(--ink)}
+.tbl td.best,.tbl th.best{font-weight:700;color:var(--ink)}
+.tbl .pn{display:inline-flex;align-items:center;gap:8px}
+.tbl .pn i{flex:none;width:12px;height:3px;border-radius:2px}
+.tbl.compact{min-width:0}
+.yheat td.hc{text-align:right;font-weight:600}
+.stance{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.stance:last-child{border-bottom:0}
+.stance .pn{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+.stance .pn i{flex:none;width:12px;height:3px;border-radius:2px}
+.stance small{grid-column:1/-1;color:var(--muted);font-size:.78rem}
+.badge.v-warn{color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.thermo{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.calc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px 14px;margin-bottom:6px}
+.calc .f{display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:var(--muted)}
+.calc input,.calc select{font:inherit;font-size:.95rem;color:var(--ink);background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-variant-numeric:tabular-nums;width:100%;min-width:0}
+.calc input:hover,.calc select:hover{border-color:var(--muted)}
+.calcbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 4px}
+.calcmsg{list-style:none;margin:14px 0 0;padding:10px 14px;border-left:4px solid var(--bear);background:var(--card2);border-radius:0 10px 10px 0;font-size:.88rem}
+.calcmsg.warn{border-left-color:var(--accent)}
+.calcmsg li+li{margin-top:4px}
+@media (max-width:620px){.mchart .tip{min-width:130px;font-size:.76rem}}
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;padding:24px 20px}
+  .split{grid-template-columns:1fr}
+  .ledger li{grid-template-columns:1fr;gap:2px}
+  .badge{margin-bottom:2px}
+}
+@media (max-width:620px){
+  .hdr-calc{display:none}
+  .dtiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .top-in{padding:9px 14px;gap:8px}
+  .brand small,.status .when{display:none}
+  .mini span{display:none}
+  .wrap{padding:16px 14px 64px}
+  .card{padding:18px 16px}
+  .rank li{grid-template-columns:1fr auto}
+  .rank li .bar{grid-column:1/-1;order:3}
+  .drow{grid-template-columns:4.6rem 1fr 4rem}
+  .cols{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.001ms!important;transition-delay:0s!important}
+  .live::after,.pulse{display:none}
+}
+</style>
+<link rel="stylesheet" href="ui.css">
+<script src="ui.js"></script>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+<div class="bg-grid" aria-hidden="true"></div>
+
+<header class="top" id="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">₿</div>
+      <div><h1>Bitcoin — analiza</h1><small>ciurkot.pl</small></div>
+    </div>
+    <div class="mini" id="mini" aria-hidden="true"></div>
+    <div class="spacer"></div>
+    <div class="status"><span class="live" id="live" aria-hidden="true"></span><span class="when" id="status" role="status">Wczytuję…</span></div>
+    <a class="btn hdr-calc" href="kalkulator.html">Kalkulator zagrań</a>
+    <a class="btn hdr-calc" href="badania.html">Badania</a>
+    <a class="btn hdr-calc" href="rynki.html">Rynki</a>
+    <a class="btn hdr-calc" href="okazje.html">Okazje</a> <a class="btn hdr-calc" href="bot.html">Bot</a>
+    <a class="btn hdr-calc" href="strategie.html" target="strategie" onclick="window.open(this.href,'strategie','width=1320,height=920');return false">Strategie</a>
+    <a class="btn hdr-calc" href="sytuacje.html">Sytuacje</a>
+    <button class="btn" id="theme" type="button" aria-label="Zmień motyw"></button>
+    <button class="btn" id="refresh" type="button" aria-label="Odśwież dane">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+      <span>Odśwież</span>
+    </button>
+  </div>
+</header>
+
+<div class="wrap">
+  <main id="app"><div class="skel"></div><div class="skel" style="height:300px"></div></main>
+  <noscript><p class="failure">Ta strona wymaga włączonej obsługi JavaScript.</p></noscript>
+</div>
+
+<script>
+(() => {
+'use strict';
+const REPORT_URL = 'btc_report.json';
+const STALE_HOURS = 6;
+const REFRESH_MS = 5 * 60 * 1000;
+const REDUCED = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+const app = document.getElementById('app');
+const statusEl = document.getElementById('status');
+const liveEl = document.getElementById('live');
+const miniEl = document.getElementById('mini');
+let report = null, rangeDays = 90, chartBox = null, chartStats = null, chartNote = null, lastWidth = 0;
+let heroNum = null, heroNow = null, livePrice = null, liveTs = 0;
+let firstPaint = true, ANIM = false, prevPrice = null, uid = 0, io = null, heroIO = null;
+const vis = {sma20: true, sma50: true, sma200: true, bb: true, pl: true};
+
+/* ---------- pomocnicze ---------- */
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k.startsWith('on') && typeof v === 'function') { e.addEventListener(k.slice(2), v); continue; }
+    if (k === 'class') e.className = v; else e.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    e.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
+  }
+  return e;
+}
+const S = (tag, attrs, text) => {
+  const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k, v] of Object.entries(attrs || {})) e.setAttribute(k, v);
+  if (text != null) e.textContent = text;
+  return e;
+};
+const nfCache = {};
+const nf = d => nfCache[d] || (nfCache[d] = new Intl.NumberFormat('pl-PL', {minimumFractionDigits: d, maximumFractionDigits: d}));
+const ok = x => x != null && x !== '' && !Number.isNaN(Number(x));
+const fmt = (x, d = 2) => ok(x) ? nf(d).format(x) : 'n/d';
+const pct = (x, d = 2) => ok(x) ? (x > 0 ? '+' : x < 0 ? '−' : '') + nf(d).format(Math.abs(x)) + '%' : 'n/d';
+const rpct = (x, d = 2) => ok(x) ? pct(x * 100, d) : 'n/d';
+const plain = (x, d = 1) => ok(x) ? nf(d).format(x * 100) + '%' : 'n/d';
+function bigParts(x) {
+  const a = Math.abs(x);
+  if (a >= 1e12) return {v: x / 1e12, u: ' bln', d: 2};
+  if (a >= 1e9) return {v: x / 1e9, u: ' mld', d: 2};
+  if (a >= 1e6) return {v: x / 1e6, u: ' mln', d: 2};
+  return {v: x, u: '', d: 0};
+}
+const big = x => { if (!ok(x)) return 'n/d'; const p = bigParts(Number(x)); return fmt(p.v, p.d) + p.u; };
+const plnum = str => String(str).replace(/\b\d{1,3}(?:,\d{3})+(?:\.\d+)?|\b\d+\.\d+/g, m => m.replace(/,/g, '\u00a0').replace('.', ','));
+const cap = str => String(str).charAt(0).toUpperCase() + String(str).slice(1);
+const sign = x => ok(x) ? (x > 0 ? 'up' : x < 0 ? 'down' : '') : '';
+const arrow = x => ok(x) ? (x > 0 ? '▲' : x < 0 ? '▼' : '•') : '';
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+function safeUrl(u) {
+  try { const x = new URL(u); return (x.protocol === 'https:' || x.protocol === 'http:') ? x.href : null; }
+  catch { return null; }
+}
+function ago(iso) {
+  const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (min < 1) return 'przed chwilą';
+  if (min < 60) return min + ' min temu';
+  if (min < 48 * 60) return Math.round(min / 60) + ' godz. temu';
+  return Math.round(min / 1440) + ' dn. temu';
+}
+const fmtDate = iso => new Date(iso + 'T00:00:00Z').toLocaleDateString('pl-PL', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'});
+const SIG = {'+': ['v-plus', '▲', 'bycze'], '-': ['v-minus', '▼', 'niedźwiedzie'], '0': ['v-zero', '●', 'neutralne']};
+const raf2 = fn => requestAnimationFrame(() => requestAnimationFrame(fn));
+
+/* animowany licznik: o.f = formatter, o.animate, o.from, o.now */
+function countUp(el, to, d, o = {}) {
+  const f = o.f || (v => fmt(v, d));
+  el.textContent = f(to);
+  if (!ok(to) || REDUCED || !o.animate) return;
+  const from = ok(o.from) ? Number(o.from) : 0;
+  if (from === to) return;
+  const run = () => {
+    const t0 = performance.now(), dur = o.dur || 1300;
+    const step = t => {
+      const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 4);
+      el.textContent = f(from + (to - from) * e);
+      if (p < 1) requestAnimationFrame(step); else el.textContent = f(to);
+    };
+    requestAnimationFrame(step);
+  };
+  if (o.now) run(); else { el.textContent = f(from); el.classList.add('cu'); el._run = run; }
+}
+const runCounts = root => root.querySelectorAll('.cu').forEach(x => { if (x._run) { const r = x._run; x._run = null; r(); } });
+
+function observeReveals(root, instant) {
+  if (io) { io.disconnect(); io = null; }
+  const els = [...root.querySelectorAll('.reveal')];
+  if (instant || REDUCED || !('IntersectionObserver' in window)) {
+    els.forEach(e => { e.classList.add('in'); runCounts(e); });
+    return;
+  }
+  io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); runCounts(e.target); io.unobserve(e.target); }
+  }), {threshold: 0.1, rootMargin: '0px 0px -5% 0px'});
+  els.forEach(e => io.observe(e));
+}
+
+function card(o, ...kids) {
+  const head = h('div', {class: 'card-head'}, h('div', null, h('h2', null, o.title), o.sub ? h('p', {class: 'sub'}, o.sub) : null), o.right || null);
+  return h('section', {class: 'card reveal' + (o.cls ? ' ' + o.cls : ''), id: o.id}, head, ...kids);
+}
+const rows = pairs => h('dl', {class: 'rows'}, pairs.filter(Boolean).map(([k, v, cls]) =>
+  h('div', {class: 'row'}, h('dt', null, k), h('dd', {class: cls || ''}, v))));
+const bar = (frac, cls, i) => h('div', {class: 'bar'}, h('i', {class: 'fill ' + (cls || ''), style: `--w:${clamp(frac * 100, 0, 100).toFixed(1)}%;--i:${i || 0}`}));
+function divbar(f, color) {
+  const c = clamp(f, -1, 1), l = c >= 0 ? 50 : 50 + c * 50, w = Math.abs(c) * 50;
+  return h('div', {class: 'dbar'}, h('i', {class: 'dfill ' + (color || (c >= 0 ? 'bull' : 'bear')), style: `--l:${l.toFixed(1)}%;--w:${w.toFixed(1)}%`}), h('i', {class: 'dmid'}));
+}
+function meter(o) {
+  const pos = v => (clamp(v, o.min, o.max) - o.min) / (o.max - o.min) * 100;
+  return h('div', null,
+    h('div', {class: 'meter-track ' + (o.plain ? 'plain' : '')},
+      o.band ? h('i', {class: 'meter-band', style: `left:${pos(o.band[0]).toFixed(1)}%;width:${(pos(o.band[1]) - pos(o.band[0])).toFixed(1)}%`}) : null,
+      h('i', {class: 'meter-pin', style: `--x:${pos(o.value).toFixed(2)}%`})),
+    h('div', {class: 'meter-scale'}, o.labels.map(t => h('span', null, t))));
+}
+const meterBlock = (title, val, node) => h('div', {class: 'mb'}, h('div', {class: 'mh'}, h('span', null, title), h('b', null, val)), node);
+const tile = (l, v, hint, viz, cls) => h('div', {class: 'tile'}, h('div', {class: 'l'}, l), h('div', {class: 'v ' + (cls || '')}, v), hint ? h('div', {class: 'h'}, hint) : null, viz || null);
+const effPrice = r => (livePrice != null && (r.vs || 'usd') === 'usd' && Date.now() - liveTs < 30000) ? livePrice : priceOf(r);
+const priceOf = r => { const vs = r.vs || 'usd', m = r.market || {}, an = r.analysis || {}, sv = (r.spot || {})[vs] || {}; return m.current_price ?? sv.price ?? an.last; };
+
+/* zegar półokrągły */
+function gauge(o) {
+  const W = 220, H = 122, cx = 110, cy = 108, R = 88, sw = 15;
+  const ang = v => 180 - (clamp(v, o.min, o.max) - o.min) / (o.max - o.min) * 180;
+  const pt = (a, rad = R) => [cx + rad * Math.cos(a * Math.PI / 180), cy - rad * Math.sin(a * Math.PI / 180)];
+  const svg = S('svg', {viewBox: `0 0 ${W} ${H}`, class: 'gauge', role: 'img', 'aria-label': o.aria || 'Wskaźnik'});
+  o.zones.forEach(z => {
+    const [x1, y1] = pt(ang(z.from)), [x2, y2] = pt(ang(z.to));
+    svg.append(S('path', {class: 'zone', d: `M${x1.toFixed(2)} ${y1.toFixed(2)}A${R} ${R} 0 0 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`, fill: 'none', 'stroke-width': sw, style: `stroke:var(${z.c})`}));
+  });
+  for (let i = 0; i <= 10; i++) {
+    const a = 180 - i * 18, [x1, y1] = pt(a, R - 13), [x2, y2] = pt(a, R - (i % 5 === 0 ? 20 : 17));
+    svg.append(S('line', {x1: x1.toFixed(1), y1: y1.toFixed(1), x2: x2.toFixed(1), y2: y2.toFixed(1), stroke: 'var(--muted)', 'stroke-width': i % 5 === 0 ? 1.6 : 1, opacity: .6}));
+  }
+  const rot = -90 + (clamp(o.value, o.min, o.max) - o.min) / (o.max - o.min) * 180;
+  const g = S('g', {class: 'needle', style: `--rot:${rot.toFixed(1)}deg;transform-origin:${cx}px ${cy}px`});
+  g.append(S('path', {d: `M${cx - 4.5} ${cy}L${cx} ${cy - R + 22}L${cx + 4.5} ${cy}Z`, fill: 'currentColor'}), S('circle', {cx, cy, r: 8, fill: 'currentColor'}), S('circle', {cx, cy, r: 3, style: 'fill:var(--card)'}));
+  svg.append(g);
+  return h('div', {class: 'gauge-wrap'}, svg, h('div', {class: 'gauge-c'}, o.center, h('span', null, o.label)));
+}
+
+/* sparkline */
+function sparkSvg(vals, w, hh, animate) {
+  const p = vals.filter(ok).map(Number);
+  if (p.length < 2) return null;
+  let lo = Math.min(...p), hi = Math.max(...p); const sp = (hi - lo) || 1; lo -= sp * .08; hi += sp * .08;
+  const X = i => 6 + i / (p.length - 1) * (w - 12), Y = v => 8 + (hi - v) / (hi - lo) * (hh - 16);
+  const d = p.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join('');
+  const area = d + `L${X(p.length - 1).toFixed(1)} ${hh}L${X(0).toFixed(1)} ${hh}Z`;
+  const id = 'sg' + (++uid), up = p[p.length - 1] >= p[0];
+  const svg = S('svg', {viewBox: `0 0 ${w} ${hh}`, class: 'spark ' + (up ? 'up' : 'down'), role: 'img', 'aria-label': `Mini-wykres: ${fmt(p[0], 0)} → ${fmt(p[p.length - 1], 0)}`});
+  const defs = S('defs'), lg = S('linearGradient', {id, x1: 0, y1: 0, x2: 0, y2: 1});
+  lg.append(S('stop', {offset: '0%', style: 'stop-color:currentColor;stop-opacity:.38'}), S('stop', {offset: '100%', style: 'stop-color:currentColor;stop-opacity:0'}));
+  defs.append(lg);
+  const line = S('path', {class: 'sl' + (animate ? ' draw' : ''), d, pathLength: '1'});
+  svg.append(defs, S('path', {class: 'spark-area', d: area, fill: `url(#${id})`}), line);
+  const lx = X(p.length - 1), ly = Y(p[p.length - 1]);
+  svg.append(S('circle', {cx: lx, cy: ly, r: 9, fill: 'currentColor', class: 'pulse'}), S('circle', {cx: lx, cy: ly, r: 4.5, fill: 'currentColor', stroke: 'var(--card)', 'stroke-width': 2.5}));
+  if (animate) { raf2(() => line.classList.add('go')); line.addEventListener('transitionend', () => line.classList.remove('draw', 'go'), {once: true}); }
+  return svg;
+}
+
+/* ---------- hero ---------- */
+function heroSection(r) {
+  const vs = r.vs || 'usd', m = r.market || {}, an = r.analysis || {}, ch = an.changes || {}, sv = (r.spot || {})[vs] || {};
+  const price = effPrice(r);
+  const asPct = v => ok(v) ? v * 100 : null;
+  const items = [
+    ['24 godz.', m.price_change_percentage_24h_in_currency ?? sv.change_24h],
+    ['7 dni', m.price_change_percentage_7d_in_currency ?? asPct(ch['7d'])],
+    ['30 dni', m.price_change_percentage_30d_in_currency ?? asPct(ch['30d'])],
+    ['1 rok', m.price_change_percentage_1y_in_currency],
+  ].filter(([, v]) => ok(v));
+  const alt = Object.entries(r.spot || {}).filter(([c, v]) => c !== vs && ok(v.price));
+  const num = h('span', {class: 'tab'});
+  const d = price >= 1000 ? 0 : 2;
+  const changed = !ANIM && ok(prevPrice) && ok(price) && prevPrice !== price;
+  countUp(num, price, d, {animate: ANIM || changed, now: true, from: ANIM ? 0 : prevPrice, dur: ANIM ? 1700 : 900});
+  heroNum = num;
+  const now = h('div', {class: 'now'}, num, h('span', {class: 'cur'}, vs.toUpperCase()));
+  heroNow = now;
+  if (changed) { now.classList.add(price > prevPrice ? 'flash-up' : 'flash-down'); }
+  const ser = r.series;
+  const sp = ser && ser.price ? sparkSvg(ser.price.slice(-60), 420, 150, ANIM) : null;
+  const left = h('div', null,
+    h('div', {class: 'coinline'}, h('span', {class: 'eyebrow'}, 'Bitcoin · BTC/' + vs.toUpperCase()), ok(m.market_cap_rank) ? h('span', {class: 'tag'}, 'Ranking #' + m.market_cap_rank) : null),
+    now,
+    alt.length ? h('div', {class: 'alts'}, alt.map(([c, v]) => h('span', null, c.toUpperCase() + ' ', h('b', null, fmt(v.price, 0))))) : null,
+    items.length ? h('div', {class: 'pills'}, items.map(([l, v]) => h('span', {class: 'pill'}, l, h('b', {class: sign(v)}, arrow(v) + ' ' + pct(v))))) : null);
+  const right = sp ? h('div', null, sp, h('div', {class: 'spark-cap'}, h('span', null, 'ostatnie ' + Math.min(60, ser.price.length) + ' dni'), h('span', null, ser.date ? fmtDate(ser.date[ser.date.length - 1]) : ''))) : null;
+  return h('section', {class: 'card hero reveal', id: 'hero'}, left, right);
+}
+
+/* ---------- KPI ---------- */
+function kpiStrip(r) {
+  const m = r.market, g = r.global, a = r.analysis || {}, cur = (r.vs || '').toUpperCase();
+  const it = [];
+  if (m && ok(m.market_cap)) { const p = bigParts(Number(m.market_cap)); it.push({l: 'Kapitalizacja', to: p.v, d: p.d, f: v => fmt(v, p.d) + p.u + ' ' + cur, s: ok(m.market_cap_rank) ? 'ranking #' + m.market_cap_rank : ''}); }
+  if (m && ok(m.total_volume)) { const p = bigParts(Number(m.total_volume)); it.push({l: 'Wolumen 24 godz.', to: p.v, d: p.d, f: v => fmt(v, p.d) + p.u + ' ' + cur, s: ok(m.market_cap) ? fmt(m.total_volume / m.market_cap * 100, 1) + '% kapitalizacji' : ''}); }
+  if (g && ok(g.btc_dominance)) it.push({l: 'Dominacja BTC', to: Number(g.btc_dominance), d: 2, f: v => fmt(v, 2) + '%', s: ok(g.change_24h) ? 'rynek 24 godz. ' + pct(g.change_24h) : ''});
+  if (ok(a.rsi14)) it.push({l: 'RSI (14)', to: Number(a.rsi14), d: 1, f: v => fmt(v, 1), s: a.rsi14 >= 70 ? 'wykupienie' : a.rsi14 <= 30 ? 'wyprzedanie' : 'strefa neutralna'});
+  if (ok(a.vol30)) it.push({l: 'Zmienność (30 dni)', to: a.vol30 * 100, d: 1, f: v => fmt(v, 1) + '%', s: 'w ujęciu rocznym'});
+  if (ok(a.current_drawdown)) it.push({l: 'Od szczytu', to: a.current_drawdown * 100, d: 2, f: v => pct(v), s: 'maks. obsunięcie ' + rpct(a.max_drawdown), cls: sign(a.current_drawdown)});
+  if (!it.length) return null;
+  return h('div', {class: 'kpis reveal'}, it.map((x, i) => {
+    const v = h('div', {class: 'v ' + (x.cls || '')});
+    countUp(v, x.to, x.d, {f: x.f, animate: ANIM, dur: 1500});
+    return h('div', {class: 'kpi', style: '--i:' + i}, h('div', {class: 'eyebrow'}, x.l), v, x.s ? h('div', {class: 's'}, x.s) : null);
+  }));
+}
+
+/* ---------- wykres główny ---------- */
+function chartSection(r) {
+  const ser = r.series;
+  chartBox = h('div', {class: 'chart'});
+  chartStats = h('div', {class: 'cstats'});
+  chartNote = h('p', {class: 'note', style: 'margin-top:10px'});
+  const ranges = [[30, '30 dni'], [90, '90 dni'], [180, '180 dni'], [9999, 'Cały okres']];
+  const group = h('div', {class: 'seg', role: 'group', 'aria-label': 'Zakres wykresu'},
+    ranges.map(([d, label]) => {
+      const b = h('button', {type: 'button', 'aria-pressed': String(d === rangeDays)}, label);
+      b.addEventListener('click', () => {
+        rangeDays = d;
+        group.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+        drawChart(true);
+      });
+      return b;
+    }));
+  const names = {sma20: ['SMA 20', 'var(--sma20)'], sma50: ['SMA 50', 'var(--sma50)'], sma200: ['SMA 200', 'var(--sma200)']};
+  const legend = h('div', {class: 'seg legend', role: 'group', 'aria-label': 'Widoczność linii'},
+    h('span', {class: 'chip static'}, h('i', {class: 'sw', style: 'background:var(--price);height:4px'}), 'Cena'),
+    ['sma20', 'sma50', 'sma200'].filter(k => Array.isArray(ser[k])).map(k => {
+      const b = h('button', {type: 'button', 'aria-pressed': String(vis[k])}, h('i', {class: 'sw', style: 'background:' + names[k][1]}), names[k][0]);
+      b.addEventListener('click', () => { vis[k] = !vis[k]; b.setAttribute('aria-pressed', String(vis[k])); drawChart(false); });
+      return b;
+    }),
+    levelsBb().length ? (() => {
+      const b = h('button', {type: 'button', 'aria-pressed': String(vis.bb)}, h('i', {class: 'sw', style: 'background:repeating-linear-gradient(90deg,var(--accent) 0 6px,transparent 6px 10px);height:3px'}), 'Poziomy Bybit');
+      b.addEventListener('click', () => { vis.bb = !vis.bb; b.setAttribute('aria-pressed', String(vis.bb)); drawChart(false); });
+      return b;
+    })() : null,
+    levelsPl().length ? (() => {
+      const b = h('button', {type: 'button', 'aria-pressed': String(vis.pl)}, h('i', {class: 'sw', style: 'background:repeating-linear-gradient(90deg,var(--price) 0 8px,transparent 8px 11px);height:3px'}), 'Plan analizatora');
+      b.addEventListener('click', () => { vis.pl = !vis.pl; b.setAttribute('aria-pressed', String(vis.pl)); drawChart(false); });
+      return b;
+    })() : null);
+  return card({id: 'sec-wykres', title: 'Cena i średnie kroczące', sub: 'Najedź kursorem lub użyj strzałek, aby zobaczyć wartości', right: group},
+    chartStats, h('div', {style: 'margin-bottom:10px'}, legend), chartBox, chartNote);
+}
+/* poziomy z Bybit (tylko BYBIT_PRIVACY=full i wykres w USD): wejście, likwidacja, TP/SL pozycji oraz oczekujące zlecenia */
+const LVL = {entry: ['var(--accent)', '7 4'], liq: ['var(--bear)', '2 4'], tp: ['var(--bull)', '7 4'], sl: ['var(--bear)', '7 4'], order: ['var(--sma50)', '3 3'],
+  pe: ['var(--price)', '11 3 2 3'], ps: ['var(--bear)', '11 3 2 3'], pt: ['var(--bull)', '11 3 2 3']};
+function levelsBb() {
+  const b = report && report.bybit, out = [], seen = new Set();
+  if (!b || b.privacy !== 'full' || !['usd', 'usdt', 'usdc'].includes(String(report.vs || 'usd').toLowerCase())) return out;
+  const add = (v, kind, long, short) => {
+    v = Number(v);
+    if (!Number.isFinite(v) || v <= 0) return;
+    const key = kind + Math.round(v);
+    if (seen.has(key)) return;
+    seen.add(key); out.push({v, kind, long, short, src: 'bb'});
+  };
+  for (const p of b.positions || []) {
+    if (!/^BTC/i.test(p.symbol || '')) continue;
+    const L = p.side === 'Short' ? 'Short' : 'Long';
+    add(p.avg_price, 'entry', L + ' · wejście', 'Wejście');
+    add(p.liq_price, 'liq', L + ' · likwidacja', 'Likwid.');
+    add(p.take_profit, 'tp', L + ' · TP', 'TP');
+    add(p.stop_loss, 'sl', L + ' · SL', 'SL');
+  }
+  for (const o of b.orders || []) {
+    if (!/^BTC/i.test(o.symbol || '')) continue;
+    const kind = o.kind === 'tp' ? 'tp' : o.kind === 'sl' ? 'sl' : 'order';
+    const nm = {tp: 'TP (zlecenie)', sl: 'SL (zlecenie)'}[kind] || ((o.side === 'Buy' ? 'Kup' : 'Sprzedaj') + ' · ' + (o.kind === 'limit' ? 'limit' : 'zlecenie'));
+    add(o.price, kind, nm, nm.split(' ')[0]);
+  }
+  return out;
+}
+/* poziomy z propozycji planera (dane publiczne, widoczne także w trybie masked) */
+function levelsPl() {
+  const pl = report && report.planner, out = [];
+  if (!pl || pl.status !== 'ok' || !pl.plan || pl.plan.action === 'wait') return out;
+  if (!['usd', 'usdt', 'usdc'].includes(String(report.vs || 'usd').toLowerCase())) return out;
+  const p = pl.plan, side = p.action === 'long' ? 'Long' : 'Short';
+  const add = (v, kind, long, short) => { if (ok(v)) out.push({v: Number(v), kind, long, short, src: 'pl'}); };
+  add(p.entry, 'pe', `Plan ${side} · wejście`, 'Plan wej.');
+  add(p.stop, 'ps', 'Plan · Stop Loss', 'Plan SL');
+  add(p.tp1, 'pt', 'Plan · TP1', 'Plan TP1');
+  add(p.tp2, 'pt', 'Plan · TP2', 'Plan TP2');
+  return out;
+}
+function niceStep(raw) {
+  const p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+  return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p;
+}
+function drawChart(animate) {
+  if (!chartBox || !report || !report.series) return;
+  const ser = report.series, n = ser.date.length, box = chartBox;
+  box.replaceChildren();
+  if (n < 2) return;
+  const anim = !!animate && !REDUCED;
+  const start = Math.max(0, n - Math.min(rangeDays, n));
+  const W = Math.max(300, box.clientWidth || 800);
+  lastWidth = W;
+  const H = Math.round(Math.min(470, Math.max(270, W * 0.46)));
+  const narrow = W < 520;
+  const pad = {l: narrow ? 44 : 60, r: narrow ? 68 : 78, t: 20, b: 28};
+  const cur = (report.vs || '').toUpperCase();
+  const keys = ['price', ...['sma20', 'sma50', 'sma200'].filter(k => vis[k] && Array.isArray(ser[k]))];
+  const vals = [];
+  for (let i = start; i < n; i++) for (const k of keys) if (ser[k][i] != null) vals.push(ser[k][i]);
+  if (!vals.length) return;
+  const levels = [...(vis.bb ? levelsBb() : []), ...(vis.pl ? levelsPl() : [])];
+  const lastRef = ser.price[n - 1];
+  if (lastRef) for (const l of levels) if (Math.abs(l.v / lastRef - 1) <= 0.25) vals.push(l.v);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const span = (hi - lo) || 1; lo -= span * 0.05; hi += span * 0.07;
+  const step = niceStep((hi - lo) / 5);
+  const X = i => pad.l + (i - start) / (n - 1 - start) * (W - pad.l - pad.r);
+  const Y = v => pad.t + (hi - v) / (hi - lo) * (H - pad.t - pad.b);
+  const svg = S('svg', {viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', tabindex: '0',
+    'aria-label': `Wykres ceny BTC z ${n - start} dni: od ${fmt(ser.price[start], 0)} do ${fmt(ser.price[n - 1], 0)} ${cur}. Strzałki przesuwają kursor.` + (levels.length ? ` Zaznaczono ${levels.length} poziomów (Bybit i plan analizatora).` : '')});
+  const gid = 'ag' + (++uid);
+  const defs = S('defs'), lg = S('linearGradient', {id: gid, x1: 0, y1: 0, x2: 0, y2: 1});
+  lg.append(S('stop', {offset: '0%', style: 'stop-color:var(--price);stop-opacity:.34'}), S('stop', {offset: '100%', style: 'stop-color:var(--price);stop-opacity:0'}));
+  defs.append(lg); svg.append(defs);
+
+  for (let t = Math.ceil(lo / step) * step; t <= hi; t += step) {
+    const y = Y(t);
+    svg.append(S('line', {class: 'g', x1: pad.l, x2: W - pad.r, y1: y, y2: y}),
+               S('text', {class: 'axis', x: pad.l - 8, y: y + 4, 'text-anchor': 'end'}, fmt(t, 0)));
+  }
+  const long = (n - start) > 120, ticks = narrow ? 3 : 5;
+  for (let k = 0; k < ticks; k++) {
+    const i = start + Math.round(k * (n - 1 - start) / (ticks - 1));
+    const d = new Date(ser.date[i] + 'T00:00:00Z');
+    const label = d.toLocaleDateString('pl-PL', long ? {month: 'short', year: '2-digit', timeZone: 'UTC'} : {day: 'numeric', month: 'short', timeZone: 'UTC'});
+    svg.append(S('text', {class: 'axis', x: X(i), y: H - 6, 'text-anchor': k === 0 ? 'start' : k === ticks - 1 ? 'end' : 'middle'}, label));
+  }
+  const path = arr => {
+    let d = '', pen = false;
+    for (let i = start; i < n; i++) {
+      const v = arr[i];
+      if (v == null) { pen = false; continue; }
+      d += (pen ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); pen = true;
+    }
+    return d;
+  };
+  /* wypełnienie pod ceną */
+  const pts = [];
+  for (let i = start; i < n; i++) if (ser.price[i] != null) pts.push(i);
+  const base = H - pad.b;
+  const areaD = pts.map((i, j) => (j ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(ser.price[i]).toFixed(1)).join('') + `L${X(pts[pts.length - 1]).toFixed(1)} ${base}L${X(pts[0]).toFixed(1)} ${base}Z`;
+  const areaP = S('path', {class: 'area' + (anim ? ' draw' : ''), d: areaD, fill: `url(#${gid})`});
+  svg.append(areaP);
+  for (const k of ['sma200', 'sma50', 'sma20']) if (keys.includes(k)) svg.append(S('path', {class: 'l-' + k + (anim ? ' fade' : ''), d: path(ser[k])}));
+  const lastP = ser.price[n - 1];
+  svg.append(S('line', {class: 'lastline', x1: pad.l, x2: W - pad.r, y1: Y(lastP), y2: Y(lastP)}));
+  /* poziomy Bybit: przerywane linie (poza zakresem przyklejone do krawędzi ze strzałką) */
+  const lvG = S('g', {class: 'lvl'}), lvDraw = levels.map(l => {
+    const y0 = Y(l.v), top = pad.t + 7, bot = H - pad.b - 7;
+    return {...l, y: Math.min(bot, Math.max(top, y0)), off: y0 < top ? 'up' : y0 > bot ? 'down' : null};
+  }).sort((a, b) => a.y - b.y);
+  for (const l of lvDraw) {
+    const [col, dash] = LVL[l.kind];
+    lvG.append(S('line', {x1: pad.l, x2: W - pad.r, y1: l.y, y2: l.y, style: `stroke:${col};stroke-dasharray:${dash};opacity:${l.off ? .55 : .95}`}));
+  }
+  svg.append(lvG);
+  const pricePath = S('path', {class: 'l-price' + (anim ? ' draw' : ''), d: path(ser.price), pathLength: '1'});
+  svg.append(pricePath);
+
+  /* przecięcia SMA50/SMA200 */
+  const crosses = [];
+  if (vis.sma50 && vis.sma200 && ser.sma50 && ser.sma200) {
+    for (let i = Math.max(start, 1); i < n; i++) {
+      const a0 = ser.sma50[i - 1], b0 = ser.sma200[i - 1], a1 = ser.sma50[i], b1 = ser.sma200[i];
+      if ([a0, b0, a1, b1].some(v => v == null)) continue;
+      const s0 = a0 - b0, s1 = a1 - b1;
+      if (s0 <= 0 && s1 > 0) crosses.push({i, golden: true});
+      else if (s0 >= 0 && s1 < 0) crosses.push({i, golden: false});
+    }
+    for (const c of crosses) {
+      const x = X(c.i), y = Y(ser.sma200[c.i]);
+      const dm = S('path', {d: `M${x} ${y - 7}L${x + 7} ${y}L${x} ${y + 7}L${x - 7} ${y}Z`, style: `fill:var(${c.golden ? '--bull' : '--bear'});stroke:var(--card);stroke-width:2`});
+      dm.append(S('title', null, (c.golden ? 'Złoty krzyż' : 'Krzyż śmierci') + ' · ' + fmtDate(ser.date[c.i])));
+      svg.append(dm);
+    }
+  }
+  /* ekstrema w zakresie */
+  let iMax = start, iMin = start;
+  for (let i = start; i < n; i++) if (ser.price[i] != null) { if (ser.price[i] > ser.price[iMax]) iMax = i; if (ser.price[i] < ser.price[iMin]) iMin = i; }
+  const extLabel = (i, above) => {
+    const x = X(i), y = Y(ser.price[i]);
+    const anchor = x < pad.l + 56 ? 'start' : x > W - pad.r - 56 ? 'end' : 'middle';
+    svg.append(S('circle', {class: 'ext', cx: x, cy: y, r: 4}), S('text', {class: 'extl', x, y: above ? y - 10 : y + 18, 'text-anchor': anchor}, fmt(ser.price[i], 0)));
+  };
+  if (iMax !== n - 1) extLabel(iMax, true);
+  if (iMin !== n - 1 && iMin !== iMax) extLabel(iMin, false);
+
+  /* kropka na końcu i etykiety */
+  const ex = X(n - 1), ey = Y(lastP);
+  svg.append(S('circle', {class: 'pulse', cx: ex, cy: ey, r: 5}), S('circle', {class: 'dot', cx: ex, cy: ey, r: 4.5}));
+  const labels = {price: fmt(lastP, 0), sma20: 'SMA20', sma50: 'SMA50', sma200: 'SMA200'};
+  const ends = keys.filter(k => ser[k][n - 1] != null).map(k => ({k, y: Y(ser[k][n - 1])})).sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 17) ends[i].y = ends[i - 1].y + 17;
+  for (const e of ends) {
+    if (e.k === 'price') {
+      const w = labels.price.length * 7.2 + 14;
+      svg.append(S('rect', {class: 'tagbg', x: ex + 8, y: e.y - 10, width: w, height: 20, rx: 10}), S('text', {class: 'tagtx', x: ex + 8 + w / 2, y: e.y + 4, 'text-anchor': 'middle'}, labels.price));
+    } else svg.append(S('text', {class: 't-' + e.k, x: ex + 10, y: e.y + 4}, labels[e.k]));
+  }
+
+  /* etykiety poziomów Bybit (z rozsuwaniem, żeby się nie nakładały) */
+  if (lvDraw.length) {
+    const lab = lvDraw.map(l => ({l, y: l.y, t: (l.off === 'up' ? '▲ ' : l.off === 'down' ? '▼ ' : '') + (narrow ? l.short : l.long) + ' ' + fmt(l.v, 0)}));
+    for (let i = 1; i < lab.length; i++) if (lab[i].y - lab[i - 1].y < 16) lab[i].y = lab[i - 1].y + 16;
+    const shift = lab.length ? Math.max(0, lab[lab.length - 1].y - (H - pad.b - 4)) : 0;
+    if (shift) lab.forEach(x => { x.y -= shift; });
+    const lg_ = S('g', {class: 'lvl'});
+    for (const x of lab) {
+      const col = LVL[x.l.kind][0], w = x.t.length * 6.3 + 12;
+      const r_ = S('rect', {x: pad.l + 6, y: x.y - 9, width: w, height: 17, rx: 8, style: `stroke:${col}`});
+      const t_ = S('text', {x: pad.l + 12, y: x.y + 3.5, style: `fill:${col}`}, x.t);
+      t_.append(S('title', null, `Bybit · ${x.l.long}: ${fmt(x.l.v, 2)} ${cur}`));
+      lg_.append(r_, t_);
+    }
+    svg.append(lg_);
+  }
+
+  /* interakcja */
+  const cross = S('line', {class: 'cross', y1: pad.t, y2: H - pad.b, visibility: 'hidden'});
+  const dot = S('circle', {class: 'dot', r: 5, visibility: 'hidden'});
+  const hit = S('rect', {x: pad.l, y: 0, width: W - pad.l - pad.r, height: H, fill: 'transparent'});
+  const tip = h('div', {class: 'tip', hidden: 'true'});
+  svg.append(cross, dot, hit);
+  let curI = n - 1;
+  const showAt = i => {
+    i = clamp(i, start, n - 1); curI = i;
+    const rect = svg.getBoundingClientRect(), k = rect.width / W;
+    cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.setAttribute('visibility', 'visible');
+    dot.setAttribute('cx', X(i)); dot.setAttribute('cy', Y(ser.price[i])); dot.setAttribute('visibility', 'visible');
+    const chg = ser.price[start] ? (ser.price[i] / ser.price[start] - 1) * 100 : null;
+    const r_ = (a, b, c) => h('div', {class: 'r'}, h('span', null, a), h('b', {class: c || ''}, b));
+    tip.replaceChildren(h('b', null, fmtDate(ser.date[i])), r_('Cena', fmt(ser.price[i], 0) + ' ' + cur), r_('Od początku zakresu', pct(chg), sign(chg)),
+      ...['sma20', 'sma50', 'sma200'].filter(kk => vis[kk] && ser[kk] && ser[kk][i] != null).map(kk => r_(kk.toUpperCase().replace('SMA', 'SMA '), fmt(ser[kk][i], 0))));
+    tip.hidden = false;
+    const left = X(i) * k;
+    tip.style.left = Math.max(0, (left > rect.width * 0.55 ? left - tip.offsetWidth - 14 : left + 14)) + 'px';
+  };
+  const hide = () => { cross.setAttribute('visibility', 'hidden'); dot.setAttribute('visibility', 'hidden'); tip.hidden = true; };
+  const move = e => {
+    const rect = svg.getBoundingClientRect();
+    const px = (e.clientX - rect.left) * (W / rect.width);
+    showAt(Math.round(start + (px - pad.l) / (W - pad.l - pad.r) * (n - 1 - start)));
+  };
+  hit.addEventListener('pointermove', move);
+  hit.addEventListener('pointerdown', move);
+  hit.addEventListener('pointerleave', hide);
+  svg.addEventListener('keydown', e => {
+    const big_ = e.shiftKey ? 7 : 1;
+    if (e.key === 'ArrowLeft') { showAt(curI - big_); e.preventDefault(); }
+    else if (e.key === 'ArrowRight') { showAt(curI + big_); e.preventDefault(); }
+    else if (e.key === 'Home') { showAt(start); e.preventDefault(); }
+    else if (e.key === 'End') { showAt(n - 1); e.preventDefault(); }
+    else if (e.key === 'Escape') hide();
+  });
+  svg.addEventListener('blur', hide);
+  box.append(svg, tip);
+
+  if (anim) {
+    raf2(() => { pricePath.classList.add('go'); areaP.classList.add('go'); });
+    pricePath.addEventListener('transitionend', () => pricePath.classList.remove('draw', 'go'), {once: true});
+  }
+
+  /* statystyki nad wykresem */
+  if (chartStats) {
+    const first = ser.price[start], chg = first ? (lastP / first - 1) * 100 : null;
+    const item = (l, v, c) => h('div', null, h('span', null, l), h('b', {class: c || ''}, v));
+    chartStats.replaceChildren(
+      item('Zmiana w zakresie', arrow(chg) + ' ' + pct(chg), sign(chg)),
+      item('Maksimum', fmt(ser.price[iMax], 0) + ' ' + cur),
+      item('Minimum', fmt(ser.price[iMin], 0) + ' ' + cur),
+      item('Rozstęp max/min', first ? fmt((ser.price[iMax] / ser.price[iMin] - 1) * 100, 1) + '%' : 'n/d'));
+  }
+  if (chartNote) {
+    const parts = [];
+    if (crosses.length) parts.push('Przecięcia SMA50 i SMA200 w zakresie: ' + crosses.map(c => (c.golden ? 'złoty krzyż ' : 'krzyż śmierci ') + fmtDate(ser.date[c.i])).join(', ') + '. Oznaczone rombami na wykresie.');
+    const nb = lvDraw.filter(x => x.src === 'bb').length, np = lvDraw.length - nb;
+    if (nb) parts.push('Przerywane linie to poziomy z Bybit (wejście, likwidacja, TP/SL i oczekujące zlecenia).');
+    if (np) parts.push('Linie kreska-kropka to propozycja planera: wejście, stop i cele TP1/TP2.');
+    if (lvDraw.some(x => x.off)) parts.push('Strzałka ▲/▼ oznacza poziom poza widocznym zakresem cen.');
+    if (!nb && report.bybit && report.bybit.privacy !== 'full' && (report.bybit.positions || []).length) parts.push('Poziomy Bybit na wykresie wymagają BYBIT_PRIVACY=full (patrz sekcja Pozycje).');
+    chartNote.textContent = parts.join(' ');
+    chartNote.style.display = parts.length ? '' : 'none';
+  }
+}
+
+/* ---------- sygnały ---------- */
+function verdictSection(r) {
+  const sg = (r.analysis && r.analysis.signals) || [];
+  if (!sg.length) return null;
+  const cnt = {'+': 0, '-': 0, '0': 0};
+  sg.forEach(s => { cnt[s.verdict] = (cnt[s.verdict] || 0) + 1; });
+  const total = sg.length, net = cnt['+'] - cnt['-'];
+  const value = 50 + (net / total) * 50;
+  const word = value >= 66 ? 'Przewaga byków' : value <= 34 ? 'Przewaga niedźwiedzi' : 'Układ mieszany';
+  const cls = value >= 66 ? 'up' : value <= 34 ? 'down' : '';
+  const center = h('b', {class: cls});
+  countUp(center, net, 0, {f: v => (Math.round(v) > 0 ? '+' : Math.round(v) < 0 ? '−' : '') + Math.abs(Math.round(v)), animate: ANIM, dur: 1500});
+  const g = gauge({min: 0, max: 100, value, center, label: word + ' · saldo sygnałów',
+    zones: [{from: 0, to: 33, c: '--bear'}, {from: 33.8, to: 66, c: '--neutral'}, {from: 66.8, to: 100, c: '--bull'}],
+    aria: `Wskaźnik sentymentu: ${cnt['+']} bycze, ${cnt['-']} niedźwiedzie, ${cnt['0']} neutralne`});
+  const bal = h('div', {class: 'balance', role: 'img', 'aria-label': `${cnt['+']} bycze, ${cnt['-']} niedźwiedzie, ${cnt['0']} neutralne`},
+    ['+', '0', '-'].map(v => cnt[v] ? h('span', {class: 's-' + {'+': 'plus', '-': 'minus', '0': 'zero'}[v], style: `--f:${cnt[v]}`}) : null));
+  const counts = h('div', {class: 'counts'}, ['+', '0', '-'].map(v => h('span', {class: 'pill'}, h('span', {class: SIG[v][0].replace('v-', '') === 'plus' ? 'up' : SIG[v][0] === 'v-minus' ? 'down' : ''}, SIG[v][1]), SIG[v][2], h('b', null, cnt[v]))));
+  const ledger = h('ul', {class: 'ledger'}, sg.map((s, i) => {
+    const [c, mark, w] = SIG[s.verdict] || SIG['0'];
+    return h('li', {style: '--i:' + i}, h('span', {class: 'badge ' + c}, mark + ' ' + w), h('span', {class: 'lbl'}, s.label), h('span', {class: 'detail'}, plnum(s.detail)));
+  }));
+  return card({id: 'sec-sygnaly', title: 'Bilans sygnałów', sub: `${total} reguł heurystycznych: wskaźniki techniczne i nagłówki newsów`},
+    h('div', {class: 'split'}, h('div', null, g, bal, counts), ledger),
+    h('p', {class: 'note'}, 'Reguły heurystyczne oparte na wskaźnikach i nagłówkach newsów. To opis obecnej sytuacji, nie prognoza.'));
+}
+
+/* ---------- wskaźniki ---------- */
+function technicalSection(r) {
+  const a = r.analysis || {};
+  if (!a.history_ok) return null;
+  const rsi = a.rsi14, mc = a.macd, bo = a.boll, price = priceOf(r), cur = (r.vs || '').toUpperCase();
+  let left = null;
+  if (ok(rsi)) {
+    const c = h('b'); countUp(c, Number(rsi), 1, {animate: ANIM, dur: 1500});
+    left = gauge({min: 0, max: 100, value: Number(rsi), center: c, label: rsi >= 70 ? 'RSI (14) · wykupienie' : rsi <= 30 ? 'RSI (14) · wyprzedanie' : 'RSI (14) · neutralnie',
+      zones: [{from: 0, to: 29.5, c: '--bull'}, {from: 30.5, to: 69.5, c: '--neutral'}, {from: 70.5, to: 100, c: '--bear'}], aria: 'RSI ' + fmt(rsi, 1)});
+  }
+  const ms = [];
+  if (bo && ok(bo.pct_b)) ms.push(meterBlock('Bollinger %B', fmt(bo.pct_b, 2), meter({min: -0.25, max: 1.25, value: Number(bo.pct_b), band: [0, 1], plain: true, labels: ['pod dolną wstęgą', 'środek', 'nad górną wstęgą']})));
+  if (a.ohlc && ok(a.ohlc.low_30d) && ok(a.ohlc.high_30d) && ok(price)) ms.push(meterBlock('Pozycja w zakresie 30 dni', fmt((price - a.ohlc.low_30d) / ((a.ohlc.high_30d - a.ohlc.low_30d) || 1) * 100, 0) + '%', meter({min: a.ohlc.low_30d, max: a.ohlc.high_30d, value: price, labels: [fmt(a.ohlc.low_30d, 0), fmt(a.ohlc.high_30d, 0)]})));
+  const sm = [['SMA 20', a.sma20], ['SMA 50', a.sma50], ['SMA 200', a.sma200]].filter(([, v]) => ok(v) && ok(price));
+  if (sm.length) ms.push(h('div', {class: 'mb'}, h('div', {class: 'mh'}, h('span', null, 'Odległość ceny od średnich'), h('b', null, '')),
+    sm.map(([l, v]) => { const d = (price / v - 1) * 100; return h('div', {class: 'drow'}, h('span', null, l), divbar(d / 25), h('span', {class: sign(d)}, pct(d, 1))); })));
+  const tiles = [];
+  if (mc && ok(mc.hist)) tiles.push(tile('MACD, histogram', arrow(mc.hist) + ' ' + fmt(mc.hist, 1), mc.hist > 0 ? 'momentum po stronie kupujących' : 'momentum po stronie sprzedających', null, sign(mc.hist)));
+  tiles.push(tile('Zmienność roczna', plain(a.vol30), 'całość okresu: ' + plain(a.vol_all), ok(a.vol30) ? bar(a.vol30 / 1.2, 'accent') : null));
+  tiles.push(tile('Obsunięcie od szczytu', rpct(a.current_drawdown), 'maksymalne: ' + rpct(a.max_drawdown), ok(a.current_drawdown) && ok(a.max_drawdown) && a.max_drawdown ? bar(Math.abs(a.current_drawdown / a.max_drawdown), 'bear') : null, 'down'));
+  if (ok(a.var95)) tiles.push(tile('VaR 95% (1 dzień)', '−' + fmt(a.var95 * 100) + '%', 'w 95% dni strata nie powinna być większa'));
+  tiles.push(tile('Najlepszy / najgorszy dzień', h('span', null, h('span', {class: 'up'}, rpct(a.best_day)), ' / ', h('span', {class: 'down'}, rpct(a.worst_day)))));
+  if (ok(a.positive_days_share)) tiles.push(tile('Dni na plusie', plain(a.positive_days_share, 0), null, bar(a.positive_days_share, 'bull')));
+  if (ok(a.volume_ratio_7_30)) tiles.push(tile('Wolumen 7 dni / średnia 30', fmt(a.volume_ratio_7_30) + '×', a.volume_ratio_7_30 > 1 ? 'obroty powyżej normy' : 'obroty poniżej normy', bar(a.volume_ratio_7_30 / 2, 'accent')));
+  if (a.ohlc && ok(a.ohlc.atr14)) tiles.push(tile('ATR (14, świece 4 godz.)', fmt(a.ohlc.atr14, 0) + ' ' + cur, ok(price) ? 'ok. ' + fmt(a.ohlc.atr14 / price * 100, 2) + '% ceny' : null));
+  return card({id: 'sec-techniczne', title: 'Wskaźniki techniczne', sub: 'Momentum, zmienność i ryzyko'},
+    (left || ms.length) ? h('div', {class: 'split'}, left || h('div'), h('div', null, ms)) : null,
+    h('div', {class: 'tiles'}, tiles));
+}
+function fibSection(r) {
+  const f = r.analysis && r.analysis.fib;
+  if (!f || !f.levels || !ok(f.high) || !ok(f.low)) return null;
+  const price = priceOf(r);
+  const lv = Object.entries(f.levels).filter(([, v]) => ok(v)).map(([k, v]) => ({k, v: Number(v)}));
+  const all = [...lv.map(x => x.v), Number(f.high), Number(f.low)]; if (ok(price)) all.push(Number(price));
+  const hi = Math.max(...all), lo = Math.min(...all), sp = (hi - lo) || 1, fr = v => ((hi - v) / sp).toFixed(4);
+  const lines = [{k: 'Szczyt', v: Number(f.high), edge: true}, ...lv.map(x => ({k: x.k.replace('.', ','), v: x.v})), {k: 'Dołek', v: Number(f.low), edge: true}];
+  const ladder = h('div', {class: 'fib'},
+    lines.map((x, i) => h('div', {class: 'fl' + (x.edge ? ' edge' : ''), style: `--f:${fr(x.v)};--i:${i}`}, h('span', {class: 'a'}, x.k), h('span', {class: 'b'}, fmt(x.v, 0)))),
+    ok(price) ? h('div', {class: 'fp', style: `--f:${fr(Number(price))}`}, h('span', null, fmt(price, 0))) : null);
+  return card({id: 'sec-fib', title: 'Poziomy Fibonacciego', sub: 'Ostatnie 90 dni, pomarańczowa linia to aktualna cena', cls: 'half'}, ladder);
+}
+function compareSection(r) {
+  const c = r.analysis && r.analysis.compare;
+  if (!c) return null;
+  const row = (l, v) => h('div', {class: 'mb'}, h('div', {class: 'mh'}, h('span', null, l), h('b', {class: ok(v) ? sign(v) : ''}, fmt(v))), divbar(ok(v) ? v : 0, 'accent'),
+    h('div', {class: 'meter-scale'}, h('span', null, '−1 odwrotnie'), h('span', null, '0'), h('span', null, '+1 zgodnie')));
+  return card({id: 'sec-korelacja', title: 'Korelacja z ' + cap(c.id), sub: 'Dzienne zwroty BTC względem ' + cap(c.id), cls: 'half'},
+    row('Cała historia', c.corr_all), row('Ostatnie 30 dni', c.corr_30d),
+    h('div', {class: 'tiles small'},
+      tile('Beta ' + cap(c.id) + ' vs BTC', fmt(c.beta_vs_btc)),
+      tile('Zmiana 30 dni: BTC', rpct(c.btc_30d), null, null, sign(c.btc_30d)),
+      tile('Zmiana 30 dni: ' + cap(c.id), rpct(c.other_30d), null, null, sign(c.other_30d))));
+}
+
+/* ---------- analiza zwrotów z serii ---------- */
+function returnsFrom(ser) {
+  const p = ser.price, d = ser.date, out = [];
+  for (let i = 1; i < p.length; i++) if (p[i] != null && p[i - 1]) out.push({date: d[i], r: p[i] / p[i - 1] - 1});
+  return out;
+}
+function histCard(rets, a) {
+  const abs = rets.map(x => Math.abs(x.r)).sort((x, y) => x - y);
+  const q = abs[Math.min(abs.length - 1, Math.floor(abs.length * 0.98))] || 0.01;
+  const lim = Math.max(0.01, Math.ceil(q * 200) / 200), B = 21, w = 2 * lim / B;
+  const bins = Array.from({length: B}, (_, i) => ({lo: -lim + i * w, hi: -lim + (i + 1) * w, c: 0}));
+  rets.forEach(x => { bins[clamp(Math.floor((x.r + lim) / w), 0, B - 1)].c++; });
+  const W = 600, Ht = 240, pl = 10, pr = 10, pt = 26, pb = 28, pw = W - pl - pr, ph = Ht - pt - pb;
+  const maxC = Math.max(...bins.map(b => b.c), 1), bw = pw / B;
+  const svg = S('svg', {viewBox: `0 0 ${W} ${Ht}`, class: 'hist', role: 'img', 'aria-label': 'Histogram dziennych zwrotów BTC'});
+  svg.append(S('line', {class: 'g', x1: pl, x2: W - pr, y1: pt + ph, y2: pt + ph}));
+  bins.forEach((b, i) => {
+    const mid = (b.lo + b.hi) / 2, bh = b.c / maxC * ph;
+    const rc = S('rect', {class: 'hbar ' + (mid < 0 ? 'bear' : 'bull'), x: (pl + i * bw + 1.5).toFixed(1), y: (pt + ph - bh).toFixed(1), width: (bw - 3).toFixed(1), height: Math.max(bh, b.c ? 1.5 : 0).toFixed(1), rx: 3, style: `--i:${i}`});
+    rc.append(S('title', null, `${rpct(b.lo, 1)} … ${rpct(b.hi, 1)}: ${b.c} dni`));
+    svg.append(rc);
+  });
+  svg.append(S('text', {class: 'axis', x: pl, y: Ht - 8, 'text-anchor': 'start'}, rpct(-lim, 1)),
+             S('text', {class: 'axis', x: W / 2, y: Ht - 8, 'text-anchor': 'middle'}, '0%'),
+             S('text', {class: 'axis', x: W - pr, y: Ht - 8, 'text-anchor': 'end'}, rpct(lim, 1)));
+  if (ok(a.var95)) {
+    const x = pl + ((-a.var95 + lim) / (2 * lim)) * pw;
+    if (x > pl + 4 && x < W - pr) svg.append(S('line', {class: 'varl', x1: x, x2: x, y1: pt - 6, y2: pt + ph}), S('text', {class: 'vart', x: x + 6, y: pt - 10}, 'VaR 95%'));
+  }
+  const mean = rets.reduce((s, x) => s + x.r, 0) / rets.length;
+  const sd = Math.sqrt(rets.reduce((s, x) => s + Math.pow(x.r - mean, 2), 0) / Math.max(1, rets.length - 1));
+  const up = rets.filter(x => x.r > 0).length;
+  return card({id: 'sec-zwroty', title: 'Rozkład dziennych zwrotów', sub: `${rets.length} dni z wczytanej historii`, cls: 'half'}, svg,
+    h('div', {class: 'tiles small'},
+      tile('Średni dzień', rpct(mean, 2), null, null, sign(mean)),
+      tile('Odchylenie std.', fmt(sd * 100) + '%'),
+      tile('Dni wzrostowe', fmt(up / rets.length * 100, 0) + '%', `${up} z ${rets.length}`)));
+}
+function ddCard(ser) {
+  const p = ser.price, d = ser.date; let peak = -Infinity;
+  const dd = p.map(v => { if (v == null) return null; peak = Math.max(peak, v); return v / peak - 1; });
+  const valid = dd.map((v, i) => ({v, i})).filter(x => x.v != null);
+  if (valid.length < 5) return null;
+  const mn = valid.reduce((a, b) => b.v < a.v ? b : a);
+  const W = 600, H = 240, pl = 44, pr = 10, pt = 12, pb = 26;
+  const minV = Math.min(mn.v * 1.08, -0.01);
+  const X = i => pl + i / (p.length - 1) * (W - pl - pr), Y = v => pt + (0 - v) / (0 - minV) * (H - pt - pb);
+  const gid = 'dg' + (++uid);
+  const svg = S('svg', {viewBox: `0 0 ${W} ${H}`, class: 'hist', role: 'img', 'aria-label': 'Obsunięcie od lokalnego szczytu w czasie'});
+  const defs = S('defs'), lg = S('linearGradient', {id: gid, x1: 0, y1: 0, x2: 0, y2: 1});
+  lg.append(S('stop', {offset: '0%', style: 'stop-color:var(--bear);stop-opacity:.05'}), S('stop', {offset: '100%', style: 'stop-color:var(--bear);stop-opacity:.4'}));
+  defs.append(lg); svg.append(defs);
+  const step = niceStep(Math.abs(minV) / 4);
+  for (let t = 0; t >= minV; t -= step) svg.append(S('line', {class: 'g', x1: pl, x2: W - pr, y1: Y(t), y2: Y(t)}), S('text', {class: 'axis', x: pl - 6, y: Y(t) + 4, 'text-anchor': 'end'}, rpct(t, 0)));
+  const line = valid.map((x, j) => (j ? 'L' : 'M') + X(x.i).toFixed(1) + ' ' + Y(x.v).toFixed(1)).join('');
+  svg.append(S('path', {d: line + `L${X(valid[valid.length - 1].i)} ${Y(0)}L${X(valid[0].i)} ${Y(0)}Z`, fill: `url(#${gid})`}), S('path', {class: 'dd-line', d: line}));
+  svg.append(S('circle', {cx: X(mn.i), cy: Y(mn.v), r: 4.5, class: 'ext', style: 'stroke:var(--bear)'}));
+  [0, .5, 1].forEach((f, k) => { const i = Math.round(f * (p.length - 1)); svg.append(S('text', {class: 'axis', x: X(i), y: H - 6, 'text-anchor': k === 0 ? 'start' : k === 2 ? 'end' : 'middle'}, new Date(d[i] + 'T00:00:00Z').toLocaleDateString('pl-PL', {month: 'short', year: '2-digit', timeZone: 'UTC'}))); });
+  const cur = valid[valid.length - 1];
+  const readout = h('div', {class: 'readout'});
+  const def = () => readout.replaceChildren('Maks. obsunięcie ', h('b', {class: 'down'}, rpct(mn.v)), ' (' + fmtDate(d[mn.i]) + ') · teraz ', h('b', {class: 'down'}, rpct(cur.v)));
+  def();
+  const cross = S('line', {class: 'cross', y1: pt, y2: H - pb, visibility: 'hidden'});
+  const hit = S('rect', {x: pl, y: 0, width: W - pl - pr, height: H, fill: 'transparent'});
+  svg.append(cross, hit);
+  hit.addEventListener('pointermove', e => {
+    const rc = svg.getBoundingClientRect(), px = (e.clientX - rc.left) * (W / rc.width);
+    const i = clamp(Math.round((px - pl) / (W - pl - pr) * (p.length - 1)), 0, p.length - 1);
+    if (dd[i] == null) return;
+    cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.setAttribute('visibility', 'visible');
+    readout.replaceChildren(h('b', null, fmtDate(d[i])), ': ', h('b', {class: 'down'}, rpct(dd[i])), ' od szczytu');
+  });
+  hit.addEventListener('pointerleave', () => { cross.setAttribute('visibility', 'hidden'); def(); });
+  return card({id: 'sec-obsuniecie', title: 'Obsunięcie od szczytu', sub: 'O ile cena była poniżej dotychczasowego maksimum', cls: 'half'}, readout, h('div', {class: 'wipe'}, svg));
+}
+function heatCard(rets) {
+  const last = rets.slice(-98);
+  if (last.length < 14) return null;
+  const grid = h('div', {class: 'heat', role: 'img', 'aria-label': 'Kalendarz dziennych zwrotów z ostatnich ' + last.length + ' dni'});
+  last.forEach((x, i) => {
+    const wd = (new Date(x.date + 'T00:00:00Z').getUTCDay() + 6) % 7;
+    const a = Math.min(1, Math.abs(x.r) / 0.04);
+    const c = h('i', {class: 'cell', title: fmtDate(x.date) + ': ' + rpct(x.r), style: `--a:${(0.2 + 0.8 * a).toFixed(2)};--c:var(${x.r >= 0 ? '--bull' : '--bear'});--i:${i}`});
+    if (i === 0) c.style.gridRowStart = wd + 1;
+    grid.append(c);
+  });
+  let streak = 1; const sgn = Math.sign(rets[rets.length - 1].r);
+  for (let i = rets.length - 2; i >= 0 && Math.sign(rets[i].r) === sgn; i--) streak++;
+  const best = last.reduce((a, b) => b.r > a.r ? b : a), worst = last.reduce((a, b) => b.r < a.r ? b : a);
+  return card({id: 'sec-kalendarz', title: 'Kalendarz zwrotów', sub: `Każdy kwadrat to jeden dzień, ostatnie ${last.length} dni. Im intensywniejszy kolor, tym większy ruch.`},
+    h('div', {class: 'heatw'}, h('div', {class: 'heatl'}, ['Pn', '', 'Śr', '', 'Pt', '', 'Nd'].map(t => h('span', null, t))), grid),
+    h('div', {class: 'hl'}, h('i', {style: 'background:var(--bear)'}), 'spadek', h('i', {style: 'background:var(--bull);margin-left:10px'}), 'wzrost', h('span', {style: 'margin-left:10px'}, 'pełny kolor ≈ ruch ≥ 4%')),
+    h('div', {class: 'tiles small'},
+      tile('Aktualna seria', streak + ' ' + (streak === 1 ? 'dzień' : 'dni') + (sgn >= 0 ? ' na plusie' : ' na minusie'), null, null, sgn >= 0 ? 'up' : 'down'),
+      tile('Najlepszy dzień okresu', rpct(best.r), fmtDate(best.date), null, 'up'),
+      tile('Najgorszy dzień okresu', rpct(worst.r), fmtDate(worst.date), null, 'down')));
+}
+function returnsSections(r) {
+  const ser = r.series, a = r.analysis || {};
+  if (!ser || !ser.price || !ser.date || ser.price.length < 20) return [];
+  const rets = returnsFrom(ser);
+  if (rets.length < 15) return [];
+  return [histCard(rets, a), ddCard(ser), heatCard(rets)];
+}
+
+/* ---------- rynek ---------- */
+function marketSection(r) {
+  const m = r.market, g = r.global;
+  if (!m && !g) return null;
+  const cur = (r.vs || '').toUpperCase();
+  const extra = [];
+  if (m && ok(m.low_24h) && ok(m.high_24h) && ok(m.current_price)) extra.push(meterBlock('Pozycja w zakresie 24 godz.', fmt((m.current_price - m.low_24h) / ((m.high_24h - m.low_24h) || 1) * 100, 0) + '%', meter({min: m.low_24h, max: m.high_24h, value: m.current_price, labels: [fmt(m.low_24h, 0), fmt(m.high_24h, 0)]})));
+  if (m && ok(m.ath) && ok(m.current_price) && m.ath) extra.push(h('div', {class: 'mb'}, h('div', {class: 'mh'}, h('span', null, 'Cena względem ATH (' + fmt(m.ath, 0) + ')'), h('b', null, fmt(m.current_price / m.ath * 100, 1) + '%')), bar(m.current_price / m.ath, 'accent')));
+  return card({id: 'sec-rynek', title: 'Rynek', sub: 'Kapitalizacja, wolumen i pozycja ceny', cls: 'half'}, extra,
+    rows([
+      m && ['Ranking / kapitalizacja', '#' + m.market_cap_rank + ' / ' + big(m.market_cap) + ' ' + cur],
+      m && ['Zakres 24 godz.', fmt(m.low_24h, 0) + ' – ' + fmt(m.high_24h, 0)],
+      m && ['ATH / odległość od ATH', fmt(m.ath, 0) + ' / ' + pct(m.ath_change_percentage), sign(m.ath_change_percentage)],
+      m && ['Wolumen 24 godz.', big(m.total_volume) + ' ' + cur],
+      g && ['Kapitalizacja całego rynku', big(g.market_cap) + ' ' + cur],
+      g && ['Zmiana kapitalizacji 24 godz.', pct(g.change_24h), sign(g.change_24h)],
+    ]));
+}
+function donutSvg(segs, centerTxt, centerSub) {
+  const R = 40, C = 2 * Math.PI * R;
+  const svg = S('svg', {viewBox: '0 0 100 100', class: 'donut', role: 'img', 'aria-label': segs.map(s => s.name + ' ' + fmt(s.pct, 1) + '%').join(', ')});
+  svg.append(S('circle', {class: 'arc-bg', cx: 50, cy: 50, r: R}));
+  let acc = 0;
+  segs.forEach(s => {
+    const len = Math.max(0, s.pct / 100 * C - (segs.length > 1 ? 1.4 : 0));
+    svg.append(S('circle', {class: 'arc', cx: 50, cy: 50, r: R, transform: 'rotate(-90 50 50)', style: `stroke:${s.color};--da:${len.toFixed(2)} ${(C - len).toFixed(2)};stroke-dashoffset:${(-acc / 100 * C).toFixed(2)}`}));
+    acc += s.pct;
+  });
+  svg.append(S('text', {class: 'dtx', x: 50, y: 52}, centerTxt), S('text', {class: 'dtx2', x: 50, y: 64}, centerSub));
+  return svg;
+}
+function structureSection(r) {
+  const m = r.market, g = r.global, blocks = [];
+  if (g && ok(g.btc_dominance)) {
+    const b = Number(g.btc_dominance), e = ok(g.eth_dominance) ? Number(g.eth_dominance) : 0, o = Math.max(0, 100 - b - e);
+    blocks.push(h('div', null, donutSvg([{name: 'BTC', pct: b, color: 'var(--accent)'}, {name: 'ETH', pct: e, color: 'var(--price)'}, {name: 'Pozostałe', pct: o, color: 'var(--neutral)'}], fmt(b, 1) + '%', 'dominacja BTC'),
+      h('ul', {class: 'dleg'},
+        h('li', null, h('i', {style: 'background:var(--accent)'}), 'Bitcoin', h('b', null, fmt(b, 1) + '%')),
+        e ? h('li', null, h('i', {style: 'background:var(--price)'}), 'Ethereum', h('b', null, fmt(e, 1) + '%')) : null,
+        h('li', null, h('i', {style: 'background:var(--neutral)'}), 'Pozostałe', h('b', null, fmt(o, 1) + '%')))));
+  }
+  if (m && ok(m.circulating_supply) && ok(m.max_supply) && m.max_supply) {
+    const p = m.circulating_supply / m.max_supply * 100;
+    blocks.push(h('div', null, donutSvg([{name: 'W obiegu', pct: p, color: 'var(--accent)'}], fmt(p, 1) + '%', 'wydobyte'),
+      h('div', {class: 'dcap'}, fmt(m.circulating_supply, 0) + ' z ' + fmt(m.max_supply, 0) + ' BTC')));
+  }
+  if (!blocks.length) return null;
+  return card({id: 'sec-struktura', title: 'Struktura rynku', sub: 'Dominacja kapitału i podaż', cls: 'half'}, h('div', {class: 'donuts'}, blocks));
+}
+
+/* ---------- pochodne ---------- */
+function derivativesSection(r) {
+  const d = r.analysis && r.analysis.derivatives;
+  if (!d) return null;
+  const fr = v => ok(v) ? fmt(v, 4) + '%' : 'n/d';
+  const top = d.top || [], max = Math.max(...top.map(t => Number(t.oi_usd) || 0), 1), tot = Number(d.total_oi_usd) || 0;
+  const fchip = v => ok(v) ? h('span', {class: 'chipf ' + (v > 0 ? 'v-plus' : v < 0 ? 'v-minus' : 'v-zero')}, fr(v)) : null;
+  const fund = d.weighted_funding_rate;
+  return card({id: 'sec-pochodne', title: 'Kontrakty perpetual BTC', sub: 'Open interest, funding i basis'},
+    h('div', {class: 'tiles', style: 'margin-top:0'},
+      tile('Open interest (suma)', big(d.total_oi_usd) + ' USD'),
+      tile('Wolumen 24 godz.', big(d.total_volume_24h_usd) + ' USD', ok(d.total_oi_usd) && d.total_volume_24h_usd ? 'obrót = ' + fmt(d.total_volume_24h_usd / d.total_oi_usd, 2) + '× OI' : null),
+      tile('Funding (ważony OI)', fr(fund), ok(fund) ? (fund > 0 ? 'długie płacą krótkim' : fund < 0 ? 'krótkie płacą długim' : 'równowaga') : null, ok(fund) ? divbar(fund / 0.05) : null, sign(fund)),
+      tile('Basis (ważony OI)', fr(d.weighted_basis), null, ok(d.weighted_basis) ? divbar(d.weighted_basis / 0.5) : null, sign(d.weighted_basis))),
+    h('h3', null, 'Największe rynki wg open interest'),
+    h('ul', {class: 'rank'}, top.map((t, i) => h('li', null,
+      h('div', {class: 'nm'}, t.market, h('small', null, t.symbol)),
+      bar((Number(t.oi_usd) || 0) / max, 'accent', i),
+      h('div', {class: 'val'}, big(t.oi_usd) + ' USD', tot ? h('small', null, fmt((Number(t.oi_usd) || 0) / tot * 100, 1) + '% całości') : null, fchip(t.funding_rate))))),
+    h('p', {class: 'note'}, 'Dodatni funding oznacza, że posiadacze długich pozycji płacą krótkim, czyli przewagę kupujących z dźwignią.'));
+}
+function exchangesSection(r) {
+  const t = r.analysis && r.analysis.tickers;
+  if (!t) return null;
+  const top = t.top || [], max = Math.max(...top.map(x => Number(x.volume_usd) || 0), 1);
+  const sp = v => ok(v) ? h('span', {class: 'chipf ' + (v < 0.05 ? 'v-plus' : v < 0.15 ? 'v-zero' : 'v-minus')}, 'spread ' + fmt(v, 3) + '%') : null;
+  return card({id: 'sec-gieldy', title: 'Płynność na giełdach', sub: 'Wolumen i spread według rynków'},
+    h('ul', {class: 'rank'}, top.map((x, i) => h('li', null,
+      h('div', {class: 'nm'}, x.market, h('small', null, x.pair)),
+      bar((Number(x.volume_usd) || 0) / max, '', i),
+      h('div', {class: 'val'}, big(x.volume_usd) + ' USD', sp(x.spread_pct))))),
+    h('p', {class: 'note'},
+      ok(t.median_spread_pct) ? 'Mediana spreadu: ' + fmt(t.median_spread_pct, 3) + '%. ' : '',
+      t.dispersion ? `Rozbieżność cen między giełdami: ${fmt(t.dispersion.pct, 3)}% (${t.dispersion.low} do ${t.dispersion.high}).` : ''));
+}
+function treasurySection(r) {
+  const t = r.treasury || {};
+  const block = (title, p) => {
+    if (!p) return null;
+    const top = p.top || [], max = Math.max(...top.map(e => Number(e.holdings) || 0), 1);
+    return h('div', null,
+      h('h3', {style: 'margin-top:0'}, title),
+      h('div', {class: 'sub', style: 'margin-bottom:6px'}, fmt(p.total_holdings, 0) + ' BTC · ' + big(p.total_value_usd) + ' USD'),
+      h('ul', {class: 'rank'}, top.map((e, i) => h('li', null,
+        h('div', {class: 'nm'}, e.name),
+        bar((Number(e.holdings) || 0) / max, 'accent', i),
+        h('div', {class: 'val'}, fmt(e.holdings, 0) + ' BTC', h('small', null, ok(e.pct_supply) ? fmt(e.pct_supply, 3) + '% podaży' : 'n/d'))))));
+  };
+  const a = block('Spółki publiczne', t.companies), b = block('Rządy', t.governments);
+  return (a || b) ? card({id: 'sec-skarbce', title: 'Skarbce publiczne', sub: 'Kto trzyma najwięcej BTC'}, h('div', {class: 'cols'}, a, b)) : null;
+}
+
+
+/* ---------- dane dodatkowe (sentyment, pochodne, opcje, on-chain, makro, stablecoiny) ---------- */
+function extrasSignalsCard(r) {
+  const x = r.extras;
+  if (!x || !(x.signals || []).length) return null;
+  const t = x.tally || {}, fg = x.sentiment, dv = (x.options || {}).dvol, d = x.derivs || {}, o = x.options || {};
+  const tiles = [];
+  if (fg) tiles.push(tile('Fear & Greed', String(fg.value), (fg.label || '') + (ok(fg.prev_week) ? ' · tydzień temu ' + fg.prev_week : ''),
+    meter({min: 0, max: 100, value: fg.value, band: null, labels: ['strach', '50', 'chciwość'], plain: true})));
+  if (ok(d.funding_avg_annual_pct)) tiles.push(tile('Funding (średnia)', fmt(d.funding_avg_annual_pct, 1) + '% rocznie', 'Binance + OKX', divbar(d.funding_avg_annual_pct / 60), sign(d.funding_avg_annual_pct)));
+  if (dv) tiles.push(tile('DVOL (zmienność implik.)', fmt(dv.now, 1), 'percentyl 30 dni: ' + fmt(dv.percentile_30d, 0)));
+  if (ok(o.put_call_oi)) tiles.push(tile('Put/Call (OI)', fmt(o.put_call_oi, 2), 'Deribit, opcje BTC'));
+  const hist = x.history;
+  return card({id: 'sec-dodatkowe', title: 'Sygnały dodatkowe', sub: 'Sentyment, pochodne, opcje, on-chain, makro · tylko opis, nie wpływa na plan'},
+    tiles.length ? h('div', {class: 'tiles', style: 'margin-top:0'}, tiles) : null,
+    h('div', {class: 'tally'}, h('span', {class: 'pill'}, 'byczych ', h('b', {class: 'up'}, String(t.bull || 0))), h('span', {class: 'pill'}, 'niedźwiedzich ', h('b', {class: 'down'}, String(t.bear || 0))), h('span', {class: 'pill'}, 'neutralnych ', h('b', null, String(t.neutral || 0)))),
+    h('ul', {class: 'sigs'}, x.signals.map(s => h('li', {class: s.state}, h('b', null, s.label), s.text))),
+    h('div', {class: 'srcs'}, Object.entries(x.sources || {}).map(([k, v]) => h('span', {class: v.ok ? '' : 'bad', title: v.error || ''}, k + (v.ok ? ' ✓' : ' ✗')))),
+    h('p', {class: 'note'}, 'Sygnały są opisowe: pokazują, co mówią pojedyncze wskaźniki, i nie są poradą ani wejściem do transakcji.' + (hist ? ` Własna historia: ${hist.points} migawek od ${new Date(hist.since * 1000).toLocaleDateString('pl-PL')}.` : '')));
+}
+function extrasDerivsCard(r) {
+  const x = r.extras;
+  if (!x || (!x.derivs && !x.options)) return null;
+  const d = x.derivs || {}, o = x.options || {}, kids = [];
+  const fr = v => ok(v) ? fmt(v, 4) + '%' : 'n/d';
+  const ex = (name, e) => e ? [[name + ' · funding', fr(e.funding_pct), sign(e.funding_pct)], [name + ' · open interest', big(e.oi_usd) + ' USD'],
+    e.oi_change_24h_pct != null ? [name + ' · OI 24 godz.', pct(e.oi_change_24h_pct), sign(e.oi_change_24h_pct)] : null,
+    e.ls_accounts ? [name + ' · long/short (konta)', fmt(e.ls_accounts.now, 2) + ' (śr. 24h ' + fmt(e.ls_accounts.avg_24h, 2) + ')'] : null,
+    e.ls_top_positions ? [name + ' · long/short (top traderzy)', fmt(e.ls_top_positions.now, 2)] : null,
+    e.taker_buy_sell ? [name + ' · taker kupno/sprzedaż', fmt(e.taker_buy_sell.now, 2) + ' (śr. 24h ' + fmt(e.taker_buy_sell.avg_24h, 2) + ')'] : null,
+    ok(e.basis_pct) ? [name + ' · basis', fr(e.basis_pct), sign(e.basis_pct)] : null] : [];
+  kids.push(rows([...ex('Binance', d.binance), ...ex('OKX', d.okx)]));
+  if ((o.expiries || []).length) {
+    kids.push(h('h3', null, 'Opcje Deribit: najbliższe wygasania'));
+    kids.push(h('div', {class: 'tbl-w'}, h('table', {class: 'tbl'},
+      h('thead', null, h('tr', null, ['Wygasa', 'Dni', 'Call OI', 'Put OI', 'Put/Call', 'Max pain'].map((t, i) => h('th', {class: i ? 'r' : ''}, t)))),
+      h('tbody', null, o.expiries.map(e => h('tr', null, h('td', null, e.expiry), h('td', {class: 'r'}, fmt(e.days, 1)), h('td', {class: 'r'}, fmt(e.call_oi, 0)), h('td', {class: 'r'}, fmt(e.put_oi, 0)),
+        h('td', {class: 'r'}, ok(e.put_call) ? fmt(e.put_call, 2) : 'n/d'), h('td', {class: 'r'}, ok(e.max_pain) ? fmt(e.max_pain, 0) : 'n/d')))))));
+    kids.push(h('p', {class: 'note'}, 'Max pain to poziom ceny, przy którym wystawcy opcji płaciliby najmniej. Cena bywa do niego przyciągana tuż przed wygaśnięciem, ale to tylko tendencja.'));
+  }
+  const pr = x.premium;
+  if (pr) kids.push(h('p', {class: 'note'}, 'Ceny spot: ' + Object.entries(pr.prices || {}).map(([k, v]) => k + ' ' + fmt(v, 0)).join(' · ') + (ok(pr.coinbase_vs_binance_pct) ? ` · premia Coinbase ${pct(pr.coinbase_vs_binance_pct, 3)}` : '') + '. ' + (pr.note || '')));
+  return card({id: 'sec-dodatkowe-pochodne', title: 'Pochodne i opcje (rozszerzone)', sub: 'Binance, OKX, Deribit', cls: 'half'}, ...kids);
+}
+function extrasChainCard(r) {
+  const x = r.extras;
+  if (!x || (!x.onchain && !x.stablecoins)) return null;
+  const oc = x.onchain || {}, st = x.stablecoins, kids = [];
+  const fees = oc.fees_sat_vb, hr = oc.hashrate, df = oc.difficulty, mp = oc.mempool;
+  kids.push(rows([
+    fees ? ['Opłaty (sat/vB): szybko / 30 min / godzina', `${fmt(fees.fast, 0)} / ${fmt(fees.half_hour, 0)} / ${fmt(fees.hour, 0)}`] : null,
+    mp ? ['Mempool', fmt(mp.tx_count, 0) + ' tx · ' + fmt(mp.vsize_mb, 1) + ' MB'] : null,
+    hr && ok(hr.current_eh) ? ['Hashrate', fmt(hr.current_eh, 0) + ' EH/s' + (ok(hr.change_30d_pct) ? ' (' + pct(hr.change_30d_pct, 1) + ' w 30 dni)' : ''), sign(hr.change_30d_pct)] : null,
+    df ? ['Trudność: do retargetu', fmt(df.remaining_blocks, 0) + ' bloków · prognoza ' + pct(df.change_pct, 1), sign(df.change_pct)] : null,
+    ok(oc.height) ? ['Wysokość bloku', fmt(oc.height, 0)] : null,
+    st ? ['Stablecoiny USD (podaż)', big(st.total_usd) + ' USD · 7 dni ' + pct(st.change_7d_pct, 2) + ' · 30 dni ' + pct(st.change_30d_pct, 2), sign(st.change_30d_pct)] : null,
+    ...(st ? (st.top || []).slice(0, 3).map(t => [t.symbol, big(t.usd) + ' USD · ' + fmt(t.share_pct, 1) + '% · 30 dni ' + pct(t.change_30d_pct, 1), sign(t.change_30d_pct)]) : [])]));
+  if (hr && (hr.series_eh || []).length > 5) kids.push(h('div', {class: 'spark-cap'}, h('span', null, 'hashrate, ostatnie ' + hr.series_eh.length + ' dni')), sparkSvg(hr.series_eh, 420, 90, false));
+  return card({id: 'sec-chain', title: 'On-chain i podaż stablecoinów', sub: 'mempool.space, DefiLlama', cls: 'half'}, ...kids);
+}
+function extrasMacroCard(r) {
+  const m = r.extras && r.extras.macro;
+  if (!m) return null;
+  const items = Object.values(m).filter(v => !v.error);
+  if (!items.length) return null;
+  const c = v => ok(v) ? h('td', {class: 'r ' + sign(v)}, pct(v, 2)) : h('td', {class: 'r'}, 'n/d');
+  const cr = v => ok(v) ? h('td', {class: 'r'}, (v > 0 ? '+' : '') + fmt(v, 2)) : h('td', {class: 'r'}, 'n/d');
+  return card({id: 'sec-makro', title: 'Makro i korelacje z BTC', sub: 'Stooq, dzienne zamknięcia'},
+    h('div', {class: 'tbl-w'}, h('table', {class: 'tbl'},
+      h('thead', null, h('tr', null, ['Instrument', 'Ostatnio', '1 dzień', '7 dni', '30 dni', 'Korel. 30d', 'Korel. 90d'].map((t, i) => h('th', {class: i ? 'r' : ''}, t)))),
+      h('tbody', null, items.map(v => h('tr', null, h('td', null, v.label), h('td', {class: 'r'}, fmt(v.last, v.last > 1000 ? 0 : 2)), c(v.change_1d_pct), c(v.change_7d_pct), c(v.change_30d_pct), cr(v.corr_30d), cr(v.corr_90d)))))),
+    h('p', {class: 'note'}, 'Korelacja liczona na dziennych zwrotach we wspólnych dniach notowań. Blisko +1: porusza się razem z BTC, blisko −1: odwrotnie. Zależności zmieniają się w czasie i nie dowodzą przyczyny.'));
+}
+
+/* ---------- Bybit ---------- */
+const PAL = ['var(--accent)', 'var(--price)', 'var(--sma50)', 'var(--bull)', 'var(--sma20)', 'var(--neutral)', 'var(--bear)'];
+function until(iso) {
+  const m = Math.round((new Date(iso).getTime() - Date.now()) / 60000);
+  if (!Number.isFinite(m)) return '';
+  if (m <= 0) return 'za chwilę';
+  return m < 60 ? 'za ' + m + ' min' : 'za ' + Math.floor(m / 60) + ' godz. ' + (m % 60) + ' min';
+}
+function bybitMsg(title, id, msg, errors) {
+  return card({id, title, sub: 'Bybit API v5, tylko odczyt'}, h('p', {class: 'note', style: 'margin-top:0'}, msg),
+    errors && errors.length ? h('ul', {class: 'warnlist', style: 'margin-top:14px'}, errors.map(e => h('li', null, e))) : null);
+}
+function bybitAccountCard(b) {
+  const full = b.privacy === 'full', acc = b.account, k = b.key;
+  if (!acc) {
+    return bybitMsg('Bybit — konto', 'sec-bybit',
+      b.authenticated ? 'Nie udało się pobrać danych konta Bybit. Szczegóły poniżej.'
+        : 'Brak kluczy API Bybit. Dodaj BYBIT_API_KEY i BYBIT_API_SECRET do pliku .env obok skryptu (klucz tylko do odczytu).', b.errors);
+  }
+  const pills = [];
+  if (k) {
+    pills.push(h('span', {class: 'badge ' + (k.read_only ? 'v-plus' : 'v-minus')}, k.read_only ? '✓ Klucz tylko do odczytu' : '! Klucz NIE jest tylko do odczytu'));
+    if (ok(k.days_left) && k.days_left <= 90) pills.push(h('span', {class: 'badge ' + (k.days_left <= 14 ? 'v-minus' : 'v-zero')}, 'Klucz ważny jeszcze ' + Math.max(k.days_left, 0) + ' dn.'));
+  }
+  pills.push(h('span', {class: 'badge v-zero'}, full ? 'Kwoty widoczne' : 'Kwoty ukryte'));
+  const warns = (k && k.warnings) || [];
+  const crit = warns.filter(w => !/adresu IP/.test(w)), info = warns.filter(w => /adresu IP/.test(w));
+
+  const t = [];
+  if (ok(acc.margin_usage_pct)) t.push(tile('Wykorzystany margines', fmt(acc.margin_usage_pct, 1) + '%', 'initial margin do kapitału', bar(acc.margin_usage_pct / 100, acc.margin_usage_pct > 60 ? 'bear' : 'accent')));
+  if (ok(acc.mm_rate_pct)) t.push(tile('Wskaźnik MM konta', fmt(acc.mm_rate_pct, 2) + '%', 'likwidacja przy 100%', bar(acc.mm_rate_pct / 100, acc.mm_rate_pct > 50 ? 'bear' : 'bull')));
+  if (ok(acc.upl_pct_of_equity)) t.push(tile('Niezrealizowany PnL', arrow(acc.upl_pct_of_equity) + ' ' + pct(acc.upl_pct_of_equity), 'względem kapitału', divbar(acc.upl_pct_of_equity / 10), sign(acc.upl_pct_of_equity)));
+  const ex = b.exposure;
+  if (ex) t.push(tile('Ekspozycja netto', pct(ex.net_pct, 0), `long ${fmt(ex.long_pct, 0)}% · short ${fmt(ex.short_pct, 0)}% kapitału`, divbar(ex.net_pct / 200), sign(ex.net_pct)));
+  if (ok(b.open_orders)) t.push(tile('Otwarte zlecenia', String(b.open_orders)));
+  if (full) {
+    if (ok(acc.equity_usd)) t.push(tile('Kapitał (equity)', fmt(acc.equity_usd, 2) + ' USD'));
+    if (ok(acc.available_usd)) t.push(tile('Dostępne środki', fmt(acc.available_usd, 2) + ' USD'));
+    if (ok(acc.unrealised_pnl_usd)) t.push(tile('Niezrealizowany PnL', (acc.unrealised_pnl_usd > 0 ? '+' : acc.unrealised_pnl_usd < 0 ? '−' : '') + fmt(Math.abs(acc.unrealised_pnl_usd), 2) + ' USD', null, null, sign(acc.unrealised_pnl_usd)));
+  }
+
+  const alloc = b.allocation || [];
+  const segs = alloc.map((x, i) => ({name: x.coin, pct: x.pct, color: PAL[i % PAL.length]}));
+  const donut = segs.length ? h('div', null,
+    donutSvg(segs, fmt(segs[0].pct, 0) + '%', segs[0].name),
+    h('ul', {class: 'dleg'}, alloc.map((x, i) => h('li', null, h('i', {style: 'background:' + PAL[i % PAL.length]}), x.coin,
+      h('b', null, fmt(x.pct, 1) + '%' + (full && ok(x.usd) ? ' · ' + fmt(x.usd, 0) + ' USD' : ''))))),
+    h('div', {class: 'dcap'}, 'struktura portfela')) : null;
+
+  return card({id: 'sec-bybit', title: 'Bybit — konto', sub: 'API v5, tylko odczyt · dane ' + ago(b.fetched_at)},
+    h('div', {class: 'keyrow'}, pills),
+    crit.length ? h('ul', {class: 'warnlist'}, crit.map(w => h('li', null, w))) : null,
+    h('div', {class: 'tiles', style: 'margin-top:0'}, t),
+    donut ? h('div', {style: 'margin-top:26px;max-width:340px'}, donut) : null,
+    info.map(w => h('p', {class: 'note'}, w)),
+    h('p', {class: 'note'}, full
+      ? 'Tryb pełny: kwoty i rozmiary pozycji trafiają do pliku btc_report.json. Chroń stronę hasłem (cPanel → Prywatność katalogu).'
+      : 'Kwoty, rozmiary pozycji i ceny wejścia są ukryte (tryb masked); widać tylko wartości względne. Pełne dane włączysz zmienną BYBIT_PRIVACY=full, najlepiej gdy strona jest chroniona hasłem.'));
+}
+function curveSvg(pts, unit) {
+  const W = 600, H = 220, pl = 54, pr = 10, pt = 14, pb = 26, n = pts.length;
+  const vals = pts.map(p => p.v);
+  const lo = Math.min(0, ...vals), hi = Math.max(0, ...vals), sp = (hi - lo) || 1;
+  const X = i => pl + (n < 2 ? 0 : i / (n - 1)) * (W - pl - pr), Y = v => pt + (hi - v) / sp * (H - pt - pb);
+  const z = v => Math.abs(v) < 1e-9 ? 0 : v, f = v => unit === 'usd' ? fmt(z(v), 0) : unit === 'r' ? fmt(z(v), 1) + 'R' : fmt(z(v), 1) + '%';
+  const col = vals[n - 1] >= 0 ? '--bull' : '--bear', gid = 'cg' + (++uid);
+  const svg = S('svg', {viewBox: `0 0 ${W} ${H}`, class: 'hist', role: 'img', 'aria-label': unit === 'r' ? 'Skumulowany wynik propozycji w jednostkach R' : 'Skumulowany wynik zrealizowany z zamkniętych pozycji'});
+  const defs = S('defs'), lg = S('linearGradient', {id: gid, x1: 0, y1: 0, x2: 0, y2: 1});
+  lg.append(S('stop', {offset: '0%', style: `stop-color:var(${col});stop-opacity:.32`}), S('stop', {offset: '100%', style: `stop-color:var(${col});stop-opacity:.02`}));
+  defs.append(lg); svg.append(defs);
+  const step = niceStep(sp / 4);
+  for (let t = Math.ceil(lo / step) * step; t <= hi + 1e-9; t += step) svg.append(S('line', {class: 'g', x1: pl, x2: W - pr, y1: Y(t), y2: Y(t)}), S('text', {class: 'axis', x: pl - 6, y: Y(t) + 4, 'text-anchor': 'end'}, f(t)));
+  svg.append(S('line', {x1: pl, x2: W - pr, y1: Y(0), y2: Y(0), style: 'stroke:var(--muted);stroke-width:1.2'}));
+  const line = pts.map((p, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(p.v).toFixed(1)).join('');
+  svg.append(S('path', {d: line + `L${X(n - 1).toFixed(1)} ${Y(0).toFixed(1)}L${X(0).toFixed(1)} ${Y(0).toFixed(1)}Z`, fill: `url(#${gid})`}),
+             S('path', {d: line, fill: 'none', style: `stroke:var(${col});stroke-width:2.2;stroke-linejoin:round`}));
+  [0, Math.floor((n - 1) / 2), n - 1].forEach((i, k) => svg.append(S('text', {class: 'axis', x: X(i), y: H - 6, 'text-anchor': k === 0 ? 'start' : k === 2 ? 'end' : 'middle'},
+    new Date(pts[i].d + 'T00:00:00Z').toLocaleDateString('pl-PL', (Date.parse(pts[n - 1].d) - Date.parse(pts[0].d)) > 200 * 864e5 ? {month: 'short', year: '2-digit', timeZone: 'UTC'} : {day: 'numeric', month: 'short', timeZone: 'UTC'}))));
+  const txt = v => unit === 'usd' ? (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + ' USD' : unit === 'r' ? (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + 'R' : pct(v, 2);
+  const readout = h('div', {class: 'readout'});
+  const def = () => readout.replaceChildren('Narastająco do końca okresu: ', h('b', {class: sign(vals[n - 1])}, txt(vals[n - 1])));
+  def();
+  const cross = S('line', {class: 'cross', y1: pt, y2: H - pb, visibility: 'hidden'});
+  const hit = S('rect', {x: pl, y: 0, width: W - pl - pr, height: H, fill: 'transparent'});
+  svg.append(cross, hit);
+  hit.addEventListener('pointermove', e => {
+    const rc = svg.getBoundingClientRect(), px = (e.clientX - rc.left) * (W / rc.width);
+    const i = clamp(Math.round((px - pl) / (W - pl - pr) * (n - 1)), 0, n - 1);
+    cross.setAttribute('x1', X(i)); cross.setAttribute('x2', X(i)); cross.setAttribute('visibility', 'visible');
+    readout.replaceChildren(h('b', null, fmtDate(pts[i].d)), ': ', h('b', {class: sign(pts[i].v)}, txt(pts[i].v)));
+  });
+  hit.addEventListener('pointerleave', () => { cross.setAttribute('visibility', 'hidden'); def(); });
+  return {svg, readout};
+}
+function bybitPerfCard(b) {
+  const pf = b.performance;
+  if (!pf) return null;
+  const unit = pf.unit, title = `Wyniki Bybit · ${pf.days} dni`;
+  const val = v => !ok(v) ? 'n/d' : unit === 'usd' ? (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + ' USD' : pct(v, 2);
+  if (!pf.trades) return card({id: 'sec-bybit-wyniki', title, sub: 'Zamknięte pozycje (closed PnL)', cls: 'half'}, h('p', {class: 'note', style: 'margin-top:0'}, 'Brak zamkniętych pozycji w tym okresie.'));
+  const tiles = [
+    tile('Zamknięte pozycje', String(pf.trades)),
+    tile('Skuteczność', fmt(pf.win_rate_pct, 0) + '%', 'odsetek zyskownych', bar(pf.win_rate_pct / 100, pf.win_rate_pct >= 50 ? 'bull' : 'bear')),
+    ok(pf.profit_factor) ? tile('Profit factor', fmt(pf.profit_factor, 2), 'zysk brutto / strata brutto', bar(pf.profit_factor / 3, pf.profit_factor >= 1 ? 'bull' : 'bear')) : null,
+    ok(pf.avg_win_loss_ratio) ? tile('Średni zysk / strata', fmt(pf.avg_win_loss_ratio, 2) + '×') : null,
+    ok(pf.realized) ? tile('Zrealizowany wynik', val(pf.realized), unit === 'pct' ? 'jako % obecnego kapitału' : null, null, sign(pf.realized)) : null,
+    ok(pf.best_trade) ? tile('Najlepsza / najgorsza', h('span', null, h('span', {class: 'up'}, val(pf.best_trade)), ' / ', h('span', {class: 'down'}, val(pf.worst_trade)))) : null,
+  ].filter(Boolean);
+  const c = pf.curve && pf.curve.length > 1 ? curveSvg(pf.curve, unit) : null;
+  const syms = pf.by_symbol || [];
+  const maxAbs = Math.max(...syms.map(x => Math.abs(Number(x.pnl) || 0)), 1e-9);
+  const bySym = syms.length ? h('div', null, h('h3', null, 'Wyniki według instrumentu'), h('ul', {class: 'rank'}, syms.map((x, i) => h('li', null,
+    h('div', {class: 'nm'}, x.symbol, h('small', null, `${x.trades} zamkn. · ${fmt(x.win_rate_pct, 0)}% zyskownych`)),
+    ok(x.pnl) ? bar(Math.abs(x.pnl) / maxAbs, x.pnl >= 0 ? 'bull' : 'bear', i) : h('span'),
+    h('div', {class: 'val'}, h('b', {class: sign(x.pnl)}, val(x.pnl))))))) : null;
+  return card({id: 'sec-bybit-wyniki', title, sub: 'Zamknięte pozycje (closed PnL)', cls: 'half'},
+    c ? [c.readout, h('div', {class: 'wipe'}, c.svg)] : null,
+    h('div', {class: 'tiles small'}, tiles), bySym,
+    h('p', {class: 'note'}, 'Wynik wg zamkniętych pozycji z Bybit' + (unit === 'pct' ? ', przeliczony na % obecnego kapitału (kwoty ukryte).' : '.') + (pf.truncated ? ' Lista została przycięta, wyniki mogą być niepełne.' : '')));
+}
+function bybitMarketCard(b) {
+  const m = b.market;
+  if (!m) return null;
+  const fnd = ok(m.funding_pct) ? fmt(m.funding_pct, 4) + '%' : 'n/d';
+  const tiles = [
+    tile('Cena mark', fmt(m.mark, 1), `index ${fmt(m.index, 1)} · last ${fmt(m.last, 1)}`),
+    tile('Premia mark/index', pct(m.premium_pct, 3), null, ok(m.premium_pct) ? divbar(m.premium_pct / 0.2) : null, sign(m.premium_pct)),
+    tile('Funding rate', fnd, m.next_funding ? 'następne rozliczenie ' + until(m.next_funding) : null, ok(m.funding_pct) ? divbar(m.funding_pct / 0.05) : null, sign(m.funding_pct)),
+    tile('Open interest', big(m.open_interest_usd) + ' USD', ok(m.oi_change_pct) ? `zmiana ${m.oi_change_hours} godz.: ${pct(m.oi_change_pct, 1)}` : null),
+    tile('Obrót 24 godz.', big(m.turnover_24h_usd) + ' USD'),
+    tile('Zmiana 24 godz.', pct(m.price_24h_pct), null, null, sign(m.price_24h_pct)),
+  ];
+  const ratio = ok(m.long_pct) && ok(m.short_pct) ? h('div', {class: 'mb', style: 'margin-top:22px'},
+    h('div', {class: 'mh'}, h('span', null, 'Konta long / short'), h('b', null, fmt(m.long_pct, 1) + '% / ' + fmt(m.short_pct, 1) + '%')),
+    h('div', {class: 'balance', style: 'margin:0'}, h('span', {class: 's-plus', style: '--f:' + m.long_pct}), h('span', {class: 's-minus', style: '--f:' + m.short_pct}))) : null;
+  return card({id: 'sec-bybit-rynek', title: 'Bybit · rynek ' + (b.symbol || ''), sub: 'Dane publiczne kontraktu perpetual', cls: 'half'},
+    h('div', {class: 'tiles', style: 'margin-top:0'}, tiles), ratio,
+    h('p', {class: 'note'}, 'Dodatni funding: długie pozycje płacą krótkim. Odsetek kont long/short to udział kont, a nie wolumenu.'));
+}
+const OKIND = {tp: ['Take Profit', 'v-plus'], sl: ['Stop Loss', 'v-minus'], conditional: ['Warunkowe', 'v-zero'], limit: ['Limit', 'v-zero'], market: ['Rynkowe', 'v-zero']};
+const usdTxt = (v, d = 2) => !ok(v) ? 'n/d' : (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), d) + ' USD';
+function positionCard(p, full) {
+  const main = full && ok(p.upl_usd) ? p.upl_usd : p.roe_pct;
+  const cls = !ok(main) ? '' : main > 0 ? 'win' : main < 0 ? 'loss' : '';
+  const base = String(p.symbol || '').replace(/(USDT|USDC|PERP)$/, '');
+  const lv = (label, val, c, small) => h('div', {class: c || ''}, h('span', null, label), h('b', null, val, small ? h('small', null, ' ' + small) : null));
+  const cells = [];
+  if (full) {
+    cells.push(lv('Rozmiar', fmt(p.size, 4) + ' ' + base),
+      lv('Cena wejścia', fmt(p.avg_price, 1)),
+      lv('Cena mark', fmt(p.mark_price, 1)),
+      lv('Cena likwidacji', ok(p.liq_price) ? fmt(p.liq_price, 1) : 'brak', 'liq' + (ok(p.liq_price) ? '' : ' none'), ok(p.liq_distance_pct) ? `(${fmt(p.liq_distance_pct, 1)}% od mark)` : ''),
+      lv('Take Profit', ok(p.take_profit) ? fmt(p.take_profit, 1) : 'nie ustawiono', ok(p.take_profit) ? 'tp' : 'none'),
+      lv('Stop Loss', ok(p.stop_loss) ? fmt(p.stop_loss, 1) : 'nie ustawiono', ok(p.stop_loss) ? '' : 'none'));
+  } else {
+    cells.push(lv('Ekspozycja', fmt(p.exposure_pct, 0) + '% kapitału'),
+      lv('Do likwidacji', ok(p.liq_distance_pct) ? fmt(p.liq_distance_pct, 1) + '%' : 'brak', 'liq'),
+      lv('Take Profit', p.has_tp ? 'ustawiony' : 'nie ustawiono', p.has_tp ? 'tp' : 'none'),
+      lv('Stop Loss', p.has_sl ? 'ustawiony' : 'nie ustawiono', p.has_sl ? '' : 'none'));
+  }
+  const arrowTxt = p.side === 'Short' ? '▼' : '▲';
+  return h('div', {class: 'pcard ' + cls, role: 'group', 'aria-label': `${p.symbol} ${p.side}`},
+    h('div', {class: 'ph'},
+      h('div', null, h('div', {class: 'sym'}, p.symbol, h('span', {class: 'badge v-zero', style: 'padding:1px 9px;font-size:.74rem'}, arrowTxt + ' ' + String(p.side).toUpperCase())),
+        h('small', null, `${fmt(p.leverage, 0)}× · ${p.mode === 'isolated' ? 'izolowany' : 'cross'}${p.opened ? ' · otwarta ' + ago(p.opened) : ''}`)),
+      h('div', {class: 'ppnl'}, full && ok(p.upl_usd) ? usdTxt(p.upl_usd) : pct(p.roe_pct, 1),
+        h('small', null, (full && ok(p.upl_usd) ? pct(p.roe_pct, 1) + ' ROE' : 'ROE · ' + (ok(p.upl_pct_of_equity) ? pct(p.upl_pct_of_equity, 2) + ' kapitału' : 'n/d'))))),
+    h('div', {class: 'plv'}, cells));
+}
+function orderRow(o, full) {
+  const [name, cls] = OKIND[o.kind] || [o.kind, 'v-zero'];
+  const side = o.side === 'Buy' ? 'Kup' : o.side === 'Sell' ? 'Sprzedaj' : '';
+  const where = ok(o.distance_pct) ? (o.distance_pct > 0 ? '+' : o.distance_pct < 0 ? '−' : '') + fmt(Math.abs(o.distance_pct), 2) + '% od ceny mark' : null;
+  return h('li', null,
+    h('span', {class: 'chipf ' + cls}, name),
+    h('div', {class: 'd'}, `${side} ${o.symbol}`, h('small', null, [o.type, o.reduce_only ? 'reduce-only' : null, full && ok(o.qty) ? fmt(o.qty, 4) : null, !full && ok(o.size_pct) ? fmt(o.size_pct, 0) + '% kapitału' : null].filter(Boolean).join(' · '))),
+    h('div', {class: 'r'}, full && ok(o.price) ? fmt(o.price, 1) : (where || ''), full && where ? h('small', null, where) : null,
+      full && (ok(o.take_profit) || ok(o.stop_loss)) ? h('small', null, [ok(o.take_profit) ? 'TP ' + fmt(o.take_profit, 1) : null, ok(o.stop_loss) ? 'SL ' + fmt(o.stop_loss, 1) : null].filter(Boolean).join(' · ')) : null));
+}
+function bybitPositionsCard(b) {
+  if (!b.authenticated || b.status === 'error') return null;
+  const full = b.privacy === 'full', pos = b.positions || [], ords = b.orders || [];
+  const errs = (b.errors || []).filter(e => /^(positions|open_orders):/.test(e));
+  const posBody = !b.positions_ok
+    ? h('p', {class: 'note', style: 'margin-top:0'}, 'Nie udało się pobrać pozycji z Bybit. Ostatni raport nie zawiera ich listy.')
+    : pos.length ? h('div', {class: 'pgrid'}, pos.map(p => positionCard(p, full)))
+      : h('p', {class: 'note', style: 'margin-top:0'}, 'Brak otwartych pozycji futures (perpetual). Gdy jakąś otworzysz, pojawi się tutaj po następnym odświeżeniu raportu.');
+  const ordBody = !b.orders_ok
+    ? h('p', {class: 'note', style: 'margin-top:0'}, 'Nie udało się pobrać zleceń z Bybit.')
+    : ords.length ? h('ul', {class: 'olist'}, ords.map(o => orderRow(o, full)))
+      : h('p', {class: 'note', style: 'margin-top:0'}, 'Brak oczekujących zleceń (limit, warunkowych, TP/SL).');
+  const unprotected = pos.filter(p => !p.has_sl && !(full && ok(p.stop_loss)) && !ords.some(o => o.kind === 'sl' && o.symbol === p.symbol));
+  return card({id: 'sec-bybit-pozycje', title: 'Bybit — pozycje i zlecenia', sub: `Futures perpetual · ${pos.length} ${pos.length === 1 ? 'pozycja' : 'pozycji'} · ${ords.length} zleceń · dane ${ago(b.fetched_at)}`},
+    posBody,
+    unprotected.length ? h('p', {class: 'note'}, `Bez stop lossa: ${unprotected.map(p => p.symbol).join(', ')}.`) : null,
+    h('h3', null, 'Oczekujące zlecenia (w tym TP / SL)'), ordBody,
+    errs.length ? h('ul', {class: 'warnlist', style: 'margin-top:14px'}, errs.map(e => h('li', null, e))) : null,
+    h('p', {class: 'note'}, full
+      ? 'Ceny wejścia i likwidacji są też nanoszone jako przerywane linie na wykresie ceny (przełącznik „Poziomy Bybit”). Tryb pełny zapisuje je w btc_report.json: chroń folder hasłem.'
+      : 'Tryb masked: nie publikujemy cen wejścia, likwidacji ani rozmiarów, więc na wykresie nie ma linii z Bybit. Ustaw BYBIT_PRIVACY=full (i zabezpiecz stronę hasłem), aby je włączyć.'));
+}
+/* ---------- Planer: plan na dziś, dziennik, rozkład cen ---------- */
+const put = (el, ...k) => el.replaceChildren(...k.flat(Infinity).filter(x => x != null && x !== false));
+const fdt = ms => ok(ms) ? new Date(ms).toLocaleString('pl-PL', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'}) : 'n/d';
+const fday = ms => ok(ms) ? new Date(ms).toLocaleDateString('pl-PL', {day: 'numeric', month: 'short'}) : 'n/d';
+const px0 = v => ok(v) ? fmt(v, 0) : 'n/d';
+const rtxt = v => ok(v) ? (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), 2) + 'R' : 'n/d';
+const OUT = {tp2: ['TP2', 'v-plus'], tp1_be: ['TP1 + wejście', 'v-plus'], sl: ['Stop Loss', 'v-minus'], time_stop: ['Po czasie', 'v-zero'],
+  expired: ['Nie wypełniono', 'v-zero'], invalidated: ['Unieważniona', 'v-zero'], missed: ['Przegapiona', 'v-zero'], withdrawn: ['Wycofana', 'v-zero'], replaced: ['Zastąpiona', 'v-zero'],
+  pending: ['Oczekuje', 'v-zero'], open: ['Otwarta', 'v-plus']};
+function planCard(r) {
+  const pl = r.planner;
+  if (!pl) return null;
+  const sub = 'Heurystyka na świecach dziennych · nie jest poradą inwestycyjną · nic nie zleca na giełdzie';
+  if (pl.status !== 'ok') {
+    if (pl.status === 'off') return null;
+    return card({id: 'sec-plan', title: 'Plan analizatora', sub}, h('p', {class: 'note', style: 'margin-top:0'}, pl.reason || 'Planer jest niedostępny.'));
+  }
+  const p = pl.plan, wait = p.action === 'wait', long = p.action === 'long';
+  const brk = p.entry_type === 'stop';
+  const label = wait ? 'CZEKAJ' : (long ? 'KUP' : 'SPRZEDAJ (short)') + (brk ? ' · zlecenie warunkowe (wybicie)' : ' · zlecenie limit');
+  const conf = p.confidence, bucket = conf >= 75 ? 'wysoka' : conf >= 65 ? 'średnia' : 'niska';
+  const top = h('div', {class: 'plan-top'},
+    h('div', {class: 'plan-act'}, label,
+      h('small', null, `${cap(p.trend)} (${p.trend_score > 0 ? '+' : ''}${p.trend_score}/5) · RSI ${fmt(p.rsi, 0)} · ATR ${px0(p.atr)} (${fmt(p.atr_pct, 1)}%) · świeca z ${fmtDate(p.date)}`),
+      p.live_text ? h('small', {style: 'color:var(--ink)'}, p.live_text) : null),
+    wait ? null : h('div', {class: 'conf'}, h('div', {class: 'mh'}, h('span', null, 'Pewność heurystyki (' + bucket + ')'), h('b', null, conf + '%')),
+      bar(conf / 100, conf >= 75 ? 'bull' : 'accent'),
+      h('div', {class: 'note', style: 'margin-top:6px;font-size:.76rem'}, 'To wynik reguł, a nie prawdopodobieństwo. Sprawdź skuteczność w teście wstecznym.')));
+  let ticket = null;
+  if (!wait) {
+    const dst = (v) => ok(v) && ok(p.entry) ? pct((v / p.entry - 1) * 100, 1) + ' od wejścia' : '';
+    ticket = h('div', {class: 'ticket'},
+      h('div', {class: 'en'}, h('span', null, brk ? 'Wejście (po wybiciu)' : 'Wejście (limit)'), h('b', null, px0(p.entry)), h('small', null, (p.entry_note || []).join(' + '))),
+      h('div', {class: 'sl'}, h('span', null, 'Stop Loss'), h('b', null, px0(p.stop)), h('small', null, `${dst(p.stop)} · ryzyko ${fmt(p.risk_px_pct, 1)}%`)),
+      h('div', {class: 'tp'}, h('span', null, 'TP1 (zamknij 50%)'), h('b', null, px0(p.tp1)), h('small', null, `${fmt(p.r1, 1)}R · potem stop na wejście`)),
+      h('div', {class: 'tp'}, h('span', null, 'TP2 (reszta)'), h('b', null, px0(p.tp2)), h('small', null, `${fmt(p.r2, 1)}R`)),
+      h('div', null, h('span', null, 'Stosunek zysku do ryzyka'), h('b', null, '1 : ' + fmt(p.rr, 2)), h('small', null, 'ważony 50/50 TP1 i TP2')),
+      h('div', null, h('span', null, `Rozmiar przy ryzyku ${fmt(p.risk_budget_pct, 1)}% kapitału`), h('b', null, fmt(p.notional_pct, 0) + '% kapitału'), h('small', null, `nominał pozycji${ok(p.leverage_x) && p.leverage_x > 1 ? ' · potrzebny lewar ' + fmt(p.leverage_x, 1) + '×' : ' · bez lewaru'}`)),
+      h('div', null, h('span', null, 'Propozycja ważna do'), h('b', null, fdt(p.valid_until_ms)), h('small', null, brk ? 'potem wygasa, jeśli cena nie wybije poziomu' : 'potem wygasa, jeśli nie wypełniona')));
+  }
+  const list = (arr, cls) => arr && arr.length ? h('ul', {class: 'why ' + cls}, arr.map(x => h('li', null, plnum(x)))) : null;
+  const goals = !wait ? null : (p.waiting_for && p.waiting_for.length ? [h('p', {class: 'eyebrow', style: 'margin:16px 0 0'}, 'Na co czekam'), h('ul', {class: 'why goal'}, p.waiting_for.map(x => h('li', null, plnum(x.text))))] : null);
+  const ctx = ((pl.context || {}).notes || []);
+  const act = pl.journal && pl.journal.active;
+  const actLine = act ? h('p', {class: 'note'}, `Aktywna propozycja w dzienniku: ${act.side === 'long' ? 'long' : 'short'} ${px0(act.entry)} — ` +
+    (act.status === 'open' ? `pozycja otwarta od ${fdt(act.filled_ms)}${ok(act.unrealized_r) ? ', wynik niezrealizowany ' + rtxt(act.unrealized_r) : ''}${act.tp1_hit ? ', TP1 zrealizowany, stop na wejściu' : ''}.`
+      : `${act.entry_type === 'stop' ? 'zlecenie warunkowe czeka na wybicie' : 'zlecenie czeka na wypełnienie'}, ważne do ${fdt(act.valid_until_ms)}.`)) : null;
+  const near = (p.supports || []).length || (p.resistances || []).length ? h('p', {class: 'note'}, 'Najbliższe poziomy: ' +
+    [(p.resistances || []).length ? 'opór ' + p.resistances.map(px0).join(', ') : null, (p.supports || []).length ? 'wsparcie ' + p.supports.map(px0).join(', ') : null].filter(Boolean).join(' · ') + '.') : null;
+  return card({id: 'sec-plan', title: 'Plan analizatora na dziś', sub},
+    h('div', {class: 'plan ' + (wait ? '' : long ? 'buy' : 'sell')}, top, ticket,
+      list(p.reasons, wait ? 'wait' : ''), list(p.cautions, 'warn'), goals,
+      !wait && p.invalidation ? h('p', {class: 'note', style: 'margin-bottom:0'}, 'Unieważnienie: ' + p.invalidation) : null),
+    ctx.length ? h('ul', {class: 'warnlist', style: 'margin-top:14px'}, ctx.map(x => h('li', null, x))) : null,
+    actLine, near,
+    h('p', {class: 'note'}, 'Poziomy planu są nanoszone na wykres ceny (przełącznik „Plan analizatora”). Każda propozycja trafia do dziennika i jest rozliczana automatycznie z danych rynkowych, więc skuteczność widać poniżej. Zawsze samodzielnie oceń ryzyko: to narzędzie pomocnicze, a nie porada inwestycyjna. Chcesz sprawdzić szanse w swoim przedziale czasu? ', h('a', {href: 'kalkulator.html'}, 'Otwórz kalkulator zagrań'), '.'));
+}
+function outChip(p) {
+  const key = p.outcome || p.status, [t, c] = OUT[key] || [key, 'v-zero'];
+  return h('span', {class: 'chipf ' + c}, t);
+}
+function statsTiles(st, extra) {
+  if (!st || !st.n) return null;
+  const t = [
+    tile('Rozliczone transakcje', String(st.n), ok(st.fill_rate_pct) ? `wypełnionych ${fmt(st.fill_rate_pct, 0)}% propozycji` : null),
+    tile('Skuteczność', fmt(st.win_rate_pct, 0) + '%', 'transakcje na plusie po kosztach', bar(st.win_rate_pct / 100, st.win_rate_pct >= 50 ? 'bull' : 'accent')),
+    tile('Średni wynik (oczekiwanie)', rtxt(st.avg_r), 'na jedną transakcję, 1R = ryzyko do SL', divbar(clamp(st.avg_r, -1, 1)), sign(st.avg_r)),
+    ok(st.profit_factor) ? tile('Profit factor', fmt(st.profit_factor, 2), 'zyski brutto / straty brutto', bar(st.profit_factor / 3, st.profit_factor >= 1 ? 'bull' : 'bear')) : null,
+    tile('Łączny wynik', rtxt(st.total_r), null, null, sign(st.total_r)),
+    ok(st.max_drawdown_r) ? tile('Największe obsunięcie', rtxt(st.max_drawdown_r), 'szczyt do dołka krzywej', null, 'down') : null,
+    ok(st.avg_hold_days) ? tile('Średni czas w pozycji', fmt(st.avg_hold_days, 1) + ' dn.') : null,
+  ].filter(Boolean);
+  return h('div', {class: 'tiles small'}, t, extra || []);
+}
+function breakdown(st) {
+  if (!st || !st.n) return null;
+  const rows_ = [];
+  for (const [k, nm] of [['long', 'Long'], ['short', 'Short']]) { const x = (st.by_side || {})[k]; if (x && x.n) rows_.push([nm, x]); }
+  for (const [k, nm] of [['pullback', 'Wejście na cofnięciu (limit)'], ['breakout', 'Wejście po wybiciu (stop)']]) { const x = (st.by_setup || {})[k]; if (x && x.n) rows_.push([nm, x]); }
+  for (const x of st.by_conf || []) if (x.n) rows_.push(['Pewność ' + x.label + '%', x]);
+  if (!rows_.length) return null;
+  const mx = Math.max(...rows_.map(([, x]) => Math.abs(x.avg_r)), 0.2);
+  return h('div', null, h('h3', null, 'Gdzie plan działa lepiej'), h('ul', {class: 'rank'}, rows_.map(([nm, x], i) => h('li', null,
+    h('div', {class: 'nm'}, nm, h('small', null, `${x.n} transakcji · skuteczność ${fmt(x.win_rate_pct, 0)}%`)),
+    divbar(x.avg_r / mx),
+    h('div', {class: 'val'}, h('b', {class: sign(x.avg_r)}, rtxt(x.avg_r)), h('small', null, 'średnio / transakcję'))))));
+}
+function tradesTable(list) {
+  if (!list || !list.length) return null;
+  return h('div', {class: 'tbl-w'}, h('table', {class: 'tbl'},
+    h('thead', null, h('tr', null, ['Utworzona', 'Strona', 'Wejście', 'Stop', 'TP1 / TP2', 'Pewność', 'Wynik', ''].map((x, i) => h('th', {class: i >= 2 && i <= 5 || i === 7 ? 'r' : ''}, x)))),
+    h('tbody', null, list.map(p => h('tr', null,
+      h('td', null, fday(p.created_ms)), h('td', null, (p.side === 'long' ? '▲ Long' : '▼ Short') + (p.entry_type === 'stop' ? ' · wybicie' : '')),
+      h('td', {class: 'r'}, px0(p.entry)), h('td', {class: 'r'}, px0(p.stop)), h('td', {class: 'r'}, px0(p.tp1) + ' / ' + px0(p.tp2)),
+      h('td', {class: 'r'}, ok(p.confidence) ? p.confidence + '%' : ''),
+      h('td', null, outChip(p)),
+      h('td', {class: 'r ' + sign(p.r != null ? p.r : p.unrealized_r)}, p.r != null ? rtxt(p.r) : (p.status === 'open' && ok(p.unrealized_r) ? rtxt(p.unrealized_r) + ' (nieroz.)' : '')))))));
+}
+function notifyLine(nf) {
+  if (!nf) return null;
+  const nm = {email: 'e-mail', whatsapp: 'WhatsApp'}, ch = (nf.channels || []).map(c => nm[c] || c);
+  if (!ch.length) return h('p', {class: 'note'}, 'Powiadomienia o sygnałach: ' + (nf.reason || 'wyłączone') + '.');
+  const recent = nf.last_error && nf.last_error.ms && Date.now() - nf.last_error.ms < 48 * 3600e3;
+  const what = {new: 'nowych sygnałach', filled: 'wejściach', tp1: 'TP1', closed: 'zamknięciach', ended: 'anulowaniach',
+    regime: 'zmianie nastawienia planów długoterminowych', liq: 'bliskości likwidacji pozycji'};
+  const list = (nf.events || []).map(e => what[e]).filter(Boolean);
+  const listTxt = list.length > 1 ? list.slice(0, -1).join(', ') + ' i ' + list[list.length - 1] : (list[0] || 'sygnałach');
+  const lq = nf.liq;
+  return [h('p', {class: 'note'}, 'Powiadomienia o ' + listTxt + ': ' + ch.join(' i ') + '. ' +
+      (nf.last_ok_ms ? 'Ostatnia wiadomość wysłana ' + fdt(nf.last_ok_ms) + '.' : 'Jeszcze nic nie wysłano.')),
+    lq ? h('p', {class: 'note', style: 'margin-top:6px'}, !lq.watched ? 'Nadzór likwidacji: brak otwartych pozycji z ceną likwidacji.'
+      : `Nadzór likwidacji: ${lq.watched} ${lq.watched === 1 ? 'pozycja' : 'pozycje'}, najbliżej ${fmt(lq.nearest_pct, 1)}% od likwidacji (ostrzeżenie przy ${fmt(lq.warn, 0)}%, pilny alarm przy ${fmt(lq.crit, 0)}%).`) : null,
+    recent ? h('p', {class: 'banner', style: 'margin-top:8px'}, `Nieudana wysyłka (${nm[nf.last_error.channel] || nf.last_error.channel}, ${fdt(nf.last_error.ms)}): ${nf.last_error.message}`) : null];
+}
+function journalCard(r) {
+  const pl = r.planner;
+  if (!pl || pl.status !== 'ok') return null;
+  const jn = pl.journal || {}, st = jn.stats || {}, bt = pl.backtest;
+  const body = h('div', {style: 'margin-top:16px'});
+  const warnSmall = n => n < 30 ? h('p', {class: 'note'}, `Mała próba (${n} transakcji): przy tak niewielu wynikach różnica między dobrym a złym wynikiem bywa przypadkiem. Traktuj liczby orientacyjnie.`) : null;
+  const paintLive = () => {
+    const logRows = (jn.log || []).slice().reverse();
+    put(body, 
+      h('p', {class: 'note', style: 'margin-top:0'}, `Dziennik zapisuje każdą propozycję analizatora od ${jn.since ? fmtDate(jn.since.slice(0, 10)) : 'pierwszego uruchomienia'} i sam ją rozlicza na świecach 15-minutowych (zlecenie limit lub warunkowe po wybiciu, stop, TP1 50% ze stopem na wejściu, TP2). To uczciwy zapis „na żywo”: nic nie jest zmieniane wstecz.`),
+      notifyLine(pl.notify),
+      st.n ? [statsTiles(st), (st.curve || []).length > 1 ? (c => [h('h3', null, 'Krzywa wyniku narastająco (R)'), c.readout, h('div', {class: 'wipe'}, c.svg)])(curveSvg(st.curve, 'r')) : null, breakdown(st), warnSmall(st.n)]
+        : h('p', {class: 'note'}, `Brak jeszcze rozliczonych transakcji (oczekujące: ${st.pending || 0}, otwarte: ${st.open || 0}, niewypełnione: ${st.not_filled || 0}, wycofane: ${st.cancelled || 0}). Wyniki pojawią się, gdy pierwsze zlecenie zostanie wypełnione i zamknięte. Do tego czasu patrz test wsteczny.`),
+      h('h3', null, 'Ostatnie propozycje'), tradesTable(jn.stats && jn.stats.recent) || h('p', {class: 'note'}, 'Dziennik jest jeszcze pusty.'),
+      logRows.length ? [h('h3', null, 'Historia decyzji analizatora'), h('ul', {class: 'why wait'}, logRows.map(x => h('li', null,
+        `${fdt(x.ms)} · ${x.action === 'wait' ? 'czekaj' : (x.action === 'long' ? 'kup limit ' : 'sprzedaj limit ') + px0(x.entry) + ' (SL ' + px0(x.stop) + ', pewność ' + x.confidence + '%)'} · cena ${px0(x.price)}`)))] : null,
+      jn.write_ok === false ? h('p', {class: 'banner', style: 'margin-top:12px'}, 'Nie udało się zapisać dziennika na serwerze (sprawdź uprawnienia do pliku btc_journal.json).') : null);
+  };
+  const paintBt = () => {
+    if (!bt || !bt.n) { put(body, h('p', {class: 'note', style: 'margin-top:0'}, 'Za mało danych historycznych, aby przeprowadzić test wsteczny.')); return; }
+    put(body, 
+      h('p', {class: 'note', style: 'margin-top:0'}, `Te same reguły planu uruchomione dzień po dniu na historii Bybit (${fmtDate(bt.from_date)} – ${fmtDate(bt.asof)}, ${bt.days} dni). Każdego dnia plan widzi tylko dane do tego dnia, a propozycje przechodzą przez ten sam silnik co na żywo. Koszt rundy ${fmt(bt.fee_pct, 3)}% nominału, w obrębie świecy zawsze zakładamy gorszy przebieg. Parametrów nie dobierano pod ten okres.`),
+      statsTiles(bt, tile('Kup i trzymaj (ten sam okres)', pct(bt.buy_hold_pct, 0), 'dla porównania, bez dźwigni', null, sign(bt.buy_hold_pct))),
+      (bt.curve || []).length > 1 ? (c => [h('h3', null, 'Krzywa wyniku narastająco (R)'), c.readout, h('div', {class: 'wipe'}, c.svg)])(curveSvg(bt.curve, 'r')) : null,
+      breakdown(bt), warnSmall(bt.n),
+      h('h3', null, 'Ostatnie transakcje w teście'), tradesTable(bt.recent),
+      h('p', {class: 'note'}, `Z ${bt.signals} wygenerowanych propozycji wypełniło się ${bt.n}; reszta wygasła, została przegapiona (cena odjechała bez cofnięcia), unieważniona (cena zeszła do stopa, zanim zlecenie warunkowe się uruchomiło) albo wycofana. Test nie uwzględnia funding rate, poślizgu przy stopie ani zmian zasad giełdy, a wyniki historyczne nie gwarantują przyszłych.`));
+  };
+  const tabs = [['live', 'Na żywo (dziennik)', paintLive], ['bt', 'Test wsteczny', paintBt]];
+  const seg = h('div', {class: 'seg', role: 'group', 'aria-label': 'Widok dziennika'});
+  tabs.forEach(([k, label, fn], i) => {
+    const b = h('button', {type: 'button', 'aria-pressed': String(i === 0)}, label);
+    b.addEventListener('click', () => { seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); fn(); });
+    seg.append(b);
+  });
+  paintLive();
+  return card({id: 'sec-dziennik', title: 'Dziennik i skuteczność planu', sub: 'Pamięć propozycji analizatora i analiza wsteczna', right: seg}, body);
+}
+function flowBars(bins, price, o) {
+  if (!bins || !bins.length) return h('p', {class: 'note'}, 'Brak danych.');
+  const mxq = Math.max(...bins.flatMap(b => [b.buy_q || 0, b.sell_q || 0, b.pend_buy_q || 0, b.pend_sell_q || 0]), 1e-9);
+  const q = v => fmt(v, v >= 10 ? 1 : 3);
+  const w = v => clamp(v / mxq, 0, 1).toFixed(3);
+  const cell = (n, qv, pn, pq, cls) => {
+    const kids = [];
+    if (pq) kids.push(h('i', {class: 'pend', style: '--f:' + w(pq), title: `oczekujące: ${pn} zl. · ${q(pq)}`}));
+    if (qv) kids.push(h('i', {style: '--f:' + w(qv)}));
+    if (qv || pq) kids.push(h('span', null, (o.showN && n ? n + '× · ' : '') + q(qv || pq) + (pq && qv ? ' +' + q(pq) : '')));
+    return kids;
+  };
+  const head = h('div', {class: 'fhead'}, h('span', null, o.left), h('span', null, 'cena'), h('span', null, o.right));
+  const rows_ = bins.map(b => {
+    const cur = ok(price) && price >= b.lo && price < b.hi;
+    const left = cell(b.buy_n, b.buy_q, b.pend_buy_n, b.pend_buy_q), right = cell(b.sell_n, b.sell_q, b.pend_sell_n, b.pend_sell_q);
+    return h('div', {class: 'frow' + (cur ? ' cur' : ''), title: cur ? 'tu jest bieżąca cena' : null},
+      h('div', {class: 'bl'}, [...left].reverse()), h('div', {class: 'px'}, (o.step >= 1 ? fmt(b.lo, 0) : fmt(b.lo, 1)) + (cur ? ' ◀' : '')), h('div', {class: 'br'}, right));
+  });
+  return h('div', {class: 'flow', role: 'img', 'aria-label': o.aria}, head, rows_);
+}
+function flowCard(r) {
+  const pl = r.planner, fl = pl && pl.flow;
+  if (!fl || (!fl.own && !fl.book && !fl.trades)) return null;
+  const price = fl.price, body = h('div', {style: 'margin-top:16px'});
+  const paint = {};
+  if (fl.own) paint.own = () => {
+    const o = fl.own, full = o.privacy === 'full';
+    const t = [tile('Kupna (ostatnie ' + o.days + ' dni)', String(o.buy_n) + ' transakcji', full && ok(o.buy_qty) ? fmt(o.buy_qty, 3) + ' BTC' : null),
+      tile('Sprzedaże', String(o.sell_n) + ' transakcji', full && ok(o.sell_qty) ? fmt(o.sell_qty, 3) + ' BTC' : null),
+      ok(o.maker_pct) ? tile('Zlecenia limit (maker)', fmt(o.maker_pct, 0) + '%', 'reszta to wypełnienia po rynku') : null];
+    if (full && ok(o.avg_buy)) t.push(tile('Średnia cena kupna', fmt(o.avg_buy, 0), ok(price) ? pct((price / o.avg_buy - 1) * 100, 1) + ' do bieżącej ceny' : null));
+    if (full && ok(o.avg_sell)) t.push(tile('Średnia cena sprzedaży', fmt(o.avg_sell, 0)));
+    put(body, h('div', {class: 'tiles small', style: 'margin-top:0'}, t.filter(Boolean)),
+      full && o.bins ? [flowBars(o.bins, price, {left: 'KUPNO (ilość BTC)', right: 'SPRZEDAŻ (ilość BTC)', step: o.step, showN: true, aria: 'Rozkład Twoich transakcji i oczekujących zleceń po cenach'}),
+        h('div', {class: 'legend2'}, h('span', null, h('i', {style: 'background:var(--bull)'}), 'wykonane'), h('span', null, h('i', {style: 'border:1.5px dashed var(--muted)'}), 'oczekujące zlecenia'), h('span', null, '◀ bieżąca cena'))]
+        : h('p', {class: 'note'}, full ? 'Brak własnych transakcji BTC w tym okresie.' : 'Tryb masked: pokazuję tylko liczby. Rozkład po cenach ujawniałby Twoje poziomy wejścia, dlatego wymaga BYBIT_PRIVACY=full (i hasła do strony).'),
+      o.other_n ? h('p', {class: 'note'}, `Pominięto ${o.other_n} transakcji na innych instrumentach.`) : null);
+  };
+  if (fl.book) paint.book = () => {
+    const bk = fl.book;
+    put(body, h('div', {class: 'tiles small', style: 'margin-top:0'},
+      tile('Płynność kupna (bid)', fmt(bk.buy_q, 1) + ' BTC'), tile('Płynność sprzedaży (ask)', fmt(bk.sell_q, 1) + ' BTC'),
+      tile('Przewaga', ok(bk.imbalance_pct) ? (bk.imbalance_pct > 0 ? 'kupujących ' : 'sprzedających ') + fmt(Math.abs(bk.imbalance_pct), 0) + '%' : 'n/d', `księga obejmuje ok. ${fmt(bk.span_pct, 2)}% ceny`, null, sign(bk.imbalance_pct))),
+      flowBars(bk.bins, price, {left: 'BID (kupno, BTC)', right: 'ASK (sprzedaż, BTC)', step: bk.step, aria: 'Płynność w księdze zleceń po cenach'}),
+      h('p', {class: 'note'}, `Najbliższe ${bk.levels} poziomów księgi Bybit w chwili generowania raportu. Zlecenia w księdze szybko się zmieniają i bywają wycofywane, więc to obraz chwilowy, a nie „mur” gwarantujący odbicie.`));
+  };
+  if (fl.trades) paint.trades = () => {
+    const tr = fl.trades;
+    put(body, h('div', {class: 'tiles small', style: 'margin-top:0'},
+      tile('Agresywne kupno', `${tr.buy_n} transakcji`, fmt(tr.buy_q, 2) + ' BTC'), tile('Agresywna sprzedaż', `${tr.sell_n} transakcji`, fmt(tr.sell_q, 2) + ' BTC'),
+      tile('Okno czasu', ok(tr.minutes) ? fmt(tr.minutes, 1) + ' min' : 'n/d', 'ostatnie transakcje publiczne')),
+      flowBars(tr.bins, price, {left: 'KUPNO po rynku (BTC)', right: 'SPRZEDAŻ po rynku (BTC)', step: tr.step, showN: true, aria: 'Ostatnie transakcje publiczne po cenach'}),
+      h('p', {class: 'note'}, 'Strona agresora: kupno oznacza, że ktoś uderzył w oferty sprzedaży, sprzedaż, że w oferty kupna. Okno jest krótkie (ostatnie 1000 transakcji).'));
+  };
+  const names = {own: 'Moje transakcje', book: 'Księga zleceń', trades: 'Ostatnie transakcje'};
+  const keys = Object.keys(paint), seg = h('div', {class: 'seg', role: 'group', 'aria-label': 'Widok rozkładu cen'});
+  keys.forEach((k, i) => {
+    const b = h('button', {type: 'button', 'aria-pressed': String(i === 0)}, names[k]);
+    b.addEventListener('click', () => { seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); paint[k](); });
+    seg.append(b);
+  });
+  paint[keys[0]]();
+  return card({id: 'sec-ceny', title: 'Zlecenia kupna i sprzedaży po cenach', sub: 'Ilości w kolejnych przedziałach cenowych', right: seg}, body);
+}
+/* ---------- plany długoterminowe (laboratorium) ---------- */
+const LAB_SLOT = {hold: 1, trend200: 2, cross: 3, volt: 4, trendvolt: 5, analyzer_0_5: 6, analyzer_1: 7, analyzer_2: 8};
+const LAB_SHORT = {hold: 'Kup i trzymaj', trend200: 'Trend SMA200', cross: 'Krzyż 50/200', volt: 'Cel zmienn.', trendvolt: 'Trend + zmienn.', analyzer_0_5: 'Analiz. 0,5%', analyzer_1: 'Analiz. 1%', analyzer_2: 'Analiz. 2%'};
+const labCol = id => `var(--s${LAB_SLOT[id] || 1})`;
+const labUi = {tab: 'cmp', vis: new Set(['hold', 'trend200', 'trendvolt', 'analyzer_1'])};
+const planName = p => window.innerWidth < 560 ? (LAB_SHORT[p.id] || p.name) : p.name;
+const dayTxt = d => !ok(d) ? 'n/d' : d >= 365 ? nf(1).format(d / 365) + ' lat' : d + ' dni';
+const yearTick = iso => iso.slice(0, 4);
+
+/* wykres wielu serii: legenda osobno, tu oś, linie, podpowiedź (mysz, dotyk i klawiatura) i etykiety końcówek */
+function mline(o) {
+  const box = h('div', {class: 'mchart'}), ser = o.series, n = o.t.length;
+  let W = 0;
+  const build = w => {
+    W = w;
+    const H = Math.round(clamp(W * 0.42, 240, 380)), direct = W >= 520 && ser.length <= 4, pl = 54, pr = direct ? 124 : 14, pt = 12, pb = 26;
+    const all = ser.flatMap(s => s.v);
+    let lo = Math.min(...all, ...(ok(o.base) ? [o.base] : [])), hi = Math.max(...all, ...(ok(o.base) ? [o.base] : []));
+    const tr = o.log ? (v => Math.log(Math.max(v, 0.01))) : (v => v);
+    if (o.zeroTop) hi = 0;
+    let tlo = tr(lo), thi = tr(hi);
+    const padv = (thi - tlo) * 0.05 || 1;
+    tlo -= padv; if (!o.zeroTop) thi += padv;
+    const X = i => pl + (n < 2 ? 0 : i / (n - 1)) * (W - pl - pr), Y = v => pt + (thi - tr(v)) / (thi - tlo) * (H - pt - pb);
+    const svg = S('svg', {viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': o.aria, tabindex: 0});
+    let ticks = [];
+    if (o.log) {
+      const mk = ms => { const a = []; for (let e = Math.floor(Math.log10(Math.max(lo, 0.01))) - 1; e <= Math.ceil(Math.log10(Math.max(hi, 0.02))) + 1; e++) for (const m of ms) { const v = m * 10 ** e; if (v >= lo * 0.9 && v <= hi * 1.1) a.push(v); } return a; };
+      ticks = mk([1, 2, 5]);
+      if (ticks.length > 7) ticks = mk([1, 3]);
+      if (ticks.length > 7) ticks = mk([1]);
+    } else {
+      const step = niceStep((hi - lo) / 4);
+      for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) ticks.push(Math.abs(v) < 1e-9 ? 0 : v);
+    }
+    for (const v of ticks) svg.append(S('line', {class: 'g', x1: pl, x2: W - pr, y1: Y(v), y2: Y(v)}), S('text', {class: 'axis', x: pl - 6, y: Y(v) + 4, 'text-anchor': 'end'}, o.fmtY(v)));
+    if (ok(o.base)) svg.append(S('line', {x1: pl, x2: W - pr, y1: Y(o.base), y2: Y(o.base), style: 'stroke:var(--muted);stroke-width:1.2'}));
+    let lastX = -99;
+    for (let i = 0; i < n; i++) if (i === 0 || o.t[i].slice(0, 4) !== o.t[i - 1].slice(0, 4)) {
+      const x = X(i);
+      if (x - lastX < 40) continue;
+      lastX = x;
+      svg.append(S('text', {class: 'axis', x, y: H - 7, 'text-anchor': i === 0 ? 'start' : 'middle'}, yearTick(o.t[i])));
+    }
+    for (const s of ser) {
+      svg.append(S('path', {class: 'ml', d: s.v.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(''), style: `stroke:${s.color}`}));
+      svg.append(S('circle', {cx: X(n - 1), cy: Y(s.v[n - 1]), r: 3.6, style: `fill:${s.color};stroke:var(--card);stroke-width:2`}));
+    }
+    if (direct) {
+      const ls = ser.map(s => ({s, y: Y(s.v[n - 1])})).sort((a, b) => a.y - b.y);
+      for (let k = 1; k < ls.length; k++) if (ls[k].y - ls[k - 1].y < 15) ls[k].y = ls[k - 1].y + 15;
+      for (const l of ls) svg.append(S('line', {x1: W - pr + 8, x2: W - pr + 20, y1: l.y, y2: l.y, style: `stroke:${l.s.color};stroke-width:2.4;stroke-linecap:round`}),
+        S('text', {class: 'axis', x: W - pr + 25, y: l.y + 4, style: 'fill:var(--ink)'}, l.s.short || LAB_SHORT[l.s.id] || l.s.name));
+    }
+    const cross = S('line', {class: 'cross', y1: pt, y2: H - pb, visibility: 'hidden'});
+    const hit = S('rect', {x: pl, y: 0, width: W - pl - pr, height: H, fill: 'transparent'});
+    svg.append(cross, hit);
+    const tip = h('div', {class: 'tip', hidden: true, role: 'status'});
+    let cur = n - 1;
+    const show = i => {
+      cur = clamp(i, 0, n - 1);
+      cross.setAttribute('x1', X(cur)); cross.setAttribute('x2', X(cur)); cross.setAttribute('visibility', 'visible');
+      const sorted = ser.slice().sort((a, b) => b.v[cur] - a.v[cur]);
+      put(tip, h('div', {class: 'd'}, fmtDate(o.t[cur])), sorted.map(s => h('div', {class: 'tr'}, h('i', {style: `background:${s.color}`}), h('span', null, s.name), h('b', null, o.fmtTip(s.v[cur])))));
+      tip.hidden = false;
+      const xp = X(cur), tw = tip.offsetWidth;
+      tip.style.left = Math.max(0, xp > W * 0.55 ? xp - tw - 14 : xp + 14) + 'px';
+    };
+    const hide = () => { cross.setAttribute('visibility', 'hidden'); tip.hidden = true; };
+    hit.addEventListener('pointermove', e => { const rc = svg.getBoundingClientRect(); show(Math.round((((e.clientX - rc.left) * (W / rc.width)) - pl) / (W - pl - pr) * (n - 1))); });
+    hit.addEventListener('pointerleave', hide);
+    svg.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); show(cur + (e.key === 'ArrowLeft' ? -1 : 1)); }
+      else if (e.key === 'Escape') hide();
+    });
+    svg.addEventListener('focus', () => show(cur));
+    svg.addEventListener('blur', hide);
+    put(box, svg, tip);
+  };
+  build(Math.round(clamp(window.innerWidth - (window.innerWidth < 700 ? 56 : 130), 300, 1000)));
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => {
+      if (!box.isConnected) { ro.disconnect(); return; }
+      const w = Math.round(box.clientWidth);
+      if (w >= 240 && Math.abs(w - W) > 12) build(w);
+    });
+    ro.observe(box);
+  }
+  return box;
+}
+
+/* tabela z tymi samymi danymi co wykres (co kwartał), dla czytników ekranu i dla tych, którzy wolą liczby */
+function mlineTable(o) {
+  const idx = [];
+  for (let i = 0; i < o.t.length; i += 13) idx.push(i);
+  if (idx[idx.length - 1] !== o.t.length - 1) idx.push(o.t.length - 1);
+  return h('details', {class: 'tw'}, h('summary', null, 'Pokaż dane w tabeli (co kwartał)'),
+    h('div', {class: 'tbl-w'}, h('table', {class: 'tbl'},
+      h('thead', null, h('tr', null, h('th', null, 'Data'), o.series.map(s => h('th', {class: 'r'}, s.name)))),
+      h('tbody', null, idx.map(i => h('tr', null, h('td', null, fmtDate(o.t[i])), o.series.map(s => h('td', {class: 'r'}, o.fmtTip(s.v[i])))))))));
+}
+
+/* legenda-przełączniki (wspólna dla wykresów kapitału i obsunięć) + wykres */
+function labChart(lab, kind) {
+  const isEq = kind === 'eq';
+  const area = h('div'), legend = h('div', {class: 'seg legend lablegend', role: 'group', 'aria-label': 'Widoczne plany'});
+  const cfg = () => ({
+    t: lab.t, log: isEq, base: isEq ? 100 : null, zeroTop: !isEq,
+    series: lab.plans.filter(p => labUi.vis.has(p.id)).map(p => ({id: p.id, name: p.name, color: labCol(p.id), v: isEq ? p.eq : p.dd})),
+    fmtY: isEq ? v => fmt(v, 0) : v => fmt(v, 0) + '%',
+    fmtTip: isEq ? v => fmt(v, 0) : v => pct(v, 1),
+    aria: isEq ? 'Wartość kapitału planów, skala logarytmiczna, start = 100' : 'Obsunięcie kapitału od szczytu dla wybranych planów',
+  });
+  const paint = () => { const c = cfg(); put(area, mline(c), mlineTable(c)); };
+  const btns = lab.plans.map(p => {
+    const b = h('button', {type: 'button', 'aria-pressed': String(labUi.vis.has(p.id))}, h('i', {class: 'sw', style: `background:${labCol(p.id)}`}), p.name);
+    b.addEventListener('click', () => {
+      if (labUi.vis.has(p.id)) { if (labUi.vis.size > 1) labUi.vis.delete(p.id); } else labUi.vis.add(p.id);
+      btns.forEach((x, k) => x.setAttribute('aria-pressed', String(labUi.vis.has(lab.plans[k].id))));
+      paint();
+    });
+    return b;
+  });
+  put(legend, btns);
+  paint();
+  return [legend, area];
+}
+
+function labCompare(lab) {
+  const P = lab.plans, best = (f, dir) => { const v = P.map(p => f(p)).filter(ok); return v.length ? (dir > 0 ? Math.max(...v) : Math.min(...v)) : null; };
+  const bc = best(p => p.m.cagr_pct, 1), bd = best(p => p.m.max_dd_pct, 1), bk = best(p => p.m.calmar, 1), bs = best(p => p.m.sharpe, 1);
+  const cell = (v, b, txt, extra) => h('td', {class: 'r' + (ok(v) && v === b ? ' best' : '') + (extra ? ' ' + extra : '')}, txt);
+  const tbl = h('div', {class: 'tbl-w'}, h('table', {class: 'tbl'},
+    h('thead', null, h('tr', null, h('th', null, 'Plan'), ['Rocznie', 'Maks. obsunięcie', 'Wynik łączny', 'Calmar', 'Sharpe', 'W rynku / próba'].map(x => h('th', {class: 'r'}, x)))),
+    h('tbody', null, P.map(p => h('tr', null,
+      h('td', null, h('span', {class: 'pn', title: p.desc}, h('i', {style: `background:${labCol(p.id)}`}), planName(p))),
+      cell(p.m.cagr_pct, bc, pct(p.m.cagr_pct, 1), sign(p.m.cagr_pct)),
+      cell(p.m.max_dd_pct, bd, pct(p.m.max_dd_pct, 0), 'down'),
+      h('td', {class: 'r ' + sign(p.m.total_pct)}, pct(p.m.total_pct, 0)),
+      cell(p.m.calmar, bk, ok(p.m.calmar) ? fmt(p.m.calmar, 2) : 'n/d'),
+      cell(p.m.sharpe, bs, ok(p.m.sharpe) ? fmt(p.m.sharpe, 2) : 'n/d'),
+      h('td', {class: 'r'}, p.group === 'analyzer' ? `${p.trades} transakcji` : fmt(p.m.avg_exposure_pct, 0) + '% kapitału'))))));
+  return [
+    h('p', {class: 'note', style: 'margin-top:0'}, `Te same dni, te same koszty, ten sam start (100). Skala pionowa jest logarytmiczna, więc równy odstęp oznacza równy procent zmiany. Włącz lub wyłącz plany w legendzie.`),
+    labChart(lab, 'eq'), tbl,
+    h('p', {class: 'note'}, 'Pogrubione = najlepsza wartość w kolumnie. Calmar to wynik roczny podzielony przez największe obsunięcie, Sharpe to wynik w stosunku do zmienności. Plan analizatora zależy od przyjętego ryzyka na transakcję, więc porównuj go raczej przez Calmar i Sharpe niż przez wynik roczny.'),
+    (lab.insights || []).length ? [h('h3', null, 'Wnioski z liczb'), h('ul', {class: 'why'}, lab.insights.map(x => h('li', null, x)))] : null];
+}
+
+function labRisk(lab) {
+  const P = lab.plans, pn = p => h('span', {class: 'pn', title: p.desc}, h('i', {style: `background:${labCol(p.id)}`}), planName(p));
+  const hist = h('div', {class: 'tbl-w'}, h('table', {class: 'tbl'},
+    h('thead', null, h('tr', null, h('th', null, 'Plan'), ['Zmienność roczna', 'Maks. obsunięcie', 'Najdłużej pod wodą', 'Najgorsze 30 dni', 'Najgorszy miesiąc', 'Miesiące na plusie'].map(x => h('th', {class: 'r'}, x)))),
+    h('tbody', null, P.map(p => h('tr', null, h('td', null, pn(p)),
+      h('td', {class: 'r'}, fmt(p.m.vol_pct, 0) + '%'), h('td', {class: 'r down'}, pct(p.m.max_dd_pct, 0)), h('td', {class: 'r'}, dayTxt(p.m.max_underwater_days)),
+      h('td', {class: 'r down'}, pct(p.m.worst_30d_pct, 0)), h('td', {class: 'r down'}, pct(p.m.worst_month_pct, 0)), h('td', {class: 'r'}, ok(p.m.pos_months_pct) ? fmt(p.m.pos_months_pct, 0) + '%' : 'n/d'))))));
+  const mcp = P.filter(p => p.mc);
+  const mc = mcp.length ? h('div', {class: 'tbl-w'}, h('table', {class: 'tbl'},
+    h('thead', null, h('tr', null, h('th', null, 'Plan'), ['Gorszy scenariusz (5%)', 'Typowo (mediana)', 'Lepszy scenariusz (95%)', 'Szansa straty', 'Obsunięcie > 30%', 'Obsunięcie > 50%'].map(x => h('th', {class: 'r'}, x)))),
+    h('tbody', null, mcp.map(p => h('tr', null, h('td', null, pn(p)),
+      h('td', {class: 'r ' + sign(p.mc.p5)}, pct(p.mc.p5, 0)), h('td', {class: 'r ' + sign(p.mc.p50)}, pct(p.mc.p50, 0)), h('td', {class: 'r ' + sign(p.mc.p95)}, pct(p.mc.p95, 0)),
+      h('td', {class: 'r'}, fmt(p.mc.p_loss, 0) + '%'), h('td', {class: 'r'}, fmt(p.mc.p_dd30, 0) + '%'), h('td', {class: 'r'}, fmt(p.mc.p_dd50, 0) + '%')))))) : null;
+  const m0 = lab.mc || {};
+  return [
+    h('p', {class: 'note', style: 'margin-top:0'}, 'Obsunięcie to spadek kapitału od jego największej dotychczasowej wartości. Im głębsze i dłuższe, tym trudniej wytrwać przy planie, nawet jeśli wynik końcowy jest dobry.'),
+    labChart(lab, 'dd'),
+    h('h3', null, 'Ryzyko historyczne'), hist,
+    mc ? [h('h3', null, 'Co może się stać w ciągu roku (symulacja)'), mc,
+      h('p', {class: 'note'}, `${m0.sims || 1000} losowań: z historii planu wybieramy bloki po ${m0.block || 21} dni i składamy z nich rok (${m0.days || 365} dni). To pokazuje, jak szeroko rozrzuca się wynik, gdy przyszłość przypomina przeszłość. Nie jest to prognoza, a skrajne scenariusze mogą wyjść poza zakres tabeli.`)] : null];
+}
+
+function labYears(lab) {
+  const P = lab.plans, yrs = lab.year_list || [];
+  const bg = v => !ok(v) ? '' : `background:color-mix(in srgb,var(${v >= 0 ? '--bull' : '--bear'}) ${Math.round(clamp(Math.abs(v) / 100, 0, 1) * 55)}%,transparent)`;
+  const partial = y => P.some(p => p.years[y] && p.years[y].partial);
+  return [
+    h('p', {class: 'note', style: 'margin-top:0'}, 'Wynik każdego planu w kolejnych latach kalendarzowych. Intensywność koloru rośnie z wielkością zmiany (pełny kolor około ±55% i więcej).'),
+    h('div', {class: 'tbl-w'}, h('table', {class: 'tbl yheat'},
+      h('thead', null, h('tr', null, h('th', null, 'Rok'), P.map(p => h('th', {class: 'r', title: p.name}, h('span', {class: 'pn', style: 'justify-content:flex-end'}, h('i', {style: `background:${labCol(p.id)}`}), LAB_SHORT[p.id] || p.name))))),
+      h('tbody', null, yrs.map(y => h('tr', null, h('td', null, y + (partial(y) ? ' *' : '')),
+        P.map(p => { const v = p.years[y] ? p.years[y].ret : null; return h('td', {class: 'hc ' + sign(v), style: bg(v)}, ok(v) ? pct(v, 0) : '–'); })))))),
+    h('p', {class: 'note'}, '* rok niepełny (początek okresu lub rok bieżący). Pojedyncze lata nie przesądzają o jakości planu, ale dobrze pokazują, jak wyglądał najgorszy rok i jak duży był rozrzut.')];
+}
+
+function labDca(lab) {
+  const d = lab.dca;
+  if (!d || !d.dca) return h('p', {class: 'note', style: 'margin-top:0'}, 'Brak danych DCA.');
+  const a = d.dca, dip = d.dip, lump = d.lump;
+  const t = [
+    tile('Wpłacono (co tydzień 100)', fmt(a.invested, 0), `${a.buys} zakupów`),
+    tile('Wartość dziś', fmt(a.value, 0), 'po kosztach 0,1% za zakup'),
+    tile('Wynik DCA', pct(a.profit_pct, 0), 'względem wpłat', divbar(clamp(a.profit_pct / 200, -1, 1)), sign(a.profit_pct)),
+    tile('Średnia cena zakupu', fmt(a.avg_price, 0), 'USDT za 1 BTC'),
+    tile('Najgorszy moment', pct(a.worst_pct, 0), 'największa strata na wpłaconym kapitale', null, 'down'),
+    tile('Pod kreską', fmt(a.underwater_pct, 0) + '% czasu', 'tygodnie, gdy wartość < wpłaty'),
+  ];
+  const ser = [
+    {id: 'lump', name: 'Jednorazowy zakup', short: 'Jednorazowo', color: 'var(--s1)', v: lump.pnl},
+    {id: 'dca', name: 'DCA co tydzień', short: 'DCA', color: 'var(--s3)', v: a.pnl},
+    {id: 'dip', name: 'DCA z dokupem na spadkach', short: 'DCA + dokup', color: 'var(--s5)', v: dip.pnl}];
+  const cfg = {t: lab.t, series: ser, base: 0, fmtY: v => fmt(v, 0) + '%', fmtTip: v => pct(v, 1), aria: 'Wynik na wpłaconym kapitale: jednorazowy zakup, DCA i DCA z dokupem na spadkach'};
+  const key = s => h('span', {class: 'pn'}, h('i', {style: `background:${s.color}`}), s.name);
+  const cmp = h('div', {class: 'tbl-w'}, h('table', {class: 'tbl compact'},
+    h('thead', null, h('tr', null, h('th', null, 'Wariant'), ['Wpłacono', 'Wynik', 'Średnia cena', 'Najgorszy moment', 'Pod kreską'].map(x => h('th', {class: 'r'}, x)))),
+    h('tbody', null,
+      h('tr', null, h('td', null, key(ser[0])), h('td', {class: 'r'}, fmt(a.invested, 0)), h('td', {class: 'r ' + sign(lump.profit_pct)}, pct(lump.profit_pct, 0)), h('td', {class: 'r'}, '–'), h('td', {class: 'r down'}, pct(lump.max_dd_pct, 0) + ' (spadek ceny)'), h('td', {class: 'r'}, '–')),
+      h('tr', null, h('td', null, key(ser[1])), h('td', {class: 'r'}, fmt(a.invested, 0)), h('td', {class: 'r ' + sign(a.profit_pct)}, pct(a.profit_pct, 0)), h('td', {class: 'r'}, fmt(a.avg_price, 0)), h('td', {class: 'r down'}, pct(a.worst_pct, 0)), h('td', {class: 'r'}, fmt(a.underwater_pct, 0) + '%')),
+      h('tr', null, h('td', null, key(ser[2])), h('td', {class: 'r'}, fmt(dip.invested, 0)), h('td', {class: 'r ' + sign(dip.profit_pct)}, pct(dip.profit_pct, 0)), h('td', {class: 'r'}, fmt(dip.avg_price, 0)), h('td', {class: 'r down'}, pct(dip.worst_pct, 0)), h('td', {class: 'r'}, fmt(dip.underwater_pct, 0) + '%')))));
+  return [
+    h('p', {class: 'note', style: 'margin-top:0'}, 'DCA to kupowanie za stałą kwotę co tydzień, bez zgadywania momentu. Porównanie pokazuje, jak wyglądałby ten sam kapitał wpłacony jednorazowo na początku oraz wariant z podwójną kwotą, gdy cena jest co najmniej 25% poniżej szczytu z 365 dni.'),
+    h('div', {class: 'tiles small'}, t),
+    h('h3', null, 'Wynik na wpłaconym kapitale w czasie'),
+    mline(cfg), mlineTable(cfg),
+    h('h3', null, 'Porównanie wariantów'), cmp,
+    h('p', {class: 'note'}, 'Wariant z dokupem wpłaca więcej pieniędzy, więc porównuj procenty, a nie kwoty. „Jednorazowy zakup” dotyczy tej samej sumy co zwykłe DCA, wpłaconej na początku.')];
+}
+
+function labToday(lab, r) {
+  const rk = lab.risk || {};
+  const lvlCls = {niskie: 'v-plus', umiarkowane: 'v-zero', 'podwyższone': 'v-warn', wysokie: 'v-minus'}[rk.level] || 'v-zero';
+  const regTxt = {hossa: 'hossa: cena i SMA50 nad SMA200', bessa: 'bessa: cena i SMA50 pod SMA200', 'przejściowy': 'przejściowy: sygnały trendu są sprzeczne'}[rk.regime] || null;
+  const th = [
+    tile('Poziom ryzyka rynku', h('span', {class: 'badge ' + lvlCls}, rk.level || 'n/d'), 'heurystyka: zmienność i obsunięcie od szczytu'),
+    ok(rk.vol_pct) ? tile('Zmienność 30 dni', fmt(rk.vol_pct, 0) + '% rocznie', ok(rk.vol_rank) ? `wyższa niż w ${fmt(rk.vol_rank, 0)}% dni historii` : null, ok(rk.vol_rank) ? bar(rk.vol_rank / 100, rk.vol_rank >= 85 ? 'bear' : 'accent') : null) : null,
+    ok(rk.dd_ath_pct) ? tile('Od szczytu historii', pct(rk.dd_ath_pct, 0), rk.ath_date ? 'szczyt z ' + fmtDate(rk.ath_date) : null, null, 'down') : null,
+    ok(rk.vs_sma200_pct) ? tile('Cena względem SMA200', pct(rk.vs_sma200_pct, 1), regTxt, null, sign(rk.vs_sma200_pct)) : null,
+    ok(rk.atr_pct) ? tile('Typowy dzienny ruch (ATR)', fmt(rk.atr_pct, 1) + '%', 'średni zakres dnia') : null].filter(Boolean);
+  const st = lab.plans.map(p => {
+    const t = p.today || {};
+    let badge, note = null;
+    if (p.group === 'analyzer') {
+      const a = t.action;
+      badge = h('span', {class: 'badge ' + (a === 'long' ? 'v-plus' : a === 'short' ? 'v-minus' : 'v-zero')}, a === 'long' ? 'Propozycja: KUP' : a === 'short' ? 'Propozycja: SPRZEDAJ' : 'CZEKAJ');
+      note = `Ryzyko ${fmt(p.risk_pct, 1)}% kapitału na transakcję; największa pozycja z testu to ${fmt(p.max_notional_pct, 0)}% kapitału` + (p.needs_leverage_x > 1.001 ? ` (wymaga dźwigni ${fmt(p.needs_leverage_x, 1)}×).` : ' (bez dźwigni).') + ' Szczegóły planu są w sekcji Plan.';
+    } else {
+      const e = t.exposure_pct;
+      badge = h('span', {class: 'badge ' + (e > 0 ? 'v-plus' : 'v-zero')}, e >= 99.5 ? 'W rynku (100%)' : e > 0 ? `W rynku (${fmt(e, 0)}%)` : 'Poza rynkiem (gotówka)');
+      note = (p.id === 'hold' ? '' : e > 0 ? `W rynku bez przerwy od ${dayTxt(t.since_days)}. ` : `Poza rynkiem od ${dayTxt(t.since_days)}. `) + p.desc;
+    }
+    return h('div', {class: 'stance'}, h('span', {class: 'pn'}, h('i', {style: `background:${labCol(p.id)}`}), p.name), badge, h('small', null, note));
+  });
+  return [
+    h('p', {class: 'note', style: 'margin-top:0'}, 'Stan na zamknięcie ostatniej zakończonej świecy dziennej. To opis reguł planów, a nie polecenie kupna lub sprzedaży.'),
+    h('div', {class: 'thermo'}, th), h('h3', null, 'Co robi każdy plan teraz'), h('div', null, st)];
+}
+
+function labCard(r) {
+  const pl = r.planner, lab = pl && pl.lab;
+  if (!pl || pl.status !== 'ok') return null;
+  const sub = 'Historia, ryzyko i symulacja · wyniki historyczne, nie prognoza';
+  if (!lab) return card({id: 'sec-lab', title: 'Plany długoterminowe i ryzyko', sub}, h('p', {class: 'note', style: 'margin-top:0'}, 'Za mało danych historycznych albo laboratorium wyłączone (--lab off). Potrzeba co najmniej około 330 dni świec dziennych.'));
+  const body = h('div', {style: 'margin-top:4px'});
+  const tabs = [['cmp', 'Porównanie', labCompare], ['risk', 'Ryzyko', labRisk], ['years', 'Lata', labYears], ['dca', 'DCA', labDca], ['now', 'Dziś', labToday]];
+  const seg = h('div', {class: 'seg', role: 'group', 'aria-label': 'Widok planów'});
+  const btns = tabs.map(([k, label, fn]) => {
+    const b = h('button', {type: 'button', 'aria-pressed': String(labUi.tab === k)}, label);
+    b.addEventListener('click', () => { labUi.tab = k; btns.forEach((x, i) => x.setAttribute('aria-pressed', String(tabs[i][0] === k))); put(body, fn(lab, r)); });
+    return b;
+  });
+  put(seg, btns);
+  const cur = tabs.find(t => t[0] === labUi.tab) || tabs[0];
+  put(body, cur[2](lab, r));
+  return card({id: 'sec-lab', title: 'Plany długoterminowe i ryzyko', sub: `${fmtDate(lab.from)} do ${fmtDate(lab.asof)} · ${nf(1).format(lab.years)} lat · koszt ${fmt(lab.cost_pct, 2)}% za transakcję`, right: seg},
+    body, h('h3', null, 'Czego te liczby nie mówią'), h('ul', {class: 'why warn'}, (lab.caveats || []).map(x => h('li', null, x))));
+}
+
+/* ---------- kalkulator pozycji ---------- */
+const calcNum = s => { const x = Number(String(s == null ? '' : s).replace(/\s/g, '').replace(',', '.')); return String(s == null ? '' : s).trim() === '' || !Number.isFinite(x) ? NaN : x; };
+const calcUi = (() => {
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem('btc-calc') || '{}') || {}; } catch (e) { s = {}; }
+  const cap = calcNum(s.cap), risk = calcNum(s.risk), lev = calcNum(s.lev);
+  return {cap: cap > 0 ? String(cap) : '10000', risk: risk > 0 && risk <= 100 ? String(risk) : null, lev: [1, 2, 3, 5, 10, 20, 25].includes(lev) ? lev : 5, side: 'long', entry: '', stop: '', tp1: '', tp2: '', sig: null};
+})();
+const calcSave = () => {
+  const cap = calcNum(calcUi.cap), risk = calcNum(calcUi.risk);
+  try { localStorage.setItem('btc-calc', JSON.stringify({cap: cap > 0 ? cap : null, risk: risk > 0 && risk <= 100 ? risk : null, lev: calcUi.lev})); } catch (e) { /* tryb prywatny: pomijamy */ }
+};
+const CALC_MMR = 0.005, CALC_FEE = 0.00055;
+
+function calcPos(v) {
+  const e = v.entry, s = v.stop, long = v.side === 'long', errs = [], warns = [];
+  if (!(v.cap > 0)) errs.push('Podaj kapitał większy od zera.');
+  if (!(v.risk > 0 && v.risk <= 100)) errs.push('Ryzyko na transakcję musi mieścić się w zakresie 0–100%.');
+  if (!(e > 0) || !(s > 0)) errs.push('Podaj cenę wejścia i cenę stopa.');
+  else if (long ? s >= e : s <= e) errs.push(long ? 'W pozycji long stop musi leżeć poniżej wejścia.' : 'W pozycji short stop musi leżeć powyżej wejścia.');
+  if (errs.length) return {errs};
+  const risk$ = v.cap * v.risk / 100, d = Math.abs(e - s), dPct = d / e * 100, qty = risk$ / d, nom = qty * e, lev = v.lev, margin = nom / lev;
+  const liq = long ? (lev <= 1 ? null : e * (1 - 1 / lev + CALC_MMR)) : e * (1 + 1 / lev - CALC_MMR);
+  const liqDist = liq == null ? null : Math.abs(e - liq) / e * 100;
+  const liqState = liq == null ? 'ok' : liqDist <= dPct ? 'bad' : liqDist < 1.5 * dPct ? 'warn' : 'ok';
+  const levMax = Math.max(1, Math.floor(1 / (1.5 * d / e + CALC_MMR)));
+  const dir = long ? 1 : -1, tp = (x, nm) => {
+    if (!(x > 0)) return null;
+    if (dir * (x - e) <= 0) { warns.push(`${nm} leży po złej stronie wejścia i został pominięty.`); return null; }
+    return {px: x, r: Math.abs(x - e) / d, gain: qty * 0.5 * Math.abs(x - e)};
+  };
+  const t1 = tp(v.tp1, 'TP1'), t2 = tp(v.tp2, 'TP2');
+  if (margin > v.cap) warns.push(`Wymagany margin (${fmt(margin, 0)}) przekracza kapitał (${fmt(v.cap, 0)}). Zmniejsz ryzyko albo zwiększ dźwignię.`);
+  if (liqState === 'bad') warns.push('Cena likwidacji leży bliżej niż stop: pozycja zostałaby zlikwidowana, zanim stop zdążyłby zadziałać. Zmniejsz dźwignię.');
+  else if (liqState === 'warn') warns.push('Zapas między stopem a likwidacją jest mały (mniej niż 1,5 razy odległość stopa). Przy poślizgu stop może nie zdążyć.');
+  return {risk$, d, dPct, qty, nom, margin, liq, liqDist, liqState, levMax, t1, t2, fees: nom * CALC_FEE * 2, errs, warns};
+}
+
+function calcCard(r) {
+  const pl = r.planner || {}, price = ok(pl.price) ? Number(pl.price) : Number(priceOf(r));
+  const plan = pl.status === 'ok' ? pl.plan : null;
+  if (!(price > 0) && !plan) return null;
+  const planSig = plan ? [plan.date, plan.action, Math.round(plan.entry || 0)].join('|') : 'none';
+  const seed = () => {
+    if (plan && plan.action !== 'wait') Object.assign(calcUi, {side: plan.action, entry: String(Math.round(plan.entry)), stop: String(Math.round(plan.stop)), tp1: String(Math.round(plan.tp1)), tp2: String(Math.round(plan.tp2))});
+    else if (price > 0) Object.assign(calcUi, {entry: String(Math.round(price)), stop: String(Math.round(price * (calcUi.side === 'short' ? 1.03 : 0.97))), tp1: '', tp2: ''});
+  };
+  if (calcUi.sig !== planSig) { seed(); calcUi.sig = planSig; }
+  if (!calcUi.risk) calcUi.risk = String((pl.params && pl.params.risk_pct) || 1);
+  const out = h('div'), form = h('div', {class: 'calc'});
+  const field = (label, key, attrs) => {
+    const inp = h('input', Object.assign({type: 'text', inputmode: 'decimal', autocomplete: 'off', value: String(calcUi[key] == null ? '' : calcUi[key])}, attrs || {}));
+    inp.addEventListener('input', () => { calcUi[key] = inp.value; if (key === 'cap' || key === 'risk') { calcSave(); } draw(); });
+    return h('label', {class: 'f'}, label, inp);
+  };
+  const lev = h('select', null, [1, 2, 3, 5, 10, 20, 25].map(x => h('option', {value: String(x), selected: x === calcUi.lev}, x + '×')));
+  lev.addEventListener('change', () => { calcUi.lev = Number(lev.value); calcSave(); draw(); });
+  const sideBtns = [['long', 'Long (kupno)'], ['short', 'Short (sprzedaż)']].map(([k, label]) => {
+    const b = h('button', {type: 'button', 'aria-pressed': String(calcUi.side === k)}, label);
+    b.addEventListener('click', () => { calcUi.side = k; sideBtns.forEach((x, i) => x.setAttribute('aria-pressed', String(i === (k === 'long' ? 0 : 1)))); draw(); });
+    return b;
+  });
+  const useBtn = h('button', {type: 'button', class: 'btn', disabled: !plan || plan.action === 'wait'}, 'Wstaw poziomy z planu analizatora');
+  useBtn.addEventListener('click', () => { seed(); put(form, formKids()); draw(); });
+  const formKids = () => [field('Kapitał (USDT)', 'cap'), field('Ryzyko na transakcję (%)', 'risk'), h('label', {class: 'f'}, 'Dźwignia', lev),
+    field('Wejście', 'entry'), field('Stop Loss', 'stop'), field('TP1 (50% pozycji)', 'tp1'), field('TP2 (reszta)', 'tp2')];
+  put(form, formKids());
+  const draw = () => {
+    const v = {cap: calcNum(calcUi.cap), risk: calcNum(calcUi.risk), lev: calcUi.lev, side: calcUi.side, entry: calcNum(calcUi.entry), stop: calcNum(calcUi.stop), tp1: calcNum(calcUi.tp1), tp2: calcNum(calcUi.tp2)};
+    const c = calcPos(v);
+    if (c.errs.length) { put(out, h('ul', {class: 'calcmsg'}, c.errs.map(x => h('li', null, x)))); return; }
+    const long = v.side === 'long', liqTxt = c.liq == null ? 'brak (long bez dźwigni)' : fmt(c.liq, 0);
+    const liqBadge = h('span', {class: 'badge ' + (c.liqState === 'bad' ? 'v-minus' : c.liqState === 'warn' ? 'v-warn' : 'v-plus')},
+      c.liqState === 'bad' ? '✗ przed stopem' : c.liqState === 'warn' ? '! mały zapas' : '✓ za stopem');
+    const sum = c.t1 || c.t2 ? (c.t1 ? c.t1.gain : 0) + (c.t2 ? c.t2.gain : 0) : null;
+    const tiles = [
+      tile('Ryzyko przy stopie', fmt(c.risk$, 2) + ' USDT', fmt(v.risk, 2) + '% kapitału (bez opłat)', null, 'down'),
+      tile('Odległość do stopa', fmt(c.dPct, 2) + '%', fmt(c.d, 0) + ' USDT na 1 BTC'),
+      tile('Rozmiar pozycji', fmt(c.qty, 4) + ' BTC', `nominał ${fmt(c.nom, 0)} USDT (${fmt(c.nom / v.cap * 100, 0)}% kapitału)`),
+      tile('Wymagany margin', fmt(c.margin, 0) + ' USDT', `${fmt(c.margin / v.cap * 100, 0)}% kapitału przy ${v.lev}×`, bar(c.margin / v.cap, c.margin > v.cap ? 'bear' : c.margin / v.cap > 0.5 ? 'accent' : 'bull')),
+      tile('Szacowana likwidacja', h('span', null, liqTxt), c.liq == null ? 'tryb izolowany' : `${fmt(c.liqDist, 1)}% od wejścia, stop ${fmt(c.dPct, 1)}%`, h('div', {style: 'margin-top:8px'}, liqBadge)),
+      tile('Najwyższa rozsądna dźwignia', '≈ ' + c.levMax + '×', 'likwidacja co najmniej 1,5 razy dalej niż stop'),
+      c.t1 ? tile('Zysk przy TP1', '+' + fmt(c.t1.gain, 2) + ' USDT', `${fmt(c.t1.r, 1)}R, zamknięcie 50% pozycji`, null, 'up') : null,
+      c.t2 ? tile('Zysk przy TP2', '+' + fmt(c.t2.gain, 2) + ' USDT', `${fmt(c.t2.r, 1)}R, druga połowa pozycji`, null, 'up') : null,
+      sum != null ? tile('Cały plan zrealizowany', '+' + fmt(sum, 2) + ' USDT', `${fmt(sum / v.cap * 100, 2)}% kapitału; stosunek 1 : ${fmt(sum / c.risk$, 2)}`, null, 'up') : null,
+      tile('Opłaty (szacunek)', '≈ ' + fmt(c.fees, 2) + ' USDT', 'wejście i wyjście po 0,055% (taker)'),
+    ].filter(Boolean);
+    put(out, c.warns.length ? h('ul', {class: 'calcmsg warn'}, c.warns.map(x => h('li', null, x))) : null, h('div', {class: 'tiles small'}, tiles),
+      h('p', {class: 'note'}, `Likwidacja jest szacowana dla marginu izolowanego i stawki utrzymania ${fmt(CALC_MMR * 100, 1)}%, bez opłat i funding. Prawdziwa cena zależy od konta i trybu marginu, więc sprawdź ją na giełdzie przed złożeniem zlecenia.`));
+  };
+  draw();
+  return card({id: 'sec-kalk', title: 'Kalkulator pozycji i ryzyka', sub: 'Ile kupić, żeby stop kosztował tyle, ile zakładasz · liczone w przeglądarce'},
+    h('div', {class: 'seg', role: 'group', 'aria-label': 'Kierunek pozycji', style: 'margin-bottom:12px'}, sideBtns),
+    form, h('div', {class: 'calcbar'}, useBtn, h('span', {class: 'note', style: 'margin:0'}, 'Kapitał, ryzyko i dźwignia zostają w tej przeglądarce; nic nie jest wysyłane na serwer.')), out);
+}
+
+/* ---------- decyzja na dziś: wstrzymać się, long czy short ---------- */
+function decisionCard(r) {
+  const pl = r.planner, p = pl && pl.status === 'ok' && pl.plan && ['long', 'short', 'wait'].includes(pl.plan.action) ? pl.plan : null;
+  const sg = (r.analysis && r.analysis.signals) || [];
+  const cnt = {'+': 0, '-': 0, '0': 0};
+  sg.forEach(s => { cnt[s.verdict] = (cnt[s.verdict] || 0) + 1; });
+  const total = sg.length, net = cnt['+'] - cnt['-'], bal = total ? 50 + net / total * 50 : null;
+  const balAct = bal == null ? null : bal >= 66 ? 'long' : bal <= 34 ? 'short' : 'wait';
+  const act = p ? p.action : balAct;
+  if (!act) return null;
+  const lab = pl && pl.lab, rk = (lab && lab.risk) || {};
+  const sgn = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v);
+  const TITLE = {wait: 'WSTRZYMAJ SIĘ', long: 'LONG (kupno)', short: 'SHORT (sprzedaż)'};
+  const brk = p && p.entry_type === 'stop';
+  let sub, sub2 = null;
+  if (p && act === 'wait') {
+    const w = p.waiting_for && p.waiting_for.length ? p.waiting_for[0].text : null;
+    sub = 'Plan analizatora nie widzi dziś dobrego wejścia.' + (w ? ' Czekam na: ' + plnum(w) + '.' : '');
+  } else if (p) {
+    sub = `Plan analizatora: ${brk ? 'zlecenie warunkowe po wybiciu' : 'zlecenie limit'} po ${px0(p.entry)}, stop ${px0(p.stop)}.`;
+    sub2 = p.live_text ? plnum(p.live_text) : null;
+  } else {
+    sub = `Planer jest niedostępny, więc kierunek wynika tylko z bilansu sygnałów (saldo ${sgn(net)} z ${total} reguł). To dużo słabsza podstawa niż plan z poziomami wejścia i stopem.`;
+  }
+  const conf = p && act !== 'wait' ? p.confidence : null;
+  const side = h('div', {class: 'conf'},
+    ok(conf)
+      ? [h('div', {class: 'mh'}, h('span', null, 'Pewność heurystyki (' + (conf >= 75 ? 'wysoka' : conf >= 65 ? 'średnia' : 'niska') + ')'), h('b', null, conf + '%')), bar(conf / 100, conf >= 75 ? 'bull' : 'accent'),
+        h('div', {class: 'note', style: 'margin-top:6px;font-size:.76rem'}, 'To wynik reguł, a nie prawdopodobieństwo zysku. Procenty szans dla wybranego okresu policzy kalkulator.')]
+      : bal != null
+        ? [h('div', {class: 'mh'}, h('span', null, 'Bilans sygnałów'), h('b', null, sgn(net))), bar(bal / 100, bal >= 66 ? 'bull' : bal <= 34 ? 'bear' : 'accent'),
+          h('div', {class: 'note', style: 'margin-top:6px;font-size:.76rem'}, `▲ ${cnt['+']} bycze · ● ${cnt['0']} neutralne · ▼ ${cnt['-']} niedźwiedzie`)]
+        : null);
+  const top = h('div', {class: 'plan-top'}, h('div', {class: 'plan-act'}, TITLE[act], h('small', null, sub), sub2 ? h('small', {style: 'color:var(--ink)'}, sub2) : null), side);
+  let ticket = null;
+  if (p && act !== 'wait') {
+    ticket = h('div', {class: 'ticket'},
+      h('div', {class: 'en'}, h('span', null, brk ? 'Wejście (po wybiciu)' : 'Wejście (limit)'), h('b', null, px0(p.entry))),
+      h('div', {class: 'sl'}, h('span', null, 'Stop Loss'), h('b', null, px0(p.stop)), h('small', null, `ryzyko ${fmt(p.risk_px_pct, 1)}% ceny`)),
+      h('div', {class: 'tp'}, h('span', null, 'TP1 / TP2'), h('b', null, px0(p.tp1) + ' / ' + px0(p.tp2)), h('small', null, `${fmt(p.r1, 1)}R / ${fmt(p.r2, 1)}R`)),
+      h('div', null, h('span', null, 'Propozycja ważna do'), h('b', null, fdt(p.valid_until_ms))));
+  }
+  const reasons = p ? (p.reasons || []).slice(0, act === 'wait' ? 2 : 1) : [];
+  const cautions = p ? (p.cautions || []).slice() : [];
+  const regime = rk.regime;
+  if (act === 'long' && regime === 'bessa') cautions.push('Long wbrew trendowi długoterminowemu: cena i SMA50 leżą pod SMA200 (bessa). Takie zagrania mają zwykle gorszy bilans.');
+  if (act === 'short' && regime === 'hossa') cautions.push('Short wbrew trendowi długoterminowemu: cena i SMA50 leżą nad SMA200 (hossa). Takie zagrania mają zwykle gorszy bilans.');
+  if (rk.level === 'wysokie') cautions.push('Ryzyko rynku jest wysokie (duża zmienność lub głębokie obsunięcie od szczytu). Rozważ mniejszy rozmiar pozycji.');
+  const lists = [reasons.length ? h('ul', {class: 'why' + (act === 'wait' ? ' wait' : '')}, reasons.map(x => h('li', null, plnum(x)))) : null,
+    cautions.length ? h('ul', {class: 'why warn'}, cautions.map(x => h('li', null, plnum(x)))) : null];
+  const t200 = lab && (lab.plans || []).find(x => x.id === 'trend200'), tt = t200 && t200.today;
+  const lvlCls = {niskie: 'v-plus', umiarkowane: 'v-zero', 'podwyższone': 'v-warn', wysokie: 'v-minus'}[rk.level] || 'v-zero';
+  const REG = {hossa: ['Hossa', 'up'], bessa: ['Bessa', 'down'], 'przejściowy': ['Przejściowy', '']};
+  const tiles = [
+    p ? tile('Krótki termin: plan analizatora', h('span', {class: 'badge ' + (act === 'long' ? 'v-plus' : act === 'short' ? 'v-minus' : 'v-zero')}, act === 'wait' ? 'CZEKAJ' : act === 'long' ? 'KUP' : 'SPRZEDAJ (short)'), 'świeca z ' + fmtDate(p.date)) : null,
+    total && p ? tile('Bilans sygnałów', `▲ ${cnt['+']} · ● ${cnt['0']} · ▼ ${cnt['-']}`, `saldo ${sgn(net)} z ${total} reguł`) : null,
+    REG[regime] ? tile('Trend długoterminowy', REG[regime][0], ok(rk.vs_sma200_pct) ? `cena ${pct(rk.vs_sma200_pct, 1)} względem SMA200` : null, null, REG[regime][1]) : null,
+    tt && ok(tt.exposure_pct) ? tile('Plan „Trend SMA200”', tt.exposure_pct > 0 ? 'W rynku' : 'Poza rynkiem', (tt.exposure_pct > 0 ? 'od ' : 'od ') + dayTxt(tt.since_days) + ' (filtr trendu, nie sygnał na dziś)') : null,
+    rk.level ? tile('Poziom ryzyka rynku', h('span', {class: 'badge ' + lvlCls}, rk.level), ok(rk.vol_pct) ? `zmienność ${fmt(rk.vol_pct, 0)}% rocznie` : null) : null,
+  ].filter(Boolean);
+  return card({id: 'sec-decyzja', title: 'Decyzja na dziś', sub: 'Wstrzymać się, long czy short · heurystyka na danych historycznych, nie porada inwestycyjna'},
+    h('div', {class: 'plan ' + (act === 'wait' ? '' : act === 'long' ? 'buy' : 'sell')}, top, ticket, lists),
+    tiles.length ? h('div', {class: 'tiles small dtiles'}, tiles) : null,
+    h('div', {class: 'calcbar'},
+      h('a', {class: 'btn pri', href: 'kalkulator.html'}, 'Zagraj w swoim przedziale czasu: kalkulator szans →'),
+      p ? h('a', {class: 'btn', href: '#sec-plan'}, 'Pełny plan ↓') : null),
+    h('p', {class: 'note', style: 'margin-top:8px'}, 'Ta decyzja dotyczy kilku najbliższych dni (reguły na świecach dziennych). Jeśli chcesz zagrać w innym przedziale czasu, kalkulator sprawdzi na historii, jakie zagrania miały tam sens i z jaką częstością kończyły się zyskiem.'));
+}
+function plannerCards(r) { return r.planner ? [planCard(r), journalCard(r), flowCard(r)] : [null, null, null]; }
+function bybitCards(r) {
+  const b = r.bybit;
+  if (!b) return [null, null, null, null];
+  return [bybitAccountCard(b), bybitPerfCard(b), bybitMarketCard(b), bybitPositionsCard(b)];
+}
+
+/* ---------- newsy ---------- */
+function newsSection(r) {
+  const n = r.analysis && r.analysis.news;
+  if (!n) return null;
+  const seen = new Set(), items = [];
+  for (const sec of Object.values(n.sections || {})) for (const it of sec.items || []) {
+    const key = (it.title || '').toLowerCase();
+    if (!key || seen.has(key)) continue;
+    seen.add(key); items.push(it);
+  }
+  items.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  if (!items.length) return null;
+  const t = n.tally || {};
+  const tot = (t.bull || 0) + (t.bear || 0) + (t.neutral || 0);
+  const bal = tot ? h('div', {class: 'balance', role: 'img', 'aria-label': `${t.bull || 0} bycze, ${t.bear || 0} niedźwiedzie, ${t.neutral || 0} neutralne`, style: 'margin-top:0'},
+    [['s-plus', t.bull], ['s-zero', t.neutral], ['s-minus', t.bear]].map(([c, v]) => v ? h('span', {class: c, style: '--f:' + v}) : null)) : null;
+  return card({id: 'sec-newsy', title: 'Newsy o BTC', sub: 'Ostatnie nagłówki z oceną tonu'},
+    bal,
+    h('ul', {class: 'news', style: 'margin-top:14px'}, items.slice(0, 10).map((it, i) => {
+      const [cls, mark, word] = SIG[it.verdict > 0 ? '+' : it.verdict < 0 ? '-' : '0'];
+      const href = safeUrl(it.link);
+      const col = it.verdict > 0 ? 'var(--bull)' : it.verdict < 0 ? 'var(--bear)' : 'var(--neutral)';
+      return h('li', {style: `--i:${i};--c:${col}`}, h('i', {class: 'bar4'}),
+        h('div', null,
+          href ? h('a', {href, target: '_blank', rel: 'noopener noreferrer'}, it.title) : h('span', {style: 'font-weight:600'}, it.title),
+          h('div', {class: 'meta'}, h('span', {class: 'badge ' + cls, style: 'padding:1px 9px;font-size:.76rem'}, mark + ' ' + word), [it.source, String(it.date || '').slice(0, 16)].filter(Boolean).join(' · '))));
+    })),
+    h('p', {class: 'note'}, `Nagłówki: ${t.bull || 0} bycze, ${t.bear || 0} niedźwiedzie, ${t.neutral || 0} neutralne (metoda: ${t.basis || 'n/d'}). ` +
+      'Na planie darmowym newsy mają około 12 godzin opóźnienia, a ocena słów kluczowych jest przybliżona.' +
+      (ok(n.credits_remaining) ? ' Pozostałe kredyty newsdata.io: ' + n.credits_remaining + '.' : '')));
+}
+function reportSection(r) {
+  if (!r.report_text) return null;
+  return card({id: 'sec-raport', title: 'Pełny raport tekstowy'}, h('details', null, h('summary', null, 'Pokaż raport'), h('pre', null, r.report_text)));
+}
+function footer(r) {
+  const w = r.warnings || [];
+  return h('footer', null,
+    h('p', {style: 'margin:0'}, 'To analiza techniczna na danych historycznych (CoinGecko, newsdata.io' + (r.bybit || r.planner ? ', Bybit' : '') + '), a nie porada inwestycyjna.'),
+    w.length ? h('p', {style: 'margin:10px 0 0'}, 'Pominięte lub niepełne źródła:') : null,
+    w.length ? h('ul', null, w.map(x => h('li', null, x))) : null);
+}
+
+/* ---------- motyw ---------- */
+const themeBtn = document.getElementById('theme');
+const THEMES = [['auto', '◐', 'Auto'], ['light', '☀', 'Jasny'], ['dark', '☾', 'Ciemny']];
+function curTheme() { const t = document.documentElement.getAttribute('data-theme'); return THEMES.some(x => x[0] === t) ? t : 'auto'; }
+function paintTheme() {
+  const [, ic, nm] = THEMES.find(x => x[0] === curTheme());
+  themeBtn.replaceChildren(h('span', {'aria-hidden': 'true'}, ic), h('span', null, nm));
+  themeBtn.setAttribute('aria-label', 'Motyw: ' + nm + '. Kliknij, aby zmienić.');
+}
+themeBtn.addEventListener('click', () => {
+  const i = THEMES.findIndex(x => x[0] === curTheme()), nx = THEMES[(i + 1) % THEMES.length][0];
+  document.documentElement.setAttribute('data-theme', nx);
+  try { if (nx === 'auto') localStorage.removeItem('btc-theme'); else localStorage.setItem('btc-theme', nx); } catch (e) {}
+  paintTheme();
+});
+paintTheme();
+
+/* ---------- renderowanie i odświeżanie ---------- */
+function setStatus(r) {
+  const ageH = (Date.now() - new Date(r.generated_at).getTime()) / 3600000;
+  statusEl.textContent = 'Dane z ' + new Date(r.generated_at).toLocaleString('pl-PL', {dateStyle: 'medium', timeStyle: 'short'}) + ', ' + ago(r.generated_at) + '.';
+  liveEl.classList.toggle('stale', ageH > STALE_HOURS);
+}
+function watchHero(el) {
+  if (heroIO) { heroIO.disconnect(); heroIO = null; }
+  document.body.classList.remove('past-hero');
+  if (!('IntersectionObserver' in window)) return;
+  heroIO = new IntersectionObserver(([e]) => document.body.classList.toggle('past-hero', !e.isIntersecting && e.boundingClientRect.top < 0));
+  heroIO.observe(el);
+}
+function render(r) {
+  ANIM = firstPaint && !REDUCED;
+  report = r;
+  setStatus(r);
+  const ageH = (Date.now() - new Date(r.generated_at).getTime()) / 3600000;
+  const price = effPrice(r);
+  const ch24 = (r.market || {}).price_change_percentage_24h_in_currency ?? (((r.spot || {})[r.vs || 'usd']) || {}).change_24h;
+  miniEl.replaceChildren('₿ ' + fmt(price, price >= 1000 ? 0 : 2), ok(ch24) ? h('span', {class: sign(ch24)}, arrow(ch24) + ' ' + pct(ch24)) : null);
+
+  chartBox = null; chartStats = null; chartNote = null;
+  const list = [];
+  const add = (id, label, el) => { if (el) list.push({id, label, el}); };
+  if (ageH > STALE_HOURS) add(null, null, h('p', {class: 'banner'}, `Dane są nieaktualne (${Math.round(ageH)} godz.). Sprawdź, czy zadanie cron na serwerze nadal działa.`));
+  const hero = heroSection(r);
+  add(null, null, hero);
+  add(null, null, kpiStrip(r));
+  add('sec-decyzja', 'Decyzja', decisionCard(r));
+  add('sec-wykres', 'Wykres', r.series && r.series.date && r.series.price ? chartSection(r) : null);
+  const pc = plannerCards(r);
+  add('sec-plan', 'Plan', pc[0]); add('sec-kalk', 'Kalkulator', calcCard(r)); add('sec-dziennik', 'Dziennik', pc[1]); add('sec-lab', 'Długi termin', labCard(r));
+  add('sec-sygnaly', 'Sygnały', verdictSection(r));
+  add('sec-techniczne', 'Wskaźniki', technicalSection(r));
+  add('sec-fib', 'Fibonacci', fibSection(r));
+  add('sec-korelacja', 'Korelacja', compareSection(r));
+  const rs = returnsSections(r);
+  add('sec-zwroty', 'Zwroty', rs[0]); add('sec-obsuniecie', null, rs[1]); add('sec-kalendarz', 'Kalendarz', rs[2]);
+  add('sec-rynek', 'Rynek', marketSection(r));
+  add('sec-struktura', null, structureSection(r));
+  add('sec-pochodne', 'Pochodne', derivativesSection(r));
+  add('sec-dodatkowe', 'Sygnały+', extrasSignalsCard(r)); add('sec-dodatkowe-pochodne', null, extrasDerivsCard(r)); add('sec-chain', 'On-chain', extrasChainCard(r)); add('sec-makro', 'Makro', extrasMacroCard(r));
+  add('sec-gieldy', 'Giełdy', exchangesSection(r));
+  const bb = bybitCards(r);
+  add('sec-bybit', 'Bybit', bb[0]); add('sec-bybit-pozycje', 'Pozycje', bb[3]); add('sec-bybit-wyniki', null, bb[1]); add('sec-bybit-rynek', null, bb[2]); add('sec-ceny', 'Rozkład cen', pc[2]);
+  add('sec-skarbce', 'Skarbce', treasurySection(r));
+  add('sec-newsy', 'Newsy', newsSection(r));
+  add('sec-raport', 'Raport', reportSection(r));
+
+  /* lone .half -> full */
+  let pend = [];
+  for (const it of list) {
+    if (it.el.classList.contains('half')) { pend.push(it.el); if (pend.length === 2) pend = []; }
+    else { if (pend.length === 1) pend[0].classList.remove('half'); pend = []; }
+  }
+  if (pend.length === 1) pend[0].classList.remove('half');
+
+  const nav = h('nav', {class: 'nav', 'aria-label': 'Sekcje strony'}, list.filter(x => x.id && x.label).map(x => h('a', {href: '#' + x.id}, x.label)), h('a', {href: 'kalkulator.html'}, 'Kalkulator zagrań ↗'));
+  const stack = h('div', {class: 'stack'});
+  let delay = 0;
+  list.forEach((it, i) => {
+    if (i === (list.findIndex(x => x.el === hero) + 1) || (i === 0 && list[0].el === hero)) { /* nav po hero i KPI */ }
+    if (it.el.classList.contains('reveal') && delay < 4) { it.el.style.setProperty('--d', delay++); }
+    stack.append(it.el);
+    const isKpi = it.el.classList.contains('kpis');
+    if (isKpi || (it.el === hero && !list.some(x => x.el.classList.contains('kpis')))) stack.append(nav);
+  });
+  stack.append(h('div', {style: 'grid-column:1/-1'}, footer(r)));
+  app.replaceChildren(stack);
+  observeReveals(app, !ANIM);
+  watchHero(hero);
+  drawChart(ANIM);
+  prevPrice = ok(price) ? Number(price) : prevPrice;
+  firstPaint = false;
+}
+async function load(manual) {
+  const rb = document.getElementById('refresh');
+  if (manual) { statusEl.textContent = 'Wczytuję…'; rb.classList.add('spin'); }
+  try {
+    const res = await fetch(REPORT_URL + '?t=' + Date.now(), {cache: 'no-store'});
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!report || data.generated_at !== report.generated_at) render(data);
+    else setStatus(data);
+  } catch (err) {
+    if (report) { statusEl.textContent = 'Nie udało się odświeżyć. Pokazuję ostatnie dane.'; return; }
+    statusEl.textContent = 'Brak danych.';
+    app.replaceChildren(h('p', {class: 'failure'}, h('strong', null, 'Nie mogę wczytać pliku ' + REPORT_URL + '. '),
+      'Uruchom na serwerze: python btc_analysis.py --quiet --web-json ' + REPORT_URL + ', a potem ustaw to polecenie w zadaniu cron. Szczegóły błędu: ' + err.message));
+  } finally {
+    if (manual) setTimeout(() => rb.classList.remove('spin'), 500);
+  }
+}
+document.getElementById('refresh').addEventListener('click', () => load(true));
+
+/* ---------- cena na żywo: publiczny WebSocket Bybit (bez klucza, za darmo) ---------- */
+(() => {
+  const WS_URL = 'wss://stream.bybit.com/v5/public/spot', TOPIC = 'tickers.BTCUSDT';
+  const REST_URL = 'https://api.bybit.com/v5/market/tickers?category=spot&symbol=BTCUSDT';
+  let ws = null, retry = 0, pingT = 0, restT = 0, lastPaint = 0;
+  function paint() {
+    if (!report || livePrice == null || (report.vs || 'usd') !== 'usd') return;
+    const now = performance.now();
+    if (now - lastPaint < 700) return;           // max ok. 1 odświeżenie na sekundę
+    lastPaint = now;
+    const p = livePrice, d = p >= 1000 ? 0 : 2;
+    if (heroNum && heroNum.isConnected) {
+      const prev = Number(heroNum.dataset.v || prevPrice);
+      heroNum.textContent = fmt(p, d); heroNum.dataset.v = p;
+      if (heroNow && ok(prev) && prev !== p && !REDUCED) {
+        heroNow.classList.remove('flash-up', 'flash-down'); void heroNow.offsetWidth;
+        heroNow.classList.add(p > prev ? 'flash-up' : 'flash-down');
+      }
+    }
+    const ch24 = (report.market || {}).price_change_percentage_24h_in_currency;
+    miniEl.replaceChildren('₿ ' + fmt(p, d), ok(ch24) ? h('span', {class: sign(ch24)}, arrow(ch24) + ' ' + pct(ch24)) : null);
+    prevPrice = p;
+    liveEl.title = 'Cena BTC na żywo (Bybit, ' + new Date(liveTs).toLocaleTimeString('pl-PL') + ')';
+  }
+  function onPrice(p) {
+    p = Number(p);
+    if (!(p > 0)) return;
+    livePrice = p; liveTs = Date.now(); paint();
+  }
+  function startRest() {                           // zapas, gdy WebSocket jest zablokowany
+    if (restT) return;
+    const tick = async () => {
+      if (document.hidden) return;
+      try {
+        const j = await (await fetch(REST_URL, {cache: 'no-store'})).json();
+        onPrice(j.result.list[0].lastPrice);
+      } catch (e) {}
+    };
+    tick(); restT = setInterval(tick, 5000);
+  }
+  function stopRest() { clearInterval(restT); restT = 0; }
+  function connect() {
+    if (document.hidden || ws) return;
+    try { ws = new WebSocket(WS_URL); } catch (e) { startRest(); return; }
+    ws.onopen = () => {
+      retry = 0; stopRest();
+      ws.send(JSON.stringify({op: 'subscribe', args: [TOPIC]}));
+      pingT = setInterval(() => { try { ws.send('{"op":"ping"}'); } catch (e) {} }, 20000);
+    };
+    ws.onmessage = ev => {
+      try { const m = JSON.parse(ev.data); if (m.topic === TOPIC && m.data && m.data.lastPrice) onPrice(m.data.lastPrice); } catch (e) {}
+    };
+    ws.onclose = () => {
+      clearInterval(pingT); ws = null;
+      if (retry++ > 2) startRest();
+      if (!document.hidden) setTimeout(connect, Math.min(30000, 1000 * 2 ** retry));
+    };
+    ws.onerror = () => { try { ws.close(); } catch (e) {} };
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (ws) { ws.onclose = null; clearInterval(pingT); ws.close(); ws = null; } stopRest(); }
+    else { retry = 0; connect(); }
+  });
+  connect();
+})();
+let rafId = 0;
+new ResizeObserver(() => {
+  if (!chartBox || Math.abs(chartBox.clientWidth - lastWidth) < 2) return;
+  cancelAnimationFrame(rafId); rafId = requestAnimationFrame(() => drawChart(false));
+}).observe(document.body);
+setInterval(() => load(false), REFRESH_MS);
+setInterval(() => { if (report) setStatus(report); }, 60000);
+load(false);
+})();
+</script>
+</body>
+</html>

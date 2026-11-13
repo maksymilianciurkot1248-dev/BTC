@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pl" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Sytuacje wpływające na ruch</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ui.css">
+<script src="ui.js"></script>
+<style>
+:root{--bg:#EDF0F4;--card:#fff;--card2:#F5F7FA;--line:#DCE2E9;--ink:#111D29;--muted:#5B6978;--accent:#E8830C;--bull:#12805A;--bear:#C1334A;--warn:#B7791F;--sans:"Segoe UI Variable","Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0F16;--card:#111A25;--card2:#16212E;--line:#223142;--ink:#E8EEF4;--muted:#93A1B1;--accent:#F7A234;--bull:#3DDC97;--bear:#FF6B81;--warn:#E5B567}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+.wrap{max-width:1150px;margin:0 auto;padding:20px 16px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+h1{font-size:1.4rem;margin:0} h2{font-size:1.05rem;margin:0 0 4px} h3{font-size:.9rem;margin:16px 0 6px;color:var(--muted)}
+a{color:var(--accent)} .sub{color:var(--muted);font-size:.85rem;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 14px;margin-bottom:16px}
+.tbl-w{overflow-x:auto} table{width:100%;border-collapse:collapse;font-size:.84rem;font-variant-numeric:tabular-nums;min-width:680px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:.74rem;padding:6px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);white-space:nowrap} tr:last-child td{border-bottom:0} .r{text-align:right}
+.up{color:var(--bull)} .down{color:var(--bear)} .vol{color:var(--warn)}
+.chip{display:inline-block;padding:1px 8px;margin:0 3px 0 0;border-radius:999px;font-size:.7rem;border:1px solid var(--line);color:var(--muted)}
+.chip.ok{color:var(--bull);border-color:var(--bull)} .chip.w{color:var(--warn);border-color:var(--warn)} .chip.act{color:#fff;background:var(--accent);border-color:var(--accent)}
+.note{color:var(--muted);font-size:.82rem;margin:10px 0 0}
+.warn{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid var(--warn);border-radius:12px;padding:10px 14px;font-size:.85rem;margin-bottom:16px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 14px} .seg button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:5px 14px;border-radius:999px;font-size:.82rem;cursor:pointer;font-family:inherit}
+.seg button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.now{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px}
+.nw{border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:12px;padding:10px 14px;background:var(--card2);font-size:.84rem}
+.nw.up{border-left-color:var(--bull)} .nw.down{border-left-color:var(--bear)} .nw.vol{border-left-color:var(--warn)} .nw b{display:block;margin-bottom:2px} .nw small{color:var(--muted)}
+.kv{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px} .kv div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 14px} .kv b{display:block;font-size:1.05rem}.kv span{font-size:.74rem;color:var(--muted)}
+.btn{display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);text-decoration:none;font-size:.85rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>Sytuacje wpływające na ruch</h1><p class="sub" id="meta" style="margin:0">Wczytuję…</p></div>
+  <div><a class="btn" href="index.html">← Panel</a> <a class="btn" href="rynki.html">Rynki</a> <a class="btn" href="bot.html">Bot</a> <a class="btn" href="badania.html">Badania</a> <a class="btn" href="strategie.html" target="strategie" onclick="window.open(this.href,'strategie','width=1320,height=920');return false">Strategie</a></div>
+</header>
+<div class="warn"><b>Opis historii, nie prognoza.</b> „Zbliża się” oznacza tylko, że wskaźnik jest blisko progu. Wyniki są korygowane na wielokrotne testowanie, ale dotyczą kilku cykli rynkowych i mogą przestać działać.</div>
+<div id="app"></div>
+</div>
+<script>
+(() => {
+'use strict';
+const app = document.getElementById('app'), meta = document.getElementById('meta');
+const el = (t, a, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a || {})) if (v != null && v !== false) e.setAttribute(n, v === true ? '' : v); for (const c of k.flat()) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
+const nf = (v, d = 2) => (v == null || Number.isNaN(v)) ? 'n/d' : new Intl.NumberFormat('pl-PL', {minimumFractionDigits: d, maximumFractionDigits: d}).format(v);
+const sg = (v, d = 2) => v == null ? 'n/d' : (v > 0 ? '+' : v < 0 ? '−' : '') + nf(Math.abs(v), d) + '%';
+const table = (heads, rows, left = [0]) => el('div', {class: 'tbl-w'}, el('table', null, el('thead', null, el('tr', null, heads.map((h, i) => el('th', {class: left.includes(i) ? '' : 'r'}, h)))), el('tbody', null, rows)));
+const td = (v, c, r = true) => el('td', {class: (r ? 'r ' : '') + (c || '')}, v);
+const card = (title, sub, ...k) => el('section', {class: 'card'}, el('h2', null, title), sub ? el('p', {class: 'sub'}, sub) : null, ...k);
+const KIND = {own: 'wykres', driver: 'sterownik', event: 'zdarzenie', cycle: 'cykl'};
+const STATUS = {active: ['aktywna', 'act'], approaching: ['zbliża się', 'w'], event_soon: ['zdarzenie wkrótce', 'w']};
+const hlabel = (h, kind) => kind === 'event' ? (h === 0 ? 'w dniu publikacji' : h + ' sesji po') : h + ' sesji';
+let current = null, data = null;
+
+function view() {
+  const a = data.assets[current], out = [];
+  const up = a.lean.up, down = a.lean.down;
+  out.push(card(`${a.name}: stan na ${a.last_date}`, `${a.days} sesji historii. Cena: ${nf(a.price, a.price > 1000 ? 0 : 4)}.`,
+    el('div', {class: 'kv'}, el('div', null, el('b', {class: 'up'}, nf(up, 1)), el('span', null, 'siła aktywnych/zbliżających się sytuacji historycznie w górę')), el('div', null, el('b', {class: 'down'}, nf(down, 1)), el('span', null, 'siła sytuacji historycznie w dół'))),
+    UI.lean(up, down),
+    el('p', {class: 'note'}, 'Siła = suma |t| (max 4) sytuacji, które teraz występują lub się zbliżają; sytuacje niestabilne liczone z wagą 0,6. To wskaźnik opisowy, nie prognoza kierunku.')));
+  const nowItems = a.now.map(n => {
+    const dir = n.stat.direction, st = STATUS[n.status] || [n.status, ''];
+    return el('div', {class: 'nw ' + (dir === 'vol' ? 'vol' : dir)}, el('b', null, n.label, ' ', el('span', {class: 'chip ' + st[1]}, st[0])), n.detail,
+      el('br'), el('small', null, dir === 'vol' ? `historycznie zmienność ×${nf(n.abs_lift || n.stat.abs_lift, 1)} (${n.stat.n} wystąpień, q=${nf(n.stat.q, 3)})`
+        : `historycznie ${dir === 'up' ? 'wzrost' : 'spadek'}: średnio ${sg(n.stat.mean_pct)} po ${hlabel(n.stat.h, n.kind)} vs ${sg(n.stat.edge_pct)} ponad zwykły ruch; % dodatnich ${nf(n.stat.hit_pct, 0)}% (zwykle ${nf(n.stat.base_hit_pct, 0)}%), ${n.stat.n} wystąpień, q=${nf(n.stat.q, 3)}${n.stat.stable ? ', stabilnie' : ''}`),
+      n.abs_lift && dir !== 'vol' ? el('div', null, el('small', null, 'wpływ na zmienność: ×' + nf(n.abs_lift, 1))) : null);
+  });
+  out.push(card('Teraz: aktywne i zbliżające się sytuacje', 'Tylko te, które historycznie miały istotny wpływ (q < 0,20) dla tego aktywa.',
+    nowItems.length ? el('div', {class: 'now'}, nowItems) : el('p', {class: 'note'}, 'Żadna z istotnych sytuacji nie jest teraz aktywna ani blisko progu.')));
+  const rows = a.situations.map(s => {
+    const vol = s.metric === 'vol';
+    return el('tr', null, td(s.label, '', false), td(KIND[s.kind] || s.kind, '', false), td(hlabel(s.h, s.kind)), td(String(s.n)),
+      td(vol ? 'zmienność ×' + nf(s.abs_lift, 2) : (s.direction === 'up' ? '↑ ' : '↓ ') + sg(s.mean_pct), vol ? 'vol' : s.direction), td(vol ? 'n/d' : sg(s.edge_pct), vol ? '' : s.direction),
+      td(vol ? 'n/d' : nf(s.hit_pct, 0) + '%'), td(nf(s.t, 1)), td(nf(s.q, 3)),
+      el('td', {class: 'r'}, s.q < 0.1 ? el('span', {class: 'chip ok'}, 'mocna') : el('span', {class: 'chip w'}, 'wstępna'), s.stable ? el('span', {class: 'chip ok'}, 'stabilna') : null));
+  });
+  out.push(card('Sytuacje istotne statystycznie', 'Najsilniejsze zależności (q < 0,20, co najmniej 15 niezależnych wystąpień). „Ponad zwykły” = średni zwrot minus przeciętny zwrot z takiego horyzontu.',
+    rows.length ? table(['Sytuacja', 'Rodzaj', 'Horyzont', 'Wystąpień', 'Średni zwrot', 'Ponad zwykły', '% dodatnich', 't', 'q', 'Ocena'], rows, [0, 1]) : el('p', {class: 'note'}, 'Brak istotnych zależności dla tego aktywa (albo za mało danych: uruchom backfill).')));
+  return out;
+}
+function render() {
+  const seg = el('div', {class: 'seg', role: 'group', 'aria-label': 'Aktywo'}, Object.entries(data.assets).map(([k, v]) => {
+    const b = el('button', {type: 'button', 'aria-pressed': String(k === current)}, k === 'EURUSD' ? 'EUR/USD' : k === 'USDPLN' ? 'USD/PLN' : k === 'USDJPY' ? 'USD/JPY' : v.name);
+    b.addEventListener('click', () => { current = k; render(); }); return b; }));
+  const ev = data.upcoming_events || [];
+  const evCard = card('Najbliższe zdarzenia (45 dni)', 'Kalendarz: wygasanie opcji, FOMC oraz (z kluczem FRED) CPI, NFP, PCE, PKB.',
+    ev.length ? table(['Data', 'Za', 'Zdarzenie'], ev.map(e => el('tr', null, td(e.date, '', false), td(e.days === 0 ? 'dziś' : e.days + ' dni'), td(e.label, '', false))), [0, 2]) : el('p', {class: 'note'}, 'Brak zdarzeń w kalendarzu na najbliższe 45 dni.'));
+  app.replaceChildren(seg, ...view(), evCard, card('Uwagi', null, el('ul', null, data.notes.map(n => el('li', {class: 'note'}, n)))));
+}
+fetch('btc_situations.json?t=' + Date.now(), {cache: 'no-store'}).then(x => { if (!x.ok) throw new Error('HTTP ' + x.status); return x.json(); }).then(d => {
+  data = d; current = Object.keys(d.assets).includes('BTC') ? 'BTC' : Object.keys(d.assets)[0];
+  meta.textContent = `${d.tests} testów, ${d.significant} mocnych (q < 0,10) · wygenerowano ${new Date(d.generated_at).toLocaleString('pl-PL')}`; render();
+}).catch(e => { meta.textContent = 'Brak danych.'; app.replaceChildren(el('div', {class: 'warn'}, 'Nie mogę wczytać btc_situations.json (' + e.message + '). Uruchom: btc_collect.py backfill, potem btc_situations.py.')); });
+})();
+</script>
+</body>
+</html>

@@ -56,30 +56,40 @@ th{text-align:left;color:var(--muted);font-weight:600;font-size:.72rem;padding:6
 .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 4px}
 .msg{font-size:.84rem;min-height:1.2em;margin-top:8px}
 @media(max-width:640px){.set{grid-template-columns:1fr 90px}.set .rg{grid-column:1/-1;grid-row:2}.ev div{grid-template-columns:1fr}}
+.fold>summary{cursor:pointer;list-style:none;display:flex;gap:6px 12px;align-items:baseline;flex-wrap:wrap}
+.fold>summary::-webkit-details-marker{display:none}
+.fold>summary::before{content:"▸";color:var(--muted);font-size:.9rem;width:.9em;display:inline-block}
+.fold[open]>summary::before{content:"▾"}
+.fold>summary b{font-size:1.05rem} .fold>summary .fsum{color:var(--muted);font-size:.84rem}
+.fold[open]>summary{margin-bottom:10px}
+.fold>div>h2:first-child{display:none}
+.ov-state{font-size:1.15rem;font-weight:650;margin:2px 0 2px} .ov-why{color:var(--muted);font-size:.88rem;margin:0 0 6px}
+.ov-act{display:flex;gap:10px 18px;flex-wrap:wrap;align-items:center;margin-top:10px} .ov-act .lbl{font-size:.82rem;color:var(--muted)}
+.kv small{display:block;color:var(--muted);font-size:.74rem}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
   <div><h1>Bot handlujący</h1><p class="sub" style="margin:0"><span class="pulse" id="pulse"></span><span id="meta">Wczytuję…</span></p></div>
-  <div><a class="btn" href="index.html">← Panel</a> <a class="btn" href="okazje.html">Okazje</a> <a class="btn" href="rynki.html">Rynki</a> <a class="btn" href="sytuacje.html">Sytuacje</a></div>
+  <div><button class="btn" type="button" id="foldall">Rozwiń wszystko</button> <a class="btn" href="index.html">← Panel</a> <a class="btn" href="okazje.html">Okazje</a> <a class="btn" href="rynki.html">Rynki</a> <a class="btn" href="sytuacje.html">Sytuacje</a></div>
 </header>
-<div class="warn"><b>Ta strona nie składa zleceń i nie zna kluczy giełdowych.</b> Zmienia tylko limity ryzyka w twardych granicach (dźwignia nigdy powyżej x2). Tryb (dryrun, testnet, demo, live) i klucze ustawiasz wyłącznie na serwerze. W trybie live ustawienia z panelu mogą tylko zmniejszać ryzyko ustawione na serwerze. Strata z rynku jest możliwa, a wynik w przeszłości nie gwarantuje przyszłego.</div>
-
+<div class="card" id="overview"><div class="ui-skel" style="height:150px"></div></div>
 <div class="card" id="proposals"></div>
-<div class="card" id="decisions"></div>
-<div class="card" id="status"><div class="ui-skel" style="height:150px"></div></div>
-<div class="card" id="riskcard"></div>
-<div class="card" id="stats"></div>
-<div class="card" id="shadow"></div>
-<div class="card" id="lab"></div>
-<div class="card" id="scalp"></div>
-<div class="card" id="copy"></div>
-<div class="card" id="ai"></div>
-<div class="card" id="learn"><div class="ui-skel" style="height:90px"></div></div>
-<div class="two">
-  <div class="card"><h2>Ustawienia ryzyka i zakresu</h2><p class="sub">Bot wczytuje je przy najbliższym uruchomieniu (co 5 minut).</p><div id="form"></div></div>
-  <div class="card"><h2>Dziennik zdarzeń</h2><p class="sub">Najnowsze na górze. Powtarzające się wpisy są pomijane.</p><div class="ev" id="events"></div></div>
+<details class="card fold" data-k="status" open><summary><b>Pozycje i plany</b><span class="fsum" id="fs_status"></span></summary><div id="status"></div></details>
+<details class="card fold" data-k="form"><summary><b>Ustawienia</b><span class="fsum" id="fs_form"></span></summary><div><p class="sub">Bot wczytuje je przy najbliższym uruchomieniu (co 5 minut). Najprościej: wybierz profil ryzyka w przeglądzie na górze.</p><div id="form"></div></div></details>
+<details class="card fold" data-k="ai"><summary><b>Asystent AI</b><span class="fsum" id="fs_ai"></span></summary><div id="ai"></div></details>
+<details class="card fold" data-k="stats"><summary><b>Wyniki bota</b><span class="fsum" id="fs_stats"></span></summary><div id="stats"></div></details>
+<details class="card fold" data-k="scalp"><summary><b>Scalper</b><span class="fsum" id="fs_scalp"></span></summary><div id="scalp"></div></details>
+<p class="sub" style="margin:18px 4px 8px">Szczegóły dla dociekliwych (kliknij, żeby rozwinąć)</p>
+<details class="card fold" data-k="decisions"><summary><b>Decyzje algorytmu</b><span class="fsum" id="fs_decisions"></span></summary><div id="decisions"></div></details>
+<details class="card fold" data-k="riskcard"><summary><b>Ryzyko portfela i wyłączniki</b><span class="fsum" id="fs_riskcard"></span></summary><div id="riskcard"></div></details>
+<details class="card fold" data-k="shadow"><summary><b>Tryb cienia</b><span class="fsum" id="fs_shadow"></span></summary><div id="shadow"></div></details>
+<details class="card fold" data-k="learn"><summary><b>Nauka systemu (mapa przewagi)</b><span class="fsum" id="fs_learn"></span></summary><div id="learn"></div></details>
+<details class="card fold" data-k="lab"><summary><b>Laboratorium wariantów</b><span class="fsum" id="fs_lab"></span></summary><div id="lab"></div></details>
+<details class="card fold" data-k="copy"><summary><b>Cudze transakcje</b><span class="fsum" id="fs_copy"></span></summary><div id="copy"></div></details>
+<details class="card fold" data-k="events"><summary><b>Dziennik zdarzeń</b><span class="fsum" id="fs_events"></span></summary><div><p class="sub">Najnowsze na górze. Powtarzające się wpisy są pomijane.</p><div class="ev" id="events"></div></div></details>
+<details class="card fold" data-k="safety"><summary><b>Zasady bezpieczeństwa</b><span class="fsum" id="fs_safety"></span></summary><div class="note" style="margin:0"><b>Ta strona nie składa zleceń i nie zna kluczy giełdowych.</b> Zmienia tylko limity ryzyka w twardych granicach (dźwignia nigdy powyżej x2). Tryb (dryrun, testnet, demo, live) i klucze ustawiasz wyłącznie na serwerze. W trybie live ustawienia z panelu mogą tylko zmniejszać ryzyko ustawione na serwerze. Strata z rynku jest możliwa, a wynik w przeszłości nie gwarantuje przyszłego.</div></details>
 </div>
 </div>
 <script>
@@ -109,7 +119,73 @@ const FIELDS = [
   ['max_drawdown_pct', 'Limit spadku kapitału od szczytu (%)', 'Po przekroczeniu bot staje i czeka na Twoje odblokowanie. Wpłaty i wypłaty zaburzają ten pomiar, więc po nich odblokuj ręcznie.', 1, 12],
   ['stop_mult', 'Odległość stop-lossa (mnożnik)', '1 = według strategii. Powyżej 1: stop dalej, rozmiar pozycji mniejszy (ryzyko stałe). Poniżej 1: stop bliżej, częściej wybija.', 0.1, 1],
 ];
-let cur = null, editing = false, CATALOG = null;
+let cur = null, editing = false, CATALOG = null, RISK = 0.5, advOpen = false;
+const pct = (v, base, d = 2) => (v == null || !(base > 0)) ? '' : sg(v / base * 100, d) + '%';
+const r2p = (r, risk = RISK) => r == null ? '' : sg(r * risk, 2) + '% kapitału';
+const setSum = (k, t) => { const e = document.getElementById('fs_' + k); if (e) e.textContent = t || ''; };
+const LS = {get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } }, set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* tryb prywatny */ } }};
+document.querySelectorAll('details.fold').forEach(d => { const v = LS.get('fold_' + d.dataset.k); if (v != null) d.open = v === '1'; d.addEventListener('toggle', () => LS.set('fold_' + d.dataset.k, d.open ? '1' : '0')); });
+document.getElementById('foldall').addEventListener('click', ev => { const all = [...document.querySelectorAll('details.fold')], open = all.some(d => !d.open); all.forEach(d => { d.open = open; }); ev.target.textContent = open ? 'Zwiń wszystko' : 'Rozwiń wszystko'; });
+const PROFILES = [['Ostrożny', {risk_pct: 0.25, max_daily_loss_pct: 1, max_positions: 1, max_orders_day: 2}, 'ryzyko 0,25% na pozycję, 1 pozycja naraz, przerwa po stracie 1% w ciągu dnia'],
+  ['Standardowy', {risk_pct: 0.5, max_daily_loss_pct: 2, max_positions: 2, max_orders_day: 3}, 'ryzyko 0,5% na pozycję, do 2 pozycji naraz, przerwa po stracie 2% w ciągu dnia'],
+  ['Odważny', {risk_pct: 1, max_daily_loss_pct: 3, max_positions: 3, max_orders_day: 5}, 'ryzyko 1% na pozycję, do 3 pozycji naraz, przerwa po stracie 3% w ciągu dnia']];
+let ovMsg = '';
+function overviewCard(j, D) {
+  const box = document.getElementById('overview'), s = j.status || {}, e = s.effective || {}, set = j.settings || {}, st = s.stats, pos = s.positions || [], B = j.bounds || {};
+  const r = s.risk || j.risk || {}, brk = r.breakers || [], cap = s.equity || r.capital || 0, paused = !!(e.paused || j.stop_file), m = MODE[s.mode] || [s.mode || 'brak danych', ''];
+  const allowed = D.learn && D.learn.edge ? (D.learn.edge.allowed || []).length : null, total = D.learn && D.learn.edge ? Object.keys(D.learn.edge.assets || {}).length : 0;
+  let state, why, kind = 'up';
+  if (!s.ts) { state = 'Brak danych z bota'; why = 'Bot nie zapisał jeszcze statusu.'; kind = 'mut'; }
+  else if (j.age_s > 900) { state = 'Bot nie odpowiada'; why = `Ostatni przebieg ${ago(j.age_s)}. Sprawdź usługę btc-trader na serwerze.`; kind = 'down'; }
+  else if (paused) { state = 'Wstrzymany'; why = j.stop_file ? 'Na serwerze jest plik STOP. Otwarte pozycje są nadal nadzorowane.' : 'Nie otwiera nowych pozycji. Otwarte pozycje są nadal nadzorowane.'; kind = 'mut'; }
+  else if (brk.length) { state = 'Zatrzymany przez wyłącznik ryzyka'; why = brk.map(b => b.label).join(', ') + '. Szczegóły w sekcji „Ryzyko portfela i wyłączniki”.'; kind = 'down'; }
+  else if (s.halted) { state = 'Przerwa do końca dnia'; why = 'Osiągnięto dzienny limit straty. Bot wróci do pracy jutro (czas UTC).'; kind = 'down'; }
+  else if (s.ok === false) { state = 'Ostatni przebieg zakończył się błędem'; why = s.error || 'Szczegóły w dzienniku zdarzeń.'; kind = 'down'; }
+  else if (set.auto_select && allowed === 0) { state = 'Działa, ale czeka'; why = `Żadne z ${total} badanych aktywów nie ma udowodnionej przewagi, więc bot nie otwiera nowych pozycji. To zamierzone zachowanie.`; kind = 'mut'; }
+  else { state = 'Działa'; why = s.decision ? 'Ostatnia decyzja: ' + s.decision : 'Szuka okazji na wybranych aktywach.'; }
+  const upnl = pos.reduce((a, p) => a + (Number(p.upnl) || 0), 0), lossLim = cap * (e.max_daily_loss_pct || 2) / 100, used = s.pnl_today < 0 && lossLim > 0 ? Math.min(100, -s.pnl_today / lossLim * 100) : 0;
+  const tile = (big, label, small, c) => el('div', null, el('b', {class: c || ''}, big), el('span', null, label), small ? el('small', null, small) : null);
+  const kv = el('div', {class: 'kv'},
+    tile(s.equity == null ? 'n/d' : nf(s.equity, 2) + ' USDT', 'saldo konta', m[0]),
+    tile(s.pnl_today == null ? 'n/d' : pct(s.pnl_today, cap) || '0%', 'wynik dziś', s.pnl_today == null ? '' : sg(s.pnl_today, 2) + ' USDT', cls(s.pnl_today)),
+    tile(st && st.trades ? pct(st.total_pnl, cap) : 'n/d', 'wynik z 8 tygodni', st && st.trades ? `${sg(st.total_pnl, 2)} USDT, ${st.trades} transakcji` : 'brak zamkniętych pozycji', st && st.trades ? cls(st.total_pnl) : ''),
+    tile(st && st.trades ? nf(st.win_rate, 0) + '%' : 'n/d', 'trafność', st && st.trades ? `${st.wins} zyskownych, ${st.losses} stratnych` : ''),
+    tile(`${pos.length} z ${e.max_positions ?? '?'}`, 'otwarte pozycje', pos.length ? `niezrealizowany wynik ${pct(upnl, cap)} (${sg(upnl, 2)} USDT)` : '', pos.length ? cls(upnl) : ''),
+    tile(nf(used, 0) + '%', 'wykorzystany dzienny limit straty', `limit ${String(e.max_daily_loss_pct ?? '?').replace('.', ',')}% kapitału`, used >= 70 ? 'down' : ''),
+    tile(String(e.risk_pct ?? '?').replace('.', ',') + '%', 'ryzyko na pozycję', cap && e.risk_pct ? `ok. ${nf(cap * e.risk_pct / 100, 2)} USDT przy stopie` : ''));
+  const msg = el('span', {class: 'msg', role: 'status', style: 'margin:0'}, ovMsg);
+  const send = async (body, okText) => { try { await post('bot/settings', body); ovMsg = okText; editing = false; if (window.UI) UI.toast(okText, {kind: 'good'}); load(); } catch (err) { ovMsg = 'Nie zapisano: ' + err.message; msg.textContent = ovMsg; } };
+  const pb = el('button', {class: 'btn ' + (paused ? 'ok' : ''), type: 'button'}, paused ? 'Wznów bota' : 'Wstrzymaj bota');
+  if (j.stop_file) pb.disabled = true;
+  pb.addEventListener('click', () => { if (paused && !confirm('Wznowić bota? Zacznie otwierać nowe pozycje przy najbliższym przebiegu (do 5 minut).')) return; send({paused: !paused}, paused ? 'Bot wznowiony.' : 'Bot wstrzymany. Otwarte pozycje są nadal nadzorowane.'); });
+  const clamp = (k, v) => B[k] ? Math.min(B[k].max, Math.max(B[k].min, v)) : v;
+  const seg = el('div', {class: 'seg', role: 'group', 'aria-label': 'Profil ryzyka'});
+  PROFILES.forEach(([name, vals, desc]) => { const on = Object.entries(vals).every(([k, v]) => Number(e[k]) === clamp(k, v));
+    const b = el('button', {type: 'button', 'aria-pressed': String(on), title: desc}, name);
+    b.addEventListener('click', () => { if (on) return; const body = {}; Object.entries(vals).forEach(([k, v]) => { body[k] = clamp(k, v); });
+      if (!confirm(`Ustawić profil „${name}”?\n${desc}.` + (body.risk_pct > (e.risk_pct ?? 0) ? '\nTo zwiększa ryzyko względem obecnych ustawień.' : ''))) return; send(body, `Profil „${name}” zapisany. Bot użyje go przy najbliższym przebiegu.`); });
+    seg.append(b); });
+  const custom = !PROFILES.some(([, vals]) => Object.entries(vals).every(([k, v]) => Number(e[k]) === clamp(k, v)));
+  box.replaceChildren(el('p', {class: 'ov-state ' + kind}, state), el('p', {class: 'ov-why'}, why), kv,
+    el('div', {class: 'ov-act'}, pb, el('span', {class: 'lbl'}, 'Profil ryzyka:'), seg, custom && s.ts ? el('span', {class: 'lbl'}, 'obecnie: ustawienia własne') : null), msg);
+}
+function summaries(j, D) {
+  const s = j.status || {}, st = s.stats, pos = s.positions || [], cap = s.equity || (s.risk || {}).capital || 0, r = s.risk || j.risk || {}, brk = r.breakers || [];
+  const plans = Object.values(s.plans || {}).filter(p => p && (p.action === 'long' || p.action === 'short')).length;
+  setSum('status', `${pos.length} otwartych pozycji, ${plans} aktywnych sygnałów`);
+  setSum('form', `ryzyko ${String((s.effective || {}).risk_pct ?? '?').replace('.', ',')}% na pozycję, aktywa: ${(s.symbols || []).length}, strategia: ${(j.settings || {}).strategy === 'ensemble' ? 'zespół sygnałów' : 'klasyczna'}`);
+  setSum('stats', st && st.trades ? `${st.trades} transakcji, trafność ${nf(st.win_rate, 0)}%, wynik ${pct(st.total_pnl, cap)}` : 'brak zamkniętych pozycji');
+  setSum('riskcard', brk.length ? `aktywne wyłączniki: ${brk.length}` : `żaden wyłącznik nie jest aktywny, ryzyko otwartych pozycji ${nf((r.heat || {}).corr_pct || 0, 2)}% z ${nf(r.limit_pct || 0, 1)}%`);
+  setSum('decisions', `${Object.keys(s.decisions || s.plans || {}).length} aktywów ocenionych w ostatnim przebiegu`);
+  const ev = j.events || []; setSum('events', ev.length ? `ostatni wpis ${fmtTs(ev[ev.length - 1].ts)}` : 'brak wpisów');
+  const S = D.scalp; if (S && S.ts) { const best = Object.values(S.strategies || {}).filter(v => v.n).sort((a, b) => b.mean_r - a.mean_r)[0];
+    setSum('scalp', `${S.blocked ? 'zlecenia wstrzymane' : 'zlecenia włączone'}, dziś ${S.day.n} transakcji (${r2p(S.day.r, S.risk_pct)})` + (best ? `, najlepsza strategia w cieniu ${sg(best.mean_r, 2)}R na transakcję` : '')); } else setSum('scalp', 'brak danych');
+  const sh = D.shadow && D.shadow.strategies; setSum('shadow', sh ? Object.values(sh).filter(v => v.since).map(v => `${v.name}: ${v.n ? sg(v.mean_r, 2) + 'R, ' + v.n + ' transakcji' : 'brak transakcji'}`).join(' · ') : 'brak danych');
+  const L = D.learn && D.learn.edge; if (L) { const n = Object.keys(L.assets || {}).length, a = (L.allowed || []).length; setSum('learn', n ? `dopuszczone ${a} z ${n} aktywów (${nf(a / n * 100, 0)}%)` : 'mapa jeszcze nie powstała'); }
+  const lab = D.lab; setSum('lab', lab && lab.variants && lab.variants.length ? `aktywny wariant ${lab.active}, wniosków o awans: ${(lab.proposals || []).length}` : 'brak danych');
+  const C = D.copy; setSum('copy', C && (C.wallets || []).length ? `${C.wallets.length} portfeli, kandydatów: ${C.wallets.filter(w => w.status === 'kandydat').length}` : 'brak obserwowanych portfeli');
+  setSum('ai', 'zadaj pytanie o stan bota'); setSum('safety', 'strona nie składa zleceń i nie zna kluczy');
+}
 
 function riskCard(j) {
   const box = document.getElementById('riskcard'), r = (j.status || {}).risk || j.risk || {}, h = r.heat || {}, m = r.metrics || {}, lim = r.limits || {}, brk = r.breakers || [];
@@ -179,11 +255,11 @@ function statusCard(j) {
     el('span', {class: 'chip ' + (e.use_take_profit === false ? 'w' : '')}, e.use_take_profit === false ? 'take-profit: wyłączony' : 'take-profit: włączony'));
   const kv = el('div', {class: 'kv'},
     el('div', null, el('b', null, s.equity == null ? 'n/d' : nf(s.equity, 2) + ' USDT'), el('span', null, 'saldo konta')),
-    el('div', null, el('b', {class: cls(s.pnl_today)}, s.pnl_today == null ? 'n/d' : sg(s.pnl_today, 2) + ' USDT'), el('span', null, 'wynik zamkniętych dziś')),
+    el('div', null, el('b', {class: cls(s.pnl_today)}, s.pnl_today == null ? 'n/d' : sg(s.pnl_today, 2) + ' USDT'), el('span', null, 'wynik zamkniętych dziś' + (s.pnl_today != null && s.equity ? ` (${pct(s.pnl_today, s.equity)} kapitału)` : ''))),
     el('div', null, el('b', null, `${s.orders_today ?? 0} / ${s.max_orders ?? e.max_orders_day ?? '?'}`), el('span', null, 'zlecenia dziś')),
     el('div', null, el('b', null, `${pos.length} / ${e.max_positions ?? '?'}`), el('span', null, 'otwarte pozycje')),
     el('div', null, el('b', null, ago(j.age_s)), el('span', null, 'ostatni przebieg')));
-  const posEls = pos.length ? pos.map(p => el('div', {class: 'pos'}, el('b', null, `${p.side === 'Buy' ? 'LONG' : 'SHORT'} ${p.size} ${p.symbol}`), ` · wejście ${p.entry} · stop ${p.stop || 'BRAK'} · cel ${p.tp || 'brak'} · dźwignia x${p.leverage} · niezrealizowany wynik ${p.upnl} USDT`)) : [el('p', {class: 'mut', style: 'margin:6px 0'}, 'Brak otwartych pozycji.')];
+  const posEls = pos.length ? pos.map(p => el('div', {class: 'pos'}, el('b', null, `${p.side === 'Buy' ? 'LONG' : 'SHORT'} ${p.size} ${p.symbol}`), ` · wejście ${p.entry} · stop ${p.stop || 'BRAK'} · cel ${p.tp || 'brak'} · dźwignia x${p.leverage} · niezrealizowany wynik ${p.upnl} USDT${p.value > 0 && p.upnl != null ? ` (${pct(Number(p.upnl), p.value)} wartości pozycji)` : ''}`)) : [el('p', {class: 'mut', style: 'margin:6px 0'}, 'Brak otwartych pozycji.')];
   const rows = Object.entries(plans).map(([sym, p]) => el('tr', null, el('td', null, sym), el('td', null, p && (p.action === 'long' || p.action === 'short') ? p.action.toUpperCase() : 'czekaj'), el('td', null, p && p.action ? `${p.setup || ''}` : ''), el('td', {class: 'r'}, p && p.entry ? p.entry : ''), el('td', {class: 'r'}, p && p.stop ? nf(p.stop, 2) : ''), el('td', {class: 'r'}, p && p.tp1 ? p.tp1 : ''), el('td', null, p && p.live_state ? p.live_state : '')));
   const tbl = rows.length ? el('div', {class: 'tbl-w'}, el('table', null, el('thead', null, el('tr', null, ['Aktywo', 'Sygnał', 'Setup', 'Wejście', 'Stop', 'Cel', 'Stan'].map((h, i) => el('th', {class: i > 2 && i < 6 ? 'r' : ''}, h)))), el('tbody', null, rows))) : null;
   box.replaceChildren(...[el('h2', null, 'Status'), chips, el('div', {class: 'decision'}, el('b', null, 'Ostatnia decyzja: '), s.decision || 'brak'), kv, ...posEls,
@@ -192,17 +268,17 @@ function statusCard(j) {
 }
 
 function statsCard(j) {
-  const st = (j.status || {}).stats, box = document.getElementById('stats');
+  const st = (j.status || {}).stats, box = document.getElementById('stats'), cap = (j.status || {}).equity || 0, pp = v => cap ? ` (${pct(v, cap)} kapitału)` : '';
   const head = el('h2', null, 'Statystyki działania (ostatnie 8 tygodni)');
   if (!st || !st.trades) { box.replaceChildren(head, el('p', {class: 'mut'}, st ? 'Brak zamkniętych pozycji w tym okresie.' : 'Statystyki pojawią się po pierwszym połączeniu z kontem (tryby testnet, demo, live) i po zamknięciu pozycji. W trybie dryrun ich nie ma.')); return; }
   const kv = el('div', {class: 'kv'},
-    el('div', null, el('b', null, st.trades), el('span', null, `transakcje (${st.wins} zysk / ${st.losses} strata)`)),
+    el('div', null, el('b', null, st.trades), el('span', null, `transakcje: ${st.wins} zyskownych (${nf(st.wins / st.trades * 100, 0)}%), ${st.losses} stratnych (${nf(st.losses / st.trades * 100, 0)}%)`)),
     el('div', null, el('b', null, nf(st.win_rate, 1) + '%'), el('span', null, 'trafność')),
-    el('div', null, el('b', {class: cls(st.total_pnl)}, sg(st.total_pnl, 2) + ' USDT'), el('span', null, 'wynik łączny')),
+    el('div', null, el('b', {class: cls(st.total_pnl)}, sg(st.total_pnl, 2) + ' USDT'), el('span', null, 'wynik łączny' + pp(st.total_pnl))),
     el('div', null, el('b', null, st.profit_factor == null ? 'n/d' : nf(st.profit_factor, 2)), el('span', null, 'profit factor (zyski / straty)')),
-    el('div', null, el('b', {class: 'up'}, sg(st.avg_win, 2)), el('span', null, 'średni zysk')),
-    el('div', null, el('b', {class: 'down'}, sg(st.avg_loss, 2)), el('span', null, 'średnia strata')),
-    el('div', null, el('b', {class: 'down'}, '−' + nf(st.max_drawdown, 2)), el('span', null, 'największy spadek kapitału z wyników')),
+    el('div', null, el('b', {class: 'up'}, sg(st.avg_win, 2)), el('span', null, 'średni zysk' + pp(st.avg_win))),
+    el('div', null, el('b', {class: 'down'}, sg(st.avg_loss, 2)), el('span', null, 'średnia strata' + pp(st.avg_loss))),
+    el('div', null, el('b', {class: 'down'}, '−' + nf(st.max_drawdown, 2)), el('span', null, 'największy spadek kapitału z wyników' + pp(-st.max_drawdown))),
     el('div', null, el('b', null, `${sg(st.worst, 2)} / ${sg(st.best, 2)}`), el('span', null, 'najgorsza / najlepsza')));
   const cv = el('div', {class: 'curve', title: 'Skumulowany wynik zamkniętych pozycji'});
   if (window.UI && st.curve && st.curve.length > 2) { const sv = UI.spark(st.curve.map(x => x[1]), {w: 600, h: 120, animate: false}); sv.setAttribute('preserveAspectRatio', 'none'); cv.append(sv); }
@@ -216,8 +292,8 @@ function shadowCard(S) {
   if (!keys.length || !keys.some(k => st[k].since)) { box.replaceChildren(head, intro, el('p', {class: 'mut'}, 'Brak danych. Pierwszy zapis powstaje po dziennej nauce systemu (sudo systemctl start btc-learn.service); wyniki zaczną się pojawiać po kilku dniach.')); return; }
   const cols = keys.map(k => { const s = st[k], enough = s.n >= 30;
     return el('div', {class: 'dec'}, el('div', {class: 'hd'}, el('b', null, s.name), s.since ? el('span', {class: 'chip'}, 'od ' + new Date(s.since * 1000).toLocaleDateString('pl-PL')) : null),
-      el('div', {class: 'kv', style: 'margin:6px 0'}, el('div', null, el('b', null, s.n), el('span', null, 'zamknięte transakcje')), el('div', null, el('b', {class: cls(s.mean_r)}, s.n ? sg(s.mean_r, 2) + 'R' : 'n/d'), el('span', null, 'średnio na transakcję')),
-        el('div', null, el('b', null, s.n ? nf(s.win_rate, 0) + '%' : 'n/d'), el('span', null, 'trafność')), el('div', null, el('b', {class: cls(s.total_r)}, sg(s.total_r, 1) + 'R'), el('span', null, 'suma wyników')),
+      el('div', {class: 'kv', style: 'margin:6px 0'}, el('div', null, el('b', null, s.n), el('span', null, 'zamknięte transakcje')), el('div', null, el('b', {class: cls(s.mean_r)}, s.n ? sg(s.mean_r, 2) + 'R' : 'n/d'), el('span', null, 'średnio na transakcję' + (s.n ? ` (${r2p(s.mean_r)})` : ''))),
+        el('div', null, el('b', null, s.n ? nf(s.win_rate, 0) + '%' : 'n/d'), el('span', null, 'trafność')), el('div', null, el('b', {class: cls(s.total_r)}, sg(s.total_r, 1) + 'R'), el('span', null, 'suma wyników' + (s.n ? ` (${r2p(s.total_r)})` : ''))),
         el('div', null, el('b', null, `${s.open} / ${s.pending}`), el('span', null, 'otwarte / oczekujące'))),
       (window.UI && s.curve && s.curve.length > 2) ? el('div', {style: 'height:54px'}, (() => { const v = UI.spark(s.curve.map(x => x[1]), {w: 400, h: 54}); v.setAttribute('preserveAspectRatio', 'none'); v.style.width = '100%'; v.style.height = '100%'; return v; })()) : null,
       el('p', {class: 'note', style: enough ? '' : 'color:var(--warn)'}, enough ? `Istotność: p = ${nf(s.p, 3)}, dolna granica średniej ${sg(s.lb, 2)}R.` : `Za mało transakcji (${s.n} z 30) na jakiekolwiek wnioski. Na razie traktuj to jako szum.`),
@@ -258,13 +334,13 @@ function scalpCard(S) {
   tog.addEventListener('click', async () => { try { await post('scalp/settings', {enabled: !on}); load(); } catch (err) { msg.textContent = 'Błąd: ' + err.message; } });
   const gate = {bramka: 'bramka: strategia z dodatnim wynikiem', rozpoznanie: 'rozpoznanie: połowa ryzyka, strategia bez dowodu', brak: 'żadna strategia nie handluje'}[S.gate] || S.gate;
   const chips = el('p', null, el('span', {class: 'chip'}, 'tryb: ' + S.mode), el('span', {class: 'chip ' + (S.blocked ? 'w' : 'ok')}, S.blocked ? 'zlecenia wstrzymane: ' + S.blocked : 'zlecenia włączone'),
-    el('span', {class: 'chip ' + (S.gate === 'bramka' ? 'ok' : 'w')}, gate), el('span', {class: 'chip'}, `dziś: ${S.day.n} transakcji, ${sg(S.day.r, 2)}R`), el('span', {class: 'chip'}, 'ostatni przebieg: ' + ago(S.age_s)));
+    el('span', {class: 'chip ' + (S.gate === 'bramka' ? 'ok' : 'w')}, gate), el('span', {class: 'chip'}, `dziś: ${S.day.n} transakcji, ${sg(S.day.r, 2)}R (${r2p(S.day.r, S.risk_pct)})`), el('span', {class: 'chip'}, 'ostatni przebieg: ' + ago(S.age_s)));
   const rows = Object.entries(S.strategies).map(([id, v]) => el('tr', null, el('td', null, v.name), el('td', null, S.allowed[id] ? el('span', {class: 'chip ok'}, S.allowed[id] < 1 ? 'rozpoznanie' : 'handluje') : el('span', {class: 'chip'}, 'tylko cień')),
     el('td', {class: 'r'}, v.n), el('td', {class: 'r ' + cls(v.mean_r)}, v.n ? sg(v.mean_r, 2) : ''), el('td', {class: 'r'}, v.n ? Math.round(v.win * 100) + '%' : ''), el('td', {class: 'r ' + cls(v.total_r)}, v.n ? sg(v.total_r, 1) : ''), el('td', {class: 'r ' + cls(v.d1_r)}, v.d1_n ? `${sg(v.d1_r, 1)} (${v.d1_n})` : '')));
   const tbl = el('div', {style: 'overflow-x:auto'}, el('table', null, el('thead', null, el('tr', null, ['Strategia', 'Status', 'Transakcje (14 dni)', 'Śr. R po kosztach', 'Trafność', 'Suma R', 'Ostatnia doba'].map(t => el('th', null, t)))), el('tbody', null, rows)));
   const real = S.real || {n: 0}, parts = [head, intro, chips, tbl, el('p', {class: 'note'}, `Bramka: co najmniej ${S.criteria.min_n} transakcji z ${S.criteria.days} dni i średnia co najmniej +${S.criteria.min_mean}R. Ryzyko na transakcję: ${S.risk_pct}% kapitału, minimalny stop ${S.min_stop_pct.toFixed(2)}% ceny.`)];
   if ((S.open || []).length) parts.push(el('p', null, 'Otwarte: ', S.open.map(o => el('span', {class: 'chip'}, `${o.sym} ${o.side > 0 ? 'long' : 'short'} ${o.qty} (${S.strategies[o.strat] ? S.strategies[o.strat].name : o.strat})`))));
-  parts.push(el('p', {class: 'note'}, real.n ? `Prawdziwe transakcje (${S.mode}): ${real.n}, średnio ${sg(real.mean_r, 2)}R, razem ${sg(real.total_r, 1)}R (${sg(real.pnl, 2)} USDT).` : 'Prawdziwych transakcji jeszcze nie było.'));
+  parts.push(el('p', {class: 'note'}, real.n ? `Prawdziwe transakcje (${S.mode}): ${real.n}, średnio ${sg(real.mean_r, 2)}R, razem ${sg(real.total_r, 1)}R (${r2p(real.total_r, S.risk_pct)}, ${sg(real.pnl, 2)} USDT).` : 'Prawdziwych transakcji jeszcze nie było.'));
   if ((real.last || []).length) parts.push(el('div', {style: 'overflow-x:auto'}, el('table', null, el('thead', null, el('tr', null, ['Czas', 'Aktywo', 'Strategia', 'Strona', 'Wynik USDT', 'R'].map(t => el('th', null, t)))),
     el('tbody', null, real.last.map(x => el('tr', null, el('td', null, fmtTs(x.ts)), el('td', null, x.sym), el('td', null, x.strat), el('td', null, x.side > 0 ? 'long' : 'short'), el('td', {class: 'r ' + cls(x.pnl)}, sg(x.pnl, 2)), el('td', {class: 'r ' + cls(x.r)}, x.r == null ? '' : sg(x.r, 2))))))));
   (S.notes || []).forEach(n => parts.push(el('p', {class: 'mut'}, n)));
@@ -341,7 +417,7 @@ function learnCard(L, j) {
   const qNow = Object.entries(q).filter(([, t]) => t * 1000 > Date.now());
   const P = e.params || {}, FLT = {btc_down: 'BTC pod SMA50', near_event: 'dzień publikacji makro'}, ae = e.assets_ens || {}, hm = P.held_size_mult ?? 0.5, smaller = hm < 1 ? `pozycje ${Math.round(hm * 100)}% normalnego rozmiaru` : 'bez zmniejszania pozycji';
   const heldN = names.filter(s2 => assets[s2].status === 'allowed' && assets[s2].held).length;
-  const chips = el('div', null, el('span', {class: 'chip'}, 'ostatnia nauka: ' + ago(L.age_s)), el('span', {class: 'chip ' + ((e.allowed || []).length ? 'ok' : 'w')}, `dopuszczone: ${(e.allowed || []).length} z ${names.length}`),
+  const chips = el('div', null, el('span', {class: 'chip'}, 'ostatnia nauka: ' + ago(L.age_s)), el('span', {class: 'chip ' + ((e.allowed || []).length ? 'ok' : 'w')}, `dopuszczone: ${(e.allowed || []).length} z ${names.length} (${nf((e.allowed || []).length / names.length * 100, 0)}%)`),
     heldN ? el('span', {class: 'chip w', title: 'Dowody osłabły poniżej progu wejścia, ale nie poniżej progu wyjścia: aktywo zostaje, ' + smaller}, `w tym utrzymane: ${heldN}`) : null,
     el('span', {class: 'chip ' + (auto.enabled ? 'ok' : '')}, auto.enabled ? 'automat: włączony' : 'automat: wyłączony'), ...qNow.map(([s2]) => el('span', {class: 'chip bad'}, s2 + ': kwarantanna')));
   const whyOf = a2 => {
@@ -422,32 +498,41 @@ function formCard(j) {
     catch (err) { msg.className = 'msg down'; msg.textContent = 'Nie zapisano: ' + err.message; }
     save.disabled = false;
   });
-  const grid = el('div');
-  rows.forEach(r => { const row = el('div', {class: 'set'}, r[0], r[1], r[2]); grid.append(row); });
-  box.replaceChildren(grid, el('h3', {style: 'font-size:.88rem;margin:14px 0 4px;color:var(--muted)'}, 'Aktywa do handlu (Bybit, kontrakty USDT)'), symBox, el('div', {class: 'bar'}, custom, dl, addBtn, el('span', {class: 'mut', style: 'font-size:.76rem'}, CATALOG && CATALOG.length ? `katalog Bybit: ${CATALOG.length} kontraktów` : 'katalog pojawi się po pierwszej nauce')),
-    el('p', {class: 'note'}, 'Handlować można tylko to, co ma kontrakt USDT na Bybit: kryptowaluty, złoto (XAUT, PAXG) i ewentualne tokeny akcji, jeśli Bybit je wystawia. Akcji giełdowych i par walutowych (FX) Bybit przez to API nie obsługuje; do nich potrzebny jest osobny broker.'),
-    el('p', {class: 'note', style: 'color:var(--warn)'}, 'Strategia była badana na BTC. Na pozostałych aktywach nie została sprawdzona, więc traktuj je jako eksperyment. Bot pomija aktywa z dobowym obrotem poniżej 20 mln USDT albo niedostępne do handlu.'),
-    el('h3', {style: 'font-size:.88rem;margin:14px 0 4px;color:var(--muted)'}, 'Zakres działania'),
-    el('h3', {style: 'font-size:.88rem;margin:14px 0 4px;color:var(--muted)'}, 'Strategia (algorytm decyzyjny)'), el('div', {class: 'bar'}, stratBtns), el('p', {class: 'note'}, 'Klasyczna: plan z trendu i poziomów (pullback, wybicie). Zespół sygnałów: 6 rodzin sygnałów z wagami zależnymi od reżimu rynku, filtrem BTC, blokadą w dni publikacji makro i skalowaniem pozycji do zmienności. Obie są oceniane na historii w tabeli „Nauka systemu”.'),
-    el('div', {class: 'opts'}, el('label', null, appr, el('b', null, 'Wymagaj mojego zatwierdzenia każdej pozycji'), ' (bot zgłasza wniosek z dokładnymi parametrami, Ty klikasz „Zatwierdź” u góry strony, a bot sam stawia pozycję)')),
-    el('div', {class: 'opts'}, el('label', null, auto, el('b', null, 'Automatyczny wybór aktywów'), ' (bot sam dodaje aktywa, które mają udowodnioną przewagę w historii po kosztach, i pomija te w kwarantannie lub z niekorzystnym kontekstem; zob. „Nauka systemu”)')),
-    el('div', {class: 'opts'}, mk('d_long', 'Otwieraj pozycje LONG'), mk('d_short', 'Otwieraj pozycje SHORT')),
-    el('div', {class: 'opts'}, el('label', null, tp, el('b', null, 'Take-profit'), ' (cel zysku w zleceniu; po wyłączeniu pozycję zamyka tylko stop-loss lub Ty ręcznie)'), el('label', {title: 'Nie da się wyłączyć'}, el('input', {type: 'checkbox', checked: true, disabled: true}), el('b', null, 'Stop-loss'), ' (zawsze włączony)')),
+  const BASIC = ['risk_pct', 'max_daily_loss_pct', 'max_positions', 'max_orders_day', 'max_capital'];
+  const grid = el('div'), advGrid = el('div');
+  rows.forEach((r, i) => { const row = el('div', {class: 'set'}, r[0], r[1], r[2]); (BASIC.includes(FIELDS[i][0]) ? grid : advGrid).append(row); });
+  const fold2 = (title, key, ...kids) => { const d = el('details', {style: 'margin:12px 0;border-top:1px solid var(--line);padding-top:10px', open: advOpen === key || advOpen === 'all'}, el('summary', {style: 'cursor:pointer;font-size:.9rem;font-weight:600'}, title), ...kids);
+    d.addEventListener('toggle', () => { if (d.open) advOpen = advOpen && advOpen !== key ? 'all' : key; else if (advOpen === key) advOpen = false; }); return d; };
+  const h3 = t => el('h3', {style: 'font-size:.88rem;margin:14px 0 4px;color:var(--muted)'}, t);
+  box.replaceChildren(grid,
     el('div', {class: 'opts'}, el('label', null, paused, el('b', null, 'Wstrzymaj otwieranie nowych pozycji'), ' (istniejące są nadal nadzorowane)')),
-    el('p', {class: 'note'}, 'Tryb (dryrun, testnet, demo, live) i klucze ustawiasz na serwerze (trader.env). Wyłącznik awaryjny: plik STOP w katalogu bota.'), el('div', {class: 'bar'}, save, preset), msg);
+    el('div', {class: 'opts'}, el('label', null, appr, el('b', null, 'Pytaj mnie o zgodę przed każdą pozycją'))),
+    el('div', {class: 'opts'}, el('label', null, auto, el('b', null, 'Bot sam wybiera aktywa'), ' (tylko te z udowodnioną przewagą)')),
+    fold2('Aktywa do handlu', 'sym', symBox, el('div', {class: 'bar'}, custom, dl, addBtn, el('span', {class: 'mut', style: 'font-size:.76rem'}, CATALOG && CATALOG.length ? `katalog Bybit: ${CATALOG.length} kontraktów` : 'katalog pojawi się po pierwszej nauce')),
+      el('p', {class: 'note'}, 'Handlować można tylko to, co ma kontrakt USDT na Bybit: kryptowaluty, złoto (XAUT, PAXG) i ewentualne tokeny akcji. Bot pomija aktywa z dobowym obrotem poniżej 20 mln USDT albo niedostępne do handlu.'),
+      el('p', {class: 'note', style: 'color:var(--warn)'}, 'Strategia była badana na BTC. Na pozostałych aktywach traktuj ją jako eksperyment.')),
+    fold2(`Ustawienia zaawansowane (${FIELDS.length - BASIC.length} limitów, strategia, kierunki)`, 'adv', advGrid,
+      h3('Strategia (algorytm decyzyjny)'), el('div', {class: 'bar'}, stratBtns), el('p', {class: 'note'}, 'Klasyczna: plan z trendu i poziomów (pullback, wybicie). Zespół sygnałów: 6 rodzin sygnałów z wagami zależnymi od reżimu rynku, filtrem BTC i blokadą w dni publikacji makro. Żadna nie ma udowodnionej przewagi; porównanie na żywo jest w sekcji „Tryb cienia”.'),
+      h3('Kierunki i wyjścia'), el('div', {class: 'opts'}, mk('d_long', 'Otwieraj pozycje LONG'), mk('d_short', 'Otwieraj pozycje SHORT')),
+      el('div', {class: 'opts'}, el('label', null, tp, el('b', null, 'Take-profit'), ' (cel zysku w zleceniu; po wyłączeniu pozycję zamyka tylko stop-loss lub Ty ręcznie)'), el('label', {title: 'Nie da się wyłączyć'}, el('input', {type: 'checkbox', checked: true, disabled: true}), el('b', null, 'Stop-loss'), ' (zawsze włączony)')),
+      el('div', {class: 'bar'}, preset),
+      el('p', {class: 'note'}, 'Tryb (dryrun, testnet, demo, live) i klucze ustawiasz na serwerze (trader.env). Wyłącznik awaryjny: plik STOP w katalogu bota.')),
+    el('div', {class: 'bar'}, save), msg);
 }
 
 async function load() {
   try {
     const j = await api('bot');
     if (!CATALOG) { try { CATALOG = (await api('catalog')).symbols; } catch (e) { CATALOG = []; } }
+    RISK = ((j.status || {}).effective || {}).risk_pct ?? (j.settings || {}).risk_pct ?? 0.5;
+    const D = {};
     proposalsCard(j); decisionsCard(j); statusCard(j); riskCard(j); statsCard(j); eventsCard(j); formCard(j);
-    try { shadowCard(await api('shadow')); } catch (err) { document.getElementById('shadow').replaceChildren(el('p', {class: 'mut'}, 'Tryb cienia niedostępny: ' + err.message)); }
+    document.getElementById('proposals').style.display = (j.proposals || []).length || (j.settings || {}).require_approval ? '' : 'none';
+    const part = async (k, path, fn, name) => { try { D[k] = await api(path); fn(D[k]); } catch (err) { document.getElementById(k).replaceChildren(el('p', {class: 'mut'}, name + ': ' + err.message)); } };
     aiCard();
-    try { scalpCard(await api('scalp')); } catch (err) { document.getElementById('scalp').replaceChildren(el('p', {class: 'mut'}, 'Scalper niedostępny: ' + err.message)); }
-    try { copyCard(await api('copy')); } catch (err) { document.getElementById('copy').replaceChildren(el('p', {class: 'mut'}, 'Kopiowanie niedostępne: ' + err.message)); }
-    try { labCard(await api('lab')); } catch (err) { document.getElementById('lab').replaceChildren(el('p', {class: 'mut'}, 'Laboratorium niedostępne: ' + err.message)); }
-    try { learnCard(await api('learn'), j); } catch (err) { document.getElementById('learn').replaceChildren(el('p', {class: 'mut'}, 'Nauka niedostępna: ' + err.message)); }
+    await Promise.all([part('shadow', 'shadow', shadowCard, 'Tryb cienia niedostępny'), part('scalp', 'scalp', scalpCard, 'Scalper niedostępny'), part('copy', 'copy', copyCard, 'Kopiowanie niedostępne'),
+      part('lab', 'lab', labCard, 'Laboratorium niedostępne'), part('learn', 'learn', L => learnCard(L, j), 'Nauka niedostępna')]);
+    overviewCard(j, D); summaries(j, D);
     const stale = j.age_s == null || j.age_s > 900;
     document.getElementById('pulse').className = 'pulse' + (stale ? ' stale' : '');
     document.getElementById('meta').textContent = j.age_s == null ? 'brak danych z bota' : `ostatni przebieg ${ago(j.age_s)}${stale ? ' (bot nie odpowiada: sprawdź usługę btc-trader)' : ''}`;

@@ -13,6 +13,7 @@ GET  /api/account                                     moje konto Bybit: saldo, p
 GET  /api/shadow                                      tryb cienia: wyniki obu strategii na żywo, bez zleceń
 GET  /api/learn                                       mapa przewagi, dziennik nauki, historia decyzji (dopuszczone/wycofane) i kwarantanny aktywów
 GET  /api/ai/chat[?id=]                               asystent AI: gotowość albo wynik zadania; POST /api/ai/chat {"messages":[...]} zadaje pytanie (klucz w ai.env)
+GET  /api/flow                                        rynek na żywo: przepływ zleceń i pozycjonowanie (wolumen agresywny, konta long/short, premia), wskaźnik łączny i jego trafność
 GET  /api/scalp                                       scalper: wyniki strategii w cieniu, bramka, otwarte pozycje, prawdziwe transakcje; POST /api/scalp/settings {"enabled":bool}
 GET  /api/copy                                        cudze transakcje (Hyperliquid): czy kopiowanie portfela ma przewagę poza próbą (dodawanie: btc_copy.py add)
 GET  /api/lab                                         laboratorium wariantów: diagnoza sygnałów, test historyczny i wyniki z cienia wariantów, wnioski o awans
@@ -239,6 +240,10 @@ def make_handler(state):
                         code, obj = btc_ai.result(state.bot_dir, q["id"][0])
                         return self._send(code, obj)
                     return self._send(200, btc_ai.info(state.bot_dir))
+                if u.path == "/api/flow":
+                    import btc_flow
+                    o = btc_flow.read_out(state.bot_dir)
+                    return self._send(200, {**o, "age_s": round(time.time() - o["ts"], 1) if o.get("ts") else None})
                 if u.path == "/api/scalp":
                     import btc_scalp
                     o = btc_scalp.read_out(state.bot_dir)

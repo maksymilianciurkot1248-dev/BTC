@@ -127,6 +127,14 @@ def snapshot(d):
         o = btc_scalp.read_out(d)
         return {k: o.get(k) for k in ("mode", "symbols", "strategies", "allowed", "gate", "blocked", "open", "day", "real", "notes")}
     put("scalper", scalp)
+
+    def flow():
+        import btc_flow
+        o = btc_flow.read_out(d)
+        return {"opis": "wskaznik laczny z danych o przeplywie: EKSPERYMENT bez potwierdzonej skutecznosci (na 2 latach danych polowa skladnikow nie wykazala przewagi); |wskaznik| >= 1 = wyrazne wskazanie na 12 h; trafnosc.oos to jedyny uczciwy sprawdzian", "trafnosc": o.get("accuracy"),
+                "aktywa": {s: {"wskaznik": v.get("score"), "wskazanie": v.get("lean"), "skladniki": {p["key"]: [p["value"], p["unit"], p["z"]] for p in v.get("parts", [])}, "info": v.get("info")}
+                           for s, v in (o.get("symbols") or {}).items()}}
+    put("rynek_na_zywo", flow)
     return snap
 
 

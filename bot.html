@@ -77,6 +77,7 @@ th{text-align:left;color:var(--muted);font-weight:600;font-size:.72rem;padding:6
 <div class="card" id="overview"><div class="ui-skel" style="height:150px"></div></div>
 <div class="card" id="proposals"></div>
 <details class="card fold" data-k="status" open><summary><b>Pozycje i plany</b><span class="fsum" id="fs_status"></span></summary><div id="status"></div></details>
+<details class="card fold" data-k="flow" open><summary><b>Rynek na żywo</b><span class="fsum" id="fs_flow"></span></summary><div id="flow"></div></details>
 <details class="card fold" data-k="form"><summary><b>Ustawienia</b><span class="fsum" id="fs_form"></span></summary><div><p class="sub">Bot wczytuje je przy najbliższym uruchomieniu (co 5 minut). Najprościej: wybierz profil ryzyka w przeglądzie na górze.</p><div id="form"></div></div></details>
 <details class="card fold" data-k="ai"><summary><b>Asystent AI</b><span class="fsum" id="fs_ai"></span></summary><div id="ai"></div></details>
 <details class="card fold" data-k="stats"><summary><b>Wyniki bota</b><span class="fsum" id="fs_stats"></span></summary><div id="stats"></div></details>
@@ -184,6 +185,8 @@ function summaries(j, D) {
   const L = D.learn && D.learn.edge; if (L) { const n = Object.keys(L.assets || {}).length, a = (L.allowed || []).length; setSum('learn', n ? `dopuszczone ${a} z ${n} aktywów (${nf(a / n * 100, 0)}%)` : 'mapa jeszcze nie powstała'); }
   const lab = D.lab; setSum('lab', lab && lab.variants && lab.variants.length ? `aktywny wariant ${lab.active}, wniosków o awans: ${(lab.proposals || []).length}` : 'brak danych');
   const C = D.copy; setSum('copy', C && (C.wallets || []).length ? `${C.wallets.length} portfeli, kandydatów: ${C.wallets.filter(w => w.status === 'kandydat').length}` : 'brak obserwowanych portfeli');
+  const F = D.flow; if (F && F.symbols && Object.keys(F.symbols).length) { const st = Object.entries(F.symbols).filter(([, v]) => v.strong);
+    const o = (F.accuracy || {}).oos || {}; setSum('flow', `przepływ zleceń i pozycjonowanie dla ${Object.keys(F.symbols).length} aktywów; wskaźnik eksperymentalny: ` + (st.length ? st.map(([s, v]) => s.replace('USDT', '') + ' ' + v.lean).join(', ') : 'bez wyraźnych wskazań') + (o.n ? `, trafność ${nf(o.hit_pct, 0)}% z ${o.n}` : '')); } else setSum('flow', 'brak danych');
   setSum('ai', 'zadaj pytanie o stan bota'); setSum('safety', 'strona nie składa zleceń i nie zna kluczy');
 }
 
@@ -346,6 +349,34 @@ function scalpCard(S) {
   (S.notes || []).forEach(n => parts.push(el('p', {class: 'mut'}, n)));
   parts.push(el('p', null, tog), msg);
   box.replaceChildren(...parts);
+}
+function flowCard(F) {
+  const box = document.getElementById('flow'), syms = Object.entries((F && F.symbols) || {});
+  const intro = el('p', {class: 'sub'}, 'Co robią inni uczestnicy rynku kontraktów, odświeżane co 10 minut: kto agresywnie kupuje lub sprzedaje, po której stronie stoi większość kont i ile kontrakt kosztuje względem rynku spot. Każda wartość jest porównana z własnym poziomem z ostatnich 7 dni, a cztery składniki tworzą jeden wskaźnik.');
+  if (!syms.length) { box.replaceChildren(intro, el('p', {class: 'mut'}, 'Brak danych. Pojawią się kilka minut po starcie usługi btc-scalp (źródło: publiczne API OKX).'), ...((F && F.errors) || []).map(e => el('p', {class: 'note down'}, e))); return; }
+  const LC = {wzrostowe: 'ok', spadkowe: 'live', 'lekko wzrostowe': '', 'lekko spadkowe': '', neutralne: '', 'brak danych': 'w'};
+  const part = p => p.value == null ? el('td', {class: 'r mut'}, 'n/d') : el('td', {class: 'r ' + (Math.abs(p.vote) >= 0.5 ? cls(p.vote) : ''), title: `odchylenie od normy z 7 dni: ${sg(p.z, 1)} (głos ${sg(p.vote, 1)})`}, (p.key === 'prem' || p.key === 'ret4' ? sg(p.value, p.key === 'prem' ? 1 : 2) : nf(p.value, 1)) + (p.key === 'prem' ? ' pb' : '%'));
+  const rows = syms.map(([s, v]) => el('tr', null, el('td', null, el('b', null, s.replace('USDT', ''))),
+    el('td', null, el('span', {class: 'chip ' + (LC[v.lean] ?? '')}, v.lean), v.score == null ? null : el('span', {class: 'mut', style: 'font-size:.78rem'}, ' ' + sg(v.score, 2))),
+    ...v.parts.map(part), el('td', {class: 'r'}, v.info.oi_chg24_pct == null ? 'n/d' : sg(v.info.oi_chg24_pct, 1) + '%'),
+    el('td', {class: 'r'}, v.info.top_long_pct == null ? 'n/d' : nf(v.info.top_long_pct, 0) + '%'), el('td', {class: 'r'}, v.info.funding_pct == null ? 'n/d' : sg(v.info.funding_pct, 3) + '%')));
+  const tbl = el('div', {class: 'tbl-w'}, el('table', null, el('thead', null, el('tr', null, ['Aktywo', 'Wskaźnik (eksperyment)', 'Kupno rynkowe (4 h)', 'Konta long', 'Premia kontraktu', 'Ruch ceny (4 h)', 'OI (24 h)', 'Duzi gracze: long', 'Funding'].map((t, i) => el('th', {class: i > 1 ? 'r' : ''}, t)))), el('tbody', null, rows)));
+  const a = F.accuracy || {}, all = a.all || {n: 0}, oos = a.oos || {n: 0};
+  const accTxt = x => x.n ? `${nf(x.hit_pct, 0)}% trafnych z ${x.n} (średnio ${sg(x.avg_bp / 100, 2)}% w kierunku wskazania, przed kosztami)` : 'jeszcze brak wskazań';
+  const acc = el('div', {class: 'kv'},
+    el('div', null, el('b', null, oos.n ? nf(oos.hit_pct, 0) + '%' : 'n/d'), el('span', null, `trafność wskaźnika po ${F.hold_h} h, liczona od ` + new Date(F.oos_start * 1000).toLocaleDateString('pl-PL')), el('small', null, oos.n ? `${oos.n} wyraźnych wskazań, średnio ${sg(oos.avg_bp / 100, 2)}% w kierunku wskazania` + (oos.n < 30 ? '; za mało na wnioski' : '') : 'uczciwy sprawdzian: tylko wskazania z okresu po zbudowaniu wskaźnika; rośnie z czasem')),
+    el('div', null, el('b', {class: 'mut'}, all.n ? nf(all.hit_pct, 0) + '%' : 'n/d'), el('span', null, `trafność z ostatnich ${nf(a.days, 0)} dni łącznie`), el('small', null, all.n ? `${all.n} wskazań; obejmuje okres, na którym wskaźnik budowano, więc jest zawyżona` : 'brak wskazań')),
+    el('div', null, el('b', null, String(syms.filter(([, v]) => v.strong).length)), el('span', null, 'wyraźne wskazania teraz'), el('small', null, syms.filter(([, v]) => v.strong).map(([s, v]) => s.replace('USDT', '') + ' ' + v.lean).join(', ') || 'żadne aktywo nie przekracza progu')));
+  const warn = el('p', {class: 'note', style: 'color:var(--warn)'}, 'Wskaźnik nie ma potwierdzonej skuteczności. Na 53 dniach danych wypadał dodatnio, ale na 2 latach połowa jego składników nie wykazała żadnej przewagi. Traktuj go jako eksperyment, a liczby w tabeli jako kontekst, nie sygnał do działania.');
+  const how = el('details', {style: 'font-size:.84rem;color:var(--muted);margin-top:8px'}, el('summary', {style: 'cursor:pointer'}, 'Jak to czytać i na ile można temu ufać'),
+    el('ul', {style: 'margin:6px 0 0;padding-left:18px'}, el('li', null, 'Zlecenia rynkowe: powyżej 50% oznacza, że więcej wolumenu kupowało „po każdej cenie” niż sprzedawało. Nietypowo wysoki udział kupna liczy się na plus.'),
+      el('li', null, 'Konta z pozycją długą: jaki procent kont ma longa. W badanym okresie rosnący udział longów poprzedzał wzrosty w skali godzin; na danych dziennych zależność była odwrotna, więc ten składnik jest najmniej pewny.'),
+      el('li', null, 'Premia kontraktu: kontrakt droższy od rynku spot niż zwykle to sygnał przegrzania (liczy się na minus). Ruch ceny z 4 h: po nietypowo dużym ruchu częściej następuje korekta (liczy się przeciwnie do ruchu).'),
+      el('li', null, 'Open interest, najwięksi gracze i funding są pokazane informacyjnie i nie wchodzą do wskaźnika.'),
+      el('li', null, `Wskaźnik to średnia czterech składników. Od ${F.theta} w górę albo −${F.theta} w dół traktujemy go jako wyraźne wskazanie na najbliższe ${F.hold_h} h.`),
+      el('li', null, 'Wyniki badań: na 53 dniach i 10 aktywach wyraźne wskazania dawały po 12 h dodatni wynik po kosztach w każdej sprawdzonej konfiguracji, ale bez pewności statystycznej, a zysk pochodził głównie z pozycji krótkich na spadającym rynku. Na 2 latach danych (BTC, ETH, SOL, XRP) premia i ruch z 4 h nie wykazały przewagi, a strategia z nich samych traciła po kosztach. Wolumen agresywny i konta long/short mają za krótką historię, żeby to rozstrzygnąć.'),
+      el('li', null, 'Dlatego scalper prowadzi strategię z tego wskaźnika tylko w cieniu, a jej wynik od wdrożenia widzisz w sekcji „Scalper” (strategia „Przepływ i pozycjonowanie”). Zlecenia złoży dopiero po przejściu bramki.')));
+  box.replaceChildren(intro, tbl, warn, acc, how, el('p', {class: 'note'}, `Kolory w czterech kolumnach składników: zielony przemawia za wzrostem, czerwony za spadkiem, bez koloru to wartość bliska normy. Źródło: ${F.source}. Ostatnie odświeżenie: ${ago(F.age_s)}.`), ...(F.errors || []).slice(0, 3).map(e => el('p', {class: 'note down'}, 'Błąd pobierania: ' + e)));
 }
 function copyCard(C) {
   const box = document.getElementById('copy'), head = el('h2', null, 'Cudze transakcje: czy kopiowanie ma przewagę');
@@ -530,7 +561,7 @@ async function load() {
     document.getElementById('proposals').style.display = (j.proposals || []).length || (j.settings || {}).require_approval ? '' : 'none';
     const part = async (k, path, fn, name) => { try { D[k] = await api(path); fn(D[k]); } catch (err) { document.getElementById(k).replaceChildren(el('p', {class: 'mut'}, name + ': ' + err.message)); } };
     aiCard();
-    await Promise.all([part('shadow', 'shadow', shadowCard, 'Tryb cienia niedostępny'), part('scalp', 'scalp', scalpCard, 'Scalper niedostępny'), part('copy', 'copy', copyCard, 'Kopiowanie niedostępne'),
+    await Promise.all([part('flow', 'flow', flowCard, 'Rynek na żywo niedostępny'), part('shadow', 'shadow', shadowCard, 'Tryb cienia niedostępny'), part('scalp', 'scalp', scalpCard, 'Scalper niedostępny'), part('copy', 'copy', copyCard, 'Kopiowanie niedostępne'),
       part('lab', 'lab', labCard, 'Laboratorium niedostępne'), part('learn', 'learn', L => learnCard(L, j), 'Nauka niedostępna')]);
     overviewCard(j, D); summaries(j, D);
     const stale = j.age_s == null || j.age_s > 900;

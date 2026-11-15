@@ -298,3 +298,19 @@ Ustawienia w `trader.env`: `SCALP_SYMBOLS`, `SCALP_RISK_PCT` (0.2), `SCALP_MAX_P
 `SCALP_MAX_DAILY_LOSS_R` (5), `SCALP_MAX_NOTIONAL_X` (1.0). Po zmianie: `sudo systemctl restart btc-scalp`.
 Włącznik zleceń jest w zakładce Bot (karta Scalper). Dziennik: `sudo journalctl -u btc-scalp -n 30 --no-pager`.
 Strata dzienna i wyłączniki ryzyka bota dziennego liczą się z całego konta, więc straty scalpera też je uruchamiają.
+
+## Rynek na żywo: przepływ zleceń i pozycjonowanie (btc_flow.py)
+
+Usługa `btc-scalp` co 10 minut pobiera z publicznego API OKX (bez klucza) dane godzinowe dla aktywów scalpera:
+wolumen agresywny, stosunek kont long/short, premię kontraktu, open interest, pozycje największych graczy i funding.
+Wynik widać w zakładce Bot, sekcja „Rynek na żywo”, oraz pod adresem `/api/flow`. Historia (45 dni) leży w `/opt/btc/flow_hist.json`.
+
+Z czterech składników powstaje wskaźnik łączny. To eksperyment bez potwierdzonej skuteczności: na 53 dniach wypadał dodatnio,
+na 2 latach danych połowa składników nie wykazała przewagi. Scalper prowadzi z niego strategię „Przepływ i pozycjonowanie”
+tylko w cieniu, a panel liczy trafność wskazań osobno dla okresu po zbudowaniu wskaźnika.
+
+Sprawdzenie, czy serwer ma dostęp do OKX i co moduł widzi (jedno odświeżenie, wydruk):
+
+    sudo -u btc BTC_BOT_DIR=/opt/btc /opt/btc/venv/bin/python /opt/btc/btc_flow.py
+
+Scalper w trybie rozpoznania (demo) nie handluje już strategiami, które w cieniu wyraźnie tracą (średnia poniżej −0,10R).

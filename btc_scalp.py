@@ -5,8 +5,12 @@ Trzy strategie działają równolegle W CIENIU (symulacja na żywych danych, wyn
   mr  powrót do średniej   skrajne odchylenie ceny od średniej z 40 świec + RSI; cel: powrót do średniej
   bo  wybicie              wyjście z wąskiego zakresu 36 świec przy obrocie > 1,8 średniej; cel 2R
   ob  nierównowaga zleceń  przewaga jednej strony arkusza zleceń w dwóch kolejnych odczytach, zgodna ze świecą; cel 1,5R
+  fl  przepływ (12 h)      wskaźnik łączny z danych o przepływie i pozycjonowaniu (btc_flow.py): wolumen agresywny, konta long/short,
+                           premia kontraktu, ruch z 4 h. Wejście przy |wskaźnik| >= 1, stop 3 x ATR godzinowy, cel 2R, wyjście po 12 h.
+                           Eksperyment bez potwierdzonej skuteczności (opis badań w btc_flow.py): wynik liczy się tylko od wdrożenia.
 Zlecenia składa tylko strategia, która w cieniu wychodzi na plus (bramka: >= 30 transakcji z 14 dni, średnia >= +0,05R).
-Na demo/testnecie, gdy żadna nie przechodzi bramki, bot handluje najlepszą z połową ryzyka („rozpoznanie”, SCALP_EXPLORE=no wyłącza).
+Na demo/testnecie, gdy żadna nie przechodzi bramki, bot handluje najlepszą z połową ryzyka („rozpoznanie”, SCALP_EXPLORE=no wyłącza),
+ale tylko taką, która w cieniu nie traci wyraźnie (średnia >= −0,10R): strategiami, o których wiemy, że tracą, bot nie handluje wcale.
 Na koncie live bot składa zlecenia wyłącznie przez bramkę i tylko z SCALP_CONFIRM_LIVE=I_ACCEPT_THE_RISK.
 
 Prowizje są głównym przeciwnikiem: wejście i wyjście rynkowe to ok. 0,13% nominału, dlatego stop ma minimum 0,30% ceny
@@ -27,15 +31,18 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import btc_botcfg as bb  # noqa: E402
+import btc_flow as bf  # noqa: E402  (dane o przepływie i pozycjonowaniu, wskaźnik łączny)
 import btc_trader as bt  # noqa: E402  (klient z podpisem, konfiguracja trybu i kluczy, powiadomienia)
 
 BAR_S = 300
-STRATS = {"mr": "Powrót do średniej", "bo": "Wybicie", "ob": "Nierównowaga zleceń"}
+STRATS = {"mr": "Powrót do średniej", "bo": "Wybicie", "ob": "Nierównowaga zleceń", "fl": "Przepływ i pozycjonowanie (12 h)"}
+FL_HOLD, FL_ATR_MULT, FL_TP = 144, 3.0, 2.0      # 12 h w świecach 5 min, stop w ATR godzinowych, cel w R
 COST_PCT = 0.0013                 # wejście + wyjście rynkowe (2 × 0,055%) + poślizg 2 × 0,01%
 MIN_STOP_PCT = 0.0030
 GATE_MIN_N, GATE_MIN_MEAN, GATE_DAYS, GATE_LAST = 30, 0.05, 14, 150
 VETO_MIN_N, VETO_MEAN = 20, -0.10
 EXPLORE_MIN_N = 10
+EXPLORE_MIN_MEAN = -0.10          # rozpoznanie tylko strategią, która w cieniu nie traci wyraźnie
 SEED_PAGES = 3                    # 3 × 1000 świec 5 min = ok. 10 dni historii na start
 MAX_SHADOW = 4000
 COOLDOWN_S = 900                  # przerwa na aktywie po stracie
@@ -124,7 +131,32 @@ def sig_ob(bars, i, imb=None):
     return _plan(side, c, stop, 1.5 * stop, 12)
 
 
-def signals(bars, i, imb=None):
+def atr_hour(bars, i, n=14):
+    """ATR ze świec godzinowych złożonych ze świec 5 min (pełne godziny przed świecą i)."""
+    hrs = {}
+    for b in bars[max(0, i - (n + 2) * 12):i + 1]:
+        h = hrs.setdefault(b[0] // 3600, [b[2], b[3], b[4], 0])
+        h[0], h[1], h[2], h[3] = max(h[0], b[2]), min(h[1], b[3]), b[4], h[3] + 1
+    full = [v for k, v in sorted(hrs.items()) if v[3] == 12]
+    if len(full) < n + 1:
+        return None
+    full = full[-(n + 1):]
+    return sum(max(full[k][0] - full[k][1], abs(full[k][0] - full[k - 1][2]), abs(full[k][1] - full[k - 1][2])) for k in range(1, n + 1)) / n
+
+
+def sig_fl(bars, i, lean=None):
+    """lean: wskaźnik łączny przepływu aktywa (btc_flow) znany w chwili zamknięcia świecy. Tylko na żywo."""
+    if lean is None or abs(lean) < bf.THETA:
+        return None
+    a = atr_hour(bars, i)
+    if not a:
+        return None
+    c = bars[i][4]
+    stop = max(FL_ATR_MULT * a, 2 * MIN_STOP_PCT * c)
+    return _plan(1 if lean > 0 else -1, c, stop, FL_TP * stop, FL_HOLD)
+
+
+def signals(bars, i, imb=None, lean=None):
     out = {}
     for name, fn in (("mr", sig_mr), ("bo", sig_bo)):
         p = fn(bars, i)
@@ -133,6 +165,9 @@ def signals(bars, i, imb=None):
     p = sig_ob(bars, i, imb)
     if p:
         out["ob"] = p
+    p = sig_fl(bars, i, lean)
+    if p:
+        out["fl"] = p
     return out
 
 
@@ -169,7 +204,7 @@ def step_shadow(t, bar):
     return None
 
 
-def feed(sh, sym, bars, imb=None, live_from=None):
+def feed(sh, sym, bars, imb=None, live_from=None, lean=None):
     """Przetwarza nowe zamknięte świece aktywa: zamyka i otwiera transakcje z cienia. Zwraca sygnały z OSTATNIEJ świecy (do handlu)."""
     last = sh["last"].get(sym, 0)
     fresh = {}
@@ -185,7 +220,8 @@ def feed(sh, sym, bars, imb=None, live_from=None):
                     sh["trades"].append([bar[0] + BAR_S, strat, sym, t["side"], round(r, 3)])
                     del sh["open"][k]
         is_last = i == len(bars) - 1
-        sig = signals(bars, i, imb if (is_last and (live_from is None or bar[0] >= live_from)) else None)
+        live = is_last and (live_from is None or bar[0] >= live_from)
+        sig = signals(bars, i, imb if live else None, lean if live else None)
         for strat, plan in sig.items():
             k = strat + ":" + sym
             if k not in sh["open"]:
@@ -225,7 +261,7 @@ def gate(st, explore):
     ok = {s: 1.0 for s, v in st.items() if v["n"] >= GATE_MIN_N and v["mean_r"] >= GATE_MIN_MEAN}
     if ok or not explore:
         return ok, "bramka" if ok else "brak"
-    cand = [(v["mean_r"], s) for s, v in st.items() if v["n"] >= EXPLORE_MIN_N]
+    cand = [(v["mean_r"], s) for s, v in st.items() if v["n"] >= EXPLORE_MIN_N and v["mean_r"] >= EXPLORE_MIN_MEAN]
     return ({max(cand)[1]: 0.5}, "rozpoznanie") if cand else ({}, "brak")
 
 
@@ -312,7 +348,7 @@ def fetch_bars(pub, sym, now_s, pages=1):
     """Zamknięte świece 5 min, od najstarszej: [ts_s, o, h, l, c, obrót]."""
     out, end = {}, None
     for _ in range(pages):
-        p = {"category": "linear", "symbol": sym, "interval": "5", "limit": 1000 if pages > 1 else 200}
+        p = {"category": "linear", "symbol": sym, "interval": "5", "limit": 1000 if pages > 1 else 300}
         if end:
             p["end"] = end
         rows = pub._request("/v5/market/kline", p)["list"]
@@ -406,7 +442,7 @@ class Live:
 
 
 # ----------------------------------------------------------------- pętla
-def cycle(d, c, sc, pub, live, s, now_s, new_bar):
+def cycle(d, c, sc, pub, live, s, now_s, new_bar, flow=None):
     """Jeden obrót: (co 5 min) dane, cień, bramka, wejścia; (zawsze) nadzór otwartych pozycji. Zwraca listę uwag."""
     notes, sh, lv = [], s["shadow"], s["live"]
     day = time.strftime("%Y-%m-%d", time.gmtime(now_s))
@@ -431,7 +467,7 @@ def cycle(d, c, sc, pub, live, s, now_s, new_bar):
                 if x is not None:
                     s["ob"][sym] = (s["ob"].get(sym, []) + [round(x, 3)])[-6:]
                     imb = s["ob"][sym]
-            sig = feed(sh, sym, bars, imb)
+            sig = feed(sh, sym, bars, imb, lean=flow.lean(sym, bars[-1][0] + BAR_S) if (flow and not seed) else None)
             if seed:
                 s["seeded"].append(sym)              # sygnałów z rozbiegu nie handlujemy
             elif sig and now_s - bars[-1][0] - BAR_S < 90:
@@ -479,11 +515,13 @@ def main():
     live = Live(HERE, c, sc, bt.Api(c), pub) if c["mode"] != "dryrun" else None
     bt.log(f"scalper: tryb {c['mode']}, aktywa {','.join(sc['symbols'])}, ryzyko {sc['risk_pct']}%, zlecenia: {'tak' if sc['can_trade'] else 'nie (tylko cień)'}, rozpoznanie: {'tak' if sc['explore'] else 'nie'}")
     s, last_bar = load_state(HERE), 0
+    flow = bf.Flow(HERE, sc["symbols"])
+    bf.Worker(flow, log=bt.log).start()            # dane o przepływie w tle; pierwsze pobranie trwa ok. minuty
     while True:
         now_s = time.time()
         new_bar = int(now_s) // BAR_S != last_bar and int(now_s) % BAR_S >= 4
         try:
-            notes = cycle(HERE, c, sc, pub, live, s, now_s, new_bar)
+            notes = cycle(HERE, c, sc, pub, live, s, now_s, new_bar, flow)
             if new_bar:
                 last_bar = int(now_s) // BAR_S
                 for n in notes:

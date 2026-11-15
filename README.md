@@ -8,6 +8,7 @@ Kluczy i plików `.env`, `trader.env`, `ai.env` tu nie ma i nie może być: zost
 - `*.html`, `ui.css`, `ui.js` — panel
 - `install_bot.sh` — instalator aktualizacji (pliki, usługi systemd)
 - `btc-update` — aktualizacja serwera z tego repozytorium
+- `tests/` — testy (bez sieci): `for t in tests/test_*.py; do python3 $t | tail -1; done`
 - `vps/` — pierwsza instalacja serwera i instrukcja
 - `docs/` — analiza programu i plany
 

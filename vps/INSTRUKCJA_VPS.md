@@ -289,15 +289,27 @@ Laboratorium liczy się codziennie razem z nauką (`btc-learn`), wynik widać w 
 ## Scalper (usługa btc-scalp)
 
 Osobny bot na świecach 5 min, działa obok bota dziennego na tym samym koncie i w tym samym trybie (`TRADER_MODE`).
-Trzy strategie (powrót do średniej, wybicie, nierównowaga zleceń) liczą się w cieniu po kosztach 0,13% nominału.
-Zlecenia składa tylko strategia z dodatnim wynikiem w cieniu (co najmniej 30 transakcji z 14 dni, średnia co najmniej +0,05R).
-Na demo, gdy żadna nie przechodzi, bot handluje najlepszą z połową ryzyka, najwyżej 6 razy na dobę (`SCALP_EXPLORE=no` wyłącza).
+Cztery strategie (powrót do średniej, wybicie, nierównowaga zleceń, przepływ i pozycjonowanie) liczą się w cieniu po kosztach 0,13% nominału.
+Pełny opis reguł: `docs/ALGORYTM.md`.
+
+**Bramka.** Zlecenia składa tylko strategia, której dodatni wynik w cieniu nie wygląda na przypadek: z ostatnich 30 dni (najwyżej 300 transakcji)
+co najmniej 30 transakcji, średnia co najmniej +0,05R i t co najmniej 2 (transakcje zamknięte w tej samej godzinie liczą się jak jedna obserwacja).
+Otwarta bramka zamyka się, gdy średnia spadnie poniżej zera. Sama dodatnia średnia nie wystarcza: na historii strategia tracąca 0,36R
+miała średnią ≥ +0,05R w 17% okien po 30 transakcji (badanie: `docs/badania_bramka`).
+
+**Hamulec.** Strategia, której prawdziwe transakcje są istotnie ujemne (co najmniej 10 transakcji z 30 dni, t ≤ −2), nie składa zleceń mimo dodatniego cienia.
+
+**Rozpoznanie (tylko demo i testnet).** Gdy żadna strategia nie przechodzi bramki, bot handluje najlepszą z połową ryzyka, najwyżej 6 razy na dobę,
+i tylko taką, która w cieniu nie traci wyraźnie (średnia ≥ −0,10R przy co najmniej 10 transakcjach). `SCALP_EXPLORE=no` wyłącza.
 Na koncie live zlecenia wymagają `SCALP_CONFIRM_LIVE=I_ACCEPT_THE_RISK` i przejścia bramki.
+
+**Wspólne limity konta.** Scalper stosuje dźwignię i kapitał ustawione w zakładce Bot (tak jak bot dzienny), pauzę z panelu oraz wyłączniki konta:
+dzienną stratę, stratę tygodniową i spadek kapitału od szczytu. Seria strat z rzędu dotyczy tylko bota dziennego i liczy się bez transakcji scalpera
+(scalper zamyka wiele małych pozycji dziennie; ma własną przerwę po stracie i własny dzienny limit w R). Pozycji scalpera bot dzienny nie zamyka.
 
 Ustawienia w `trader.env`: `SCALP_SYMBOLS`, `SCALP_RISK_PCT` (0.2), `SCALP_MAX_POSITIONS` (3), `SCALP_MAX_TRADES_DAY` (30),
 `SCALP_MAX_DAILY_LOSS_R` (5), `SCALP_MAX_NOTIONAL_X` (1.0). Po zmianie: `sudo systemctl restart btc-scalp`.
 Włącznik zleceń jest w zakładce Bot (karta Scalper). Dziennik: `sudo journalctl -u btc-scalp -n 30 --no-pager`.
-Strata dzienna i wyłączniki ryzyka bota dziennego liczą się z całego konta, więc straty scalpera też je uruchamiają.
 
 ## Rynek na żywo: przepływ zleceń i pozycjonowanie (btc_flow.py)
 
@@ -313,4 +325,4 @@ Sprawdzenie, czy serwer ma dostęp do OKX i co moduł widzi (jedno odświeżenie
 
     sudo -u btc BTC_BOT_DIR=/opt/btc /opt/btc/venv/bin/python /opt/btc/btc_flow.py
 
-Scalper w trybie rozpoznania (demo) nie handluje już strategiami, które w cieniu wyraźnie tracą (średnia poniżej −0,10R).
+Strategia z tego wskaźnika wchodzi najwyżej raz na jeden godzinowy odczyt (po stopie nie wraca na tym samym sygnale).

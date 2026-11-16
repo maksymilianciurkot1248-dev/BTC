@@ -125,7 +125,7 @@ def snapshot(d):
     def scalp():
         import btc_scalp
         o = btc_scalp.read_out(d)
-        return {k: o.get(k) for k in ("mode", "symbols", "strategies", "allowed", "gate", "blocked", "open", "day", "real", "notes")}
+        return {k: o.get(k) for k in ("mode", "symbols", "strategies", "allowed", "gate", "gate_on", "brake", "real_by", "criteria", "blocked", "open", "day", "real", "notes")}
     put("scalper", scalp)
 
     def flow():

@@ -8,9 +8,11 @@ Kluczy i plików `.env`, `trader.env`, `ai.env` tu nie ma i nie może być: zost
 - `*.html`, `ui.css`, `ui.js` — panel
 - `install_bot.sh` — instalator aktualizacji (pliki, usługi systemd)
 - `btc-update` — aktualizacja serwera z tego repozytorium
-- `tests/` — testy (bez sieci): `for t in tests/test_*.py; do python3 $t | tail -1; done`
+- `tests/` — testy (bez sieci): `bash tests/run_all.sh`
 - `vps/` — pierwsza instalacja serwera i instrukcja
-- `docs/` — analiza programu i plany
+- `docs/ALGORYTM.md` — dokładny opis działania obu botów (reguły, progi, kolejność decyzji)
+- `docs/PLAN.md` — plan działania i warunki przed prawdziwymi pieniędzmi
+- `docs/badania_*` — badania z wynikami (także negatywnymi) i skryptami do ich powtórzenia
 
 ## Aktualizacja serwera
 ```bash

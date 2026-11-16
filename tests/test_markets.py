@@ -2,14 +2,14 @@ import sys, os, tempfile, random, math, time, json, sqlite3
 sys.path.insert(0, __import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))))
 import btc_collect as bc, btc_markets as bm
 from datetime import datetime, timezone, timedelta
-now=datetime(2026,11,3,12,tzinfo=timezone.utc)
+now=datetime.now(timezone.utc).replace(hour=12,minute=0,second=0,microsecond=0)     # dane kończą się "wczoraj": analiza odrzuca notowania starsze niż 14 dni, więc stała data psuła test po dwóch tygodniach
 def bdays(a,b):
     d=a; out=[]
     while d<=b:
         if d.weekday()<5: out.append(d)
         d+=timedelta(days=1)
     return out
-days=bdays(datetime(2019,1,1),datetime(2026,11,2))
+days=bdays(datetime(2019,1,1),(now-timedelta(days=1)).replace(tzinfo=None))
 
 def make_world(momentum, seed):
     rnd=random.Random(seed); world={}

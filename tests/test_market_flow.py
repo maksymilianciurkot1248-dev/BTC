@@ -166,12 +166,33 @@ check(set(out["symbols"]) == {"BTCUSDT", "ETHUSDT"} and not out["errors"] and ou
 check(os.path.exists(os.path.join(tmp, bf.OUT)) and bf.read_out(tmp)["symbols"]["BTCUSDT"]["score"] == out["symbols"]["BTCUSDT"]["score"], "flow.json zapisany")
 check(fl.lean("BTCUSDT", NOW) == ser[-1]["score"] and fl.lean("BTCUSDT", LAST + H - 1) == ser[-2]["score"], "wskaźnik znany w danej chwili (bez wyprzedzania)")
 check(fl.lean("BTCUSDT", NOW + 3 * H) is None and fl.lean("DOGEUSDT", NOW) is None, "stare dane albo nieznane aktywo = brak")
+check(fl.reading("BTCUSDT", NOW) == (ser[-1]["t"], ser[-1]["score"]) and fl.reading("BTCUSDT", NOW + 3 * H) is None, "odczyt z czasem (jeden odczyt = jedno wejście)")
 fl2 = bf.Flow(tmp, ["BTCUSDT"], get=api, pace=pace)
 check(len(fl2.hist["BTCUSDT"]) == 400 and fl2.lean("BTCUSDT", NOW) == ser[-1]["score"], "historia wczytana z pliku po restarcie")
 api.fail = {"candles", "rubik", "funding"}
 o3 = bf.Flow(tempfile.mkdtemp(), ["BTCUSDT"], get=api, pace=pace).step(NOW)
 check(len(o3["errors"]) == 7 and o3["symbols"]["BTCUSDT"]["lean"] == "brak danych", "brak sieci: błędy w wyniku, program działa")
 api.fail = set()
+# luka w jednym źródle zasklepia się po jego powrocie (każde źródło uzupełniamy od jego własnej ostatniej godziny)
+flg = bf.Flow(tempfile.mkdtemp(), ["BTCUSDT"], get=api, pace=pace)
+flg.step(NOW - 30 * H)
+api.fail = {"long-short-account"}
+o_gap = flg.step(NOW)
+gap = lambda: [t for t, r in flg.hist["BTCUSDT"].items() if r[bf.LS] is None and t > NOW - 28 * H]
+check(len(gap()) >= 20 and len(o_gap["errors"]) == 1, f"awaria jednego źródła: luka tylko w nim ({len(gap())} h), reszta świeża")
+api.fail = set()
+flg.step(NOW)
+check(not gap(), "po powrocie źródła luka uzupełniona")
+# dziennik: ten sam błąd zgłaszany raz, potem jedna linia o powrocie
+lines = []
+api.fail = {"candles", "rubik", "funding"}
+w = bf.Worker(bf.Flow(tempfile.mkdtemp(), ["BTCUSDT"], get=api, pace=pace), log=lines.append)
+w.flow.step = lambda step=w.flow.step: step(NOW)
+w.tick(); w.tick(); w.tick()
+check(len(lines) == 1 and lines[0].startswith("przepływ: BTCUSDT"), f"powtarzający się błąd: jedna linia {lines}")
+api.fail = set()
+w.tick(); w.tick()
+check(len(lines) == 2 and "znów kompletne" in lines[1], f"powrót danych: jedna linia {lines}")
 
 # 7. scalper: ATR godzinowy i strategia „fl”
 T0 = NOW // 300 * 300 - 400 * 300
@@ -221,8 +242,8 @@ class Api:
 
 
 class FlowStub:
-    def __init__(s, v): s.v, s.asked = v, []
-    def lean(s, sym, at): s.asked.append((sym, at)); return s.v
+    def __init__(s, v): s.v, s.asked, s.t = v, [], 1000
+    def reading(s, sym, at): s.asked.append((sym, at)); return (s.t, s.v)
 
 
 dd = tempfile.mkdtemp()
@@ -243,10 +264,17 @@ now = nb[0] + 305
 sc.cycle(dd, cfg, scf, pub, live, st, now, True, stub)
 check(stub.asked == [("BTCUSDT", nb[0] + 300)] and "fl:BTCUSDT" in st["shadow"]["open"], "cykl pyta o wskaźnik na chwilę zamknięcia świecy; fl otwarta w cieniu")
 check(not any("order/create" in x[1] for x in ap.calls) and sc.read_out(dd)["gate"] == "brak", "bez wyników w cieniu fl nie składa zleceń")
-st["shadow"]["trades"] += [[now - i, "fl", "BTCUSDT", 1, 0.3] for i in range(40)]
+check(st["shadow"]["fl_t"] == {"BTCUSDT": 1000}, "zapamiętany odczyt wskaźnika, z którego powstało wejście")
+st["shadow"]["trades"] += [[now - i * 7200, "fl", "BTCUSDT", 1, 0.3 + (0.5 if i % 2 else -0.5)] for i in range(40)]
 del st["shadow"]["open"]["fl:BTCUSDT"]
 nb2 = [nb[0] + 300, nb[4], nb[4] * 1.0002, nb[4] * 0.9998, nb[4], 10.0]
 pub.bars["BTCUSDT"] = bars + [nb, nb2]
+sc.cycle(dd, cfg, scf, pub, live, st, nb2[0] + 305, True, stub)
+check("fl:BTCUSDT" not in st["shadow"]["open"] and not any("order/create" in x[1] for x in ap.calls), "ten sam godzinowy odczyt nie daje drugiego wejścia (po stopie nie wchodzimy ponownie na tym samym sygnale)")
+stub.t = 4600                                                              # nowa godzina, nowy odczyt
+nb3 = [nb2[0] + 300, nb2[4], nb2[4] * 1.0002, nb2[4] * 0.9998, nb2[4], 10.0]
+pub.bars["BTCUSDT"] = bars + [nb, nb2, nb3]
+nb2 = nb3
 sc.cycle(dd, cfg, scf, pub, live, st, nb2[0] + 305, True, stub)
 orders = [x[2] for x in ap.calls if "order/create" in x[1]]
 check(len(orders) == 1 and orders[0]["side"] == "Buy" and orders[0]["orderLinkId"].startswith("sc-fl-") and st["live"]["open"]["BTCUSDT"]["hold_s"] == 144 * 300, f"po przejściu bramki: zlecenie fl ze stopem, limit czasu 12 h {orders}")

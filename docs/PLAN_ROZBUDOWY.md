@@ -1,5 +1,7 @@
 # Plan rozbudowy systemu analizy
 
+> Dokument historyczny (pierwszy plan, sprzed analizy z 8.11.2026). Aktualny plan: `PLAN.md`.
+
 Stan wyjściowy: kolektor danych (ok. 30 źródeł, SQLite), strumień WebSocket, badania statystyczne (IC, FDR, walk-forward), skaner okazji z samokorektą, strategie portfelowe, autonomiczny trader Bybit (dryrun domyślnie), strony WWW.
 
 ## 1. Co robią podobne projekty (i co z tego wynika dla nas)

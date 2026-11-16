@@ -22,6 +22,7 @@ Wyłącznik awaryjny: utwórz pusty plik STOP obok skryptu — skrypt przestaje 
 Cron (co 5 min):  */5 * * * * cd ~/btc_trader && /usr/bin/python3 btc_trader.py >> trader.log 2>&1
 """
 import atexit
+import decimal
 import fcntl
 import hashlib
 import hmac
@@ -278,6 +279,12 @@ def fmt_px(x, tick):
     return f"{round(round(x / tick) * tick, 8):.{max(0, -int(math.floor(math.log10(tick))))}f}"
 
 
+def fmt_qty(qty, step):
+    """Ilość jako tekst dziesiętny z dokładnością kroku giełdy (nigdy notacja naukowa ani ucięcie do 6 cyfr znaczących)."""
+    d = max(0, -decimal.Decimal(str(step)).normalize().as_tuple().exponent)
+    return f"{qty:.{d}f}"
+
+
 # --------------------------------------------------------------------------
 def load_state():
     p = os.path.join(HERE, "trader_state.json")
@@ -349,6 +356,48 @@ def scalp_symbols():
             return set((json.load(f).get("live") or {}).get("open") or {})
     except (OSError, ValueError):
         return set()
+
+
+def scalp_windows(d=None):
+    """Okresy, w których pozycja na aktywie należała do scalpera: [(symbol, od_s, do_s)], do_s = None dla pozycji otwartej.
+    Źródła: scalp_state.json (otwarte) i scalp_trades.jsonl (zamknięte). Oba boty nigdy nie mają pozycji na tym samym aktywie naraz."""
+    d = d or HERE
+    out = []
+    try:
+        with open(os.path.join(d, "scalp_state.json"), encoding="utf-8") as f:
+            for sym, t in ((json.load(f).get("live") or {}).get("open") or {}).items():
+                out.append((sym, float(t["ts"]) - 10, None))
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        pass
+    try:
+        with open(os.path.join(d, "scalp_trades.jsonl"), encoding="utf-8") as f:
+            for ln in f.readlines()[-3000:]:
+                try:
+                    x = json.loads(ln)
+                    out.append((x["sym"], float(x["ts"]) - float(x.get("held_s") or 0) - 10, float(x["ts"]) + 10))
+                except (ValueError, KeyError, TypeError):
+                    continue
+    except OSError:
+        pass
+    return out
+
+
+def split_scalp(rows, windows):
+    """Dzieli zamknięte pozycje konta (Bybit closed-pnl) na (reszta, scalper) według okresów scalpera.
+    Seria strat, kwarantanna, statystyki i dziennik bota dziennego liczą się bez transakcji scalpera;
+    strata dzienna i tygodniowa konta liczą wszystko."""
+    by = {}
+    for sym, lo, hi in windows:
+        by.setdefault(sym, []).append((lo, hi))
+    own, scalp = [], []
+    for r in rows:
+        try:
+            ts = float(r.get("updatedTime") or r.get("createdTime") or 0) / 1000
+        except (TypeError, ValueError):
+            ts = 0.0
+        hit = any(lo <= ts and (hi is None or ts <= hi) for lo, hi in by.get(r.get("symbol"), ()))
+        (scalp if hit else own).append(r)
+    return own, scalp
 
 
 def notional_left(capital, max_lev, open_values):
@@ -465,7 +514,7 @@ def _run(c, st):
         prev = bb.read_status(HERE)
         if time.time() - (prev.get("stats_ts") or 0) > STATS_EVERY_S:
             try:
-                rows = fetch_closed_pnl(api, c)
+                rows = split_scalp(fetch_closed_pnl(api, c), scalp_windows())[0]       # scalper ma własne statystyki i własne limity
                 st["stats"], st["stats_ts"] = bb.stats_from_closed(rows), int(time.time())
                 capital = min(info["equity"], c["max_capital"]) if c["max_capital"] else info["equity"]
                 q, newly = be.quarantine_update(rows, bb.read_quar(HERE), time.time(), capital * c["risk_pct"] / 100)
@@ -739,7 +788,8 @@ def supervise(api, c, state):
     base = min(eq, c["max_capital"]) if c["max_capital"] else eq
     info = {"equity": eq, "pnl_today": round(pnl, 4), "positions": [], "order_syms": [], "capital": base}
     consume_reset(c, state, eq, now / 1000)
-    info["breakers"], state["risk"], info["risk_metrics"] = rk.evaluate(now / 1000, rows, eq, base, c, state.get("risk"))
+    own = split_scalp(rows, scalp_windows())[0]          # seria strat i dziennik: tylko transakcje bota dziennego (i ręczne), bez scalpera
+    info["breakers"], state["risk"], info["risk_metrics"] = rk.evaluate(now / 1000, rows, eq, base, c, state.get("risk"), streak_rows=own)
     if pnl < 0 and -pnl >= base * c["max_daily_loss_pct"] / 100:
         if not state["halted"]:
             notify(f"STRATA DZIENNA {pnl:.2f} USDT >= limit: handel wstrzymany do końca dnia UTC")
@@ -754,6 +804,7 @@ def supervise(api, c, state):
             info["order_syms"].append(o["symbol"])
     # pozycje bota: każda musi mieć SL i dźwignię <= limit
     managed = {s for s, ts in (state.get("managed") or {}).items() if ts > now / 1000 - 30 * 86400}
+    scalp_open = scalp_symbols()         # pozycje scalpera prowadzi scalper (stop i cel na giełdzie, własny limit czasu): liczymy je do sumy, ale nie zamykamy
     total = 0.0
     raw_pos = api.ok("GET", "/v5/position/list", {"category": "linear", "settleCoin": "USDT"})["list"]
     for p in raw_pos:
@@ -765,6 +816,8 @@ def supervise(api, c, state):
         mine = SUPERVISE_ALL or p["symbol"] in managed
         info["positions"].append({"symbol": p["symbol"], "side": p["side"], "size": size, "entry": p.get("avgPrice"), "stop": p.get("stopLoss"), "tp": p.get("takeProfit"),
                                   "leverage": p.get("leverage"), "upnl": p.get("unrealisedPnl"), "value": value})
+        if p["symbol"] in scalp_open:
+            continue
         bad_lev = float(p["leverage"]) > c["max_lev"] + 1e-9 or value > base * c["max_lev"] * 1.05
         no_sl = not p.get("stopLoss") or float(p["stopLoss"]) == 0
         if (bad_lev or no_sl) and not mine:       # pozycja otwarta ręcznie w aplikacji Bybit: tylko ostrzeżenie raz dziennie, bez zamykania
@@ -781,7 +834,7 @@ def supervise(api, c, state):
         notify(f"SUMA POZYCJI {total:.0f} USDT przekracza limit dźwigni x{c['max_lev']:g} kapitału {base:.0f}: nie otwieram nowych", key="sum_lev", cooldown_h=24)
         info["over_limit"] = True
     manage_trades(api, state, raw_pos, raw_orders, time.time())
-    settle_ledger(state, rows, time.time(), c["mode"])
+    settle_ledger(state, own, time.time(), c["mode"])
     info["raw_pos"] = raw_pos
     return info
 

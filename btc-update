@@ -33,6 +33,10 @@ $G pull --ff-only
 new=$($G rev-parse HEAD)
 if [ "$old" = "$new" ] && [ "${1:-}" != "--force" ]; then echo "Brak zmian ($new). Wymuszenie: sudo btc-update --force"; exit 0; fi
 echo "Zmiany $old..$new:"; $G log --oneline "$old..$new" | head -20
+# sama dokumentacja, testy albo badania: nie ma czego instalowac ani restartowac (uslugi dzialaja bez przerwy)
+if [ "${1:-}" != "--force" ] && [ "$old" != "$new" ] && ! $G diff --name-only "$old" "$new" | grep -qvE '^(docs/|tests/|README\.md$|\.gitignore$|\.github/)'; then
+  echo "Zmieniona tylko dokumentacja lub testy: bez instalacji i bez restartu uslug"; exit 0
+fi
 # zabezpieczenie: nic nie instalujemy, jesli ktorykolwiek plik ma blad skladni
 for f in btc_*.py; do $APP/venv/bin/python -m py_compile "$f" || { echo "BLAD skladni w $f: aktualizacja przerwana, serwer bez zmian"; exit 1; }; done
 bash -n install_bot.sh

@@ -139,15 +139,17 @@ def loss_streak(rows, ignore_before_s=0):
     return n, last
 
 
-def evaluate(now_s, rows, equity, base, cfg, risk_state):
+def evaluate(now_s, rows, equity, base, cfg, risk_state, streak_rows=None):
     """Zwraca (lista aktywnych wyłączników, zaktualizowany stan ryzyka, metryki).
     rows: zamknięte pozycje (Bybit closed-pnl) co najmniej od początku tygodnia; base: kapitał do liczenia ryzyka; cfg: limity.
+    streak_rows: transakcje do serii strat (domyślnie rows). Bot dzienny podaje tu transakcje bez scalpera: scalper zamyka wiele
+    małych pozycji dziennie i jego zwykłe serie strat nie mogą wstrzymywać bota dziennego. Strata tygodniowa liczy całe konto (rows).
     risk_state: {"peak", "dd_halt", "reset_ts"} (zapisywany w trader_state.json)."""
     rs = dict(risk_state or {})
     reset = f(rs.get("reset_ts"))
     breakers = []
     # seria strat
-    n, last = loss_streak(rows, reset)
+    n, last = loss_streak(rows if streak_rows is None else streak_rows, reset)
     pause = cfg["streak_pause_h"] * 3600
     if n >= cfg["streak_losses"] and now_s < last + pause:
         breakers.append({"key": "streak", "label": f"seria {n} strat z rzędu", "until": int(last + pause), "detail": f"pauza {cfg['streak_pause_h']} h od ostatniej straty", "manual": False})

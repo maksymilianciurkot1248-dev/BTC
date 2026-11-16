@@ -1,5 +1,7 @@
 # Analiza całego programu i elementy do rozbudowy
 
+> Analiza z 8–10.11.2026. Aktualny plan: `PLAN.md`; dokładny opis reguł: `ALGORYTM.md`.
+
 Stan na 8.11.2026. Analiza oparta na kodzie (ok. 11,2 tys. linii Pythona, ok. 6,2 tys. linii stron WWW, 22 pliki testów, 24 usługi i timery systemd), na wynikach testów i na przeglądzie przepływów. Rzeczy, których nie mogłem sprawdzić na prawdziwym Bybit i serwerze, oznaczam wprost.
 
 ## 1. Architektura w skrócie

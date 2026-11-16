@@ -65,11 +65,51 @@ b.append([b[-1][0] + 300, 100.45, e["tp"] + 0.1, 100.4, e["tp"], 10])
 sc.feed(sh, "BTCUSDT", b)
 bo_tr = [t for t in sh["trades"] if t[1] == "bo"]
 check(len(bo_tr) == 1 and bo_tr[0][4] > 1 and "bo:BTCUSDT" not in sh["open"], f"feed zamyka {sh['trades']}")
+# 6b. przerwa w danych: otwarte transakcje z cienia znikają bez wyniku, krótka przerwa ich nie rusza
+bg = flat(60); bg.append([bg[-1][0] + 300, 100.0, 100.5, 99.99, 100.45, 40.0])
+shg = {"open": {}, "trades": [], "last": {}}
+sc.feed(shg, "BTCUSDT", bg)
+check("bo:BTCUSDT" in shg["open"], "pozycja w cieniu przed przerwą")
+small = bg + [[bg[-1][0] + 3 * 300, 100.45, 100.5, 100.4, 100.45, 10.0]]
+shs = json.loads(json.dumps(shg)); sc.feed(shs, "BTCUSDT", small)
+check("bo:BTCUSDT" in shs["open"], "przerwa 10 minut: transakcja trwa")
+late = bg + [[bg[-1][0] + 40 * 300, 100.45, 100.5, 100.4, 100.45, 10.0]]
+n_before = len(shg["trades"]); sc.feed(shg, "BTCUSDT", late)
+check("bo:BTCUSDT" not in shg["open"] and len(shg["trades"]) == n_before, "przerwa ponad 15 minut: transakcja zamknięta bez wyniku")
 # 7. bramka
 now = b[-1][0] + 1000
-mk = lambda strat, n, r, sym="BTCUSDT", age=0: [[now - age - i, strat, sym, 1, r] for i in range(n)]
+# transakcje co 2 h (osobne bloki godzinowe), wynik r ± sp na przemian: średnia r, odchylenie sp
+mk = lambda strat, n, r, sym="BTCUSDT", age=0, sp=0.5, gap=7200: [[now - age - i * gap, strat, sym, 1, r + (sp if i % 2 else -sp)] for i in range(n)]
+# 7a. t odporne na skupiska
+spread, bunched = [(now - i * 7200, 0.3 + (0.5 if i % 2 else -0.5)) for i in range(40)], [(now - (i // 10) * 7200, 0.3 + (0.5 if (i // 10) % 2 else -0.5)) for i in range(40)]
+check(abs(sc.tstat(spread) - 0.3 / (0.5 / math.sqrt(40)) * math.sqrt(39 / 40)) < 0.01, f"t dla niezależnych transakcji = zwykłe t ({sc.tstat(spread):.2f})")
+check(0 < sc.tstat(bunched) < sc.tstat(spread) / 2.5, f"40 transakcji w 4 godzinach to 4 obserwacje, nie 40 ({sc.tstat(bunched):.2f})")
+check(sc.tstat([]) == 0 and sc.tstat([(now, 1.0)]) == 0 and sc.tstat([(now, 1.0), (now + 5, 2.0)]) == 0, "za mało danych albo jeden blok: t = 0")
 st = sc.stats(mk("mr", 40, 0.2) + mk("bo", 40, -0.2) + mk("ob", 5, 3.0), now)
+check(st["mr"]["t"] >= 2 and st["bo"]["t"] <= -2, f"t w statystykach {st['mr']['t']} {st['bo']['t']}")
 check(sc.gate(st, False) == ({"mr": 1.0}, "bramka") and sc.gate(st, True)[0] == {"mr": 1.0}, "bramka przepuszcza tylko mr")
+# 7b. dodatnia średnia bez istotności nie otwiera bramki (to był błąd: przy 30 transakcjach przechodził przypadek)
+noisy = sc.stats(mk("mr", 30, 0.2, sp=1.5), now)
+check(noisy["mr"]["mean_r"] >= 0.05 and noisy["mr"]["t"] < 2 and sc.gate(noisy, False) == ({}, "brak"), f"średnia +0,2R przy t {noisy['mr']['t']} nie wystarcza")
+lucky = sc.stats(mk("mr", 30, 0.2, sp=0.4, gap=60), now)
+check(lucky["mr"]["mean_r"] >= 0.05 and sc.gate(lucky, False) == ({}, "brak"), f"30 transakcji z jednej godziny to jedna obserwacja (t {lucky['mr']['t']})")
+# 7c. histereza: otwarta bramka trzyma się, dopóki średnia >= 0; zamyka się poniżej zera; nie otwiera się bez pamięci
+mem = {}
+check(sc.gate(st, False, mem) == ({"mr": 1.0}, "bramka") and mem == {"mr": 1}, "bramka zapamiętana")
+weak = sc.stats(mk("mr", 40, 0.02, sp=1.0), now)
+check(sc.gate(weak, False, mem) == ({"mr": 1.0}, "bramka") and sc.gate(weak, False, {}) == ({}, "brak"), "słabszy okres: otwarta bramka zostaje, zamknięta się nie otwiera")
+neg = sc.stats(mk("mr", 40, -0.03, sp=1.0), now)
+check(sc.gate(neg, False, mem) == ({}, "brak") and mem == {}, "średnia poniżej zera zamyka bramkę")
+check(sc.gate(weak, False, mem) == ({}, "brak"), "po zamknięciu potrzebny jest pełny dowód od nowa")
+few = sc.stats(mk("mr", 20, 0.5), now); mem2 = {"mr": 1}
+check(sc.gate(few, False, mem2) == ({}, "brak") and mem2 == {}, "za mało transakcji w oknie zamyka bramkę")
+# 7d. hamulec z prawdziwych transakcji
+led = [{"ts": now - i * 7200, "strat": "mr", "r": -0.6 + (0.5 if i % 2 else -0.5)} for i in range(12)] + [{"ts": now - i * 7200, "strat": "bo", "r": 0.1 + (0.5 if i % 2 else -0.5)} for i in range(12)] + [{"ts": now, "strat": "mr", "r": None}]
+br = sc.real_brake(led, now)
+check(set(br) == {"mr"} and br["mr"]["n"] == 12 and br["mr"]["mean_r"] < 0 and br["mr"]["t"] <= -2, f"hamulec łapie istotnie ujemne realne wyniki {br}")
+check(sc.gate(st, False, {}, br) == ({}, "brak") and sc.gate(st, True, {}, br)[0] != {"mr": 1.0}, "zahamowana strategia nie handluje mimo dodatniego cienia")
+check(sc.real_brake(led[:8], now) == {} and sc.real_brake([dict(x, ts=now - 40 * 86400) for x in led], now) == {}, "za mało transakcji albo stare: brak hamulca")
+check(sc.real_brake([{"ts": now - i * 7200, "strat": "mr", "r": -0.1 + (1.5 if i % 2 else -1.5)} for i in range(12)], now) == {}, "ujemna średnia bez istotności nie hamuje")
 st2 = sc.stats(mk("mr", 40, -0.1) + mk("bo", 40, -0.3) + mk("ob", 5, 3.0), now)
 check(sc.gate(st2, False) == ({}, "brak") and sc.gate(st2, True) == ({"mr": 0.5}, "rozpoznanie"), "rozpoznanie: najlepsza z min. próbą, połowa ryzyka")
 check(sc.gate(sc.stats([], now), True) == ({}, "brak"), "bez danych nic")
@@ -77,8 +117,9 @@ st_bad = sc.stats(mk("mr", 40, -0.36) + mk("bo", 40, -0.49), now)
 check(sc.gate(st_bad, True) == ({}, "brak"), "rozpoznanie nie handluje strategiami, które w cieniu wyraźnie tracą")
 st_mix = sc.stats(mk("mr", 40, -0.36) + mk("fl", 12, 0.02), now)
 check(sc.gate(st_mix, True) == ({"fl": 0.5}, "rozpoznanie"), "rozpoznanie wybiera strategię, która nie traci")
-st3 = sc.stats(mk("mr", 40, 0.2, age=20 * 86400), now)
-check(st3["mr"]["n"] == 0, "stare transakcje poza oknem 14 dni")
+st3 = sc.stats(mk("mr", 40, 0.2, age=31 * 86400), now)
+check(st3["mr"]["n"] == 0 and sc.GATE_DAYS == 30, "stare transakcje poza oknem 30 dni")
+check(sc.stats(mk("mr", 400, 0.2, gap=600), now)["mr"]["n"] == sc.GATE_LAST == 300, "okno: najwyżej 300 ostatnich transakcji")
 st4 = sc.stats(mk("mr", 40, 0.3) + mk("mr", 25, -0.4, "DOGEUSDT"), now)
 check(sc.vetoed(st4, "mr", "DOGEUSDT") and not sc.vetoed(st4, "mr", "BTCUSDT") and not sc.vetoed(st4, "mr", "ETHUSDT"), "weto pary")
 # 8. zlecenia z udawaną giełdą

@@ -29,6 +29,7 @@ import calendar
 import json
 import math
 import os
+import re
 import sys
 import threading
 import time
@@ -137,11 +138,12 @@ def fetch_kind(get, kind, sym, since_s, now_s, pace, max_pages=8):
 
 def refresh_symbol(get, rows, sym, now_s, pace):
     """Uzupełnia historię aktywa (rows: {ts_s: [8 wartości]}) o brakujące godziny. Zwraca listę błędów (teksty)."""
-    newest = max(rows) if rows else None
-    since = (newest - 3 * HOUR) if newest and now_s - newest < SEED_H * HOUR else now_s - SEED_H * HOUR
     errs = []
     for kind in KINDS:
         try:
+            cols = KINDS[kind][3].values()       # każde źródło uzupełniamy od JEGO ostatniej godziny: po awarii jednego źródła luka się zasklepia
+            newest = max((t for t, r in rows.items() if any(r[c] is not None for c in cols)), default=None)
+            since = (newest - 3 * HOUR) if newest and now_s - newest < SEED_H * HOUR else now_s - SEED_H * HOUR
             for t, vals in fetch_kind(get, kind, sym, since, now_s, pace).items():
                 row = rows.setdefault(t, [None] * 8)
                 for col, v in vals.items():
@@ -315,14 +317,19 @@ class Flow:
         _write(os.path.join(self.d, OUT), out)
         return out
 
-    def lean(self, sym, at_s):
-        """Wskaźnik aktywa znany w chwili at_s (ostatnia pełna godzina), albo None gdy brak lub dane za stare."""
+    def reading(self, sym, at_s):
+        """(czas odczytu, wskaźnik) znany w chwili at_s: ostatnia pełna godzina. None, gdy brak danych, dane za stare albo wskaźnik niepełny."""
         with self.lock:
             ser = self.ser.get(sym) or []
         for x in reversed(ser[-6:]):
             if x["t"] <= at_s:
-                return x["score"] if at_s - x["t"] <= STALE_S else None
+                return (x["t"], x["score"]) if at_s - x["t"] <= STALE_S and x["score"] is not None else None
         return None
+
+    def lean(self, sym, at_s):
+        """Sam wskaźnik aktywa znany w chwili at_s albo None."""
+        rd = self.reading(sym, at_s)
+        return rd[1] if rd else None
 
 
 class Worker(threading.Thread):
@@ -330,17 +337,24 @@ class Worker(threading.Thread):
 
     def __init__(self, flow, every=600, log=print):
         super().__init__(daemon=True)
-        self.flow, self.every, self.log = flow, every, log
+        self.flow, self.every, self.log, self.said = flow, every, log, None
+
+    def tick(self):
+        """Jedno odświeżenie. Ten sam stan zgłaszamy raz: źródło niedostępne przez dobę to jedna linia w dzienniku, nie 144."""
+        try:
+            errs = self.flow.step()["errors"]
+            msg = "; ".join(errs[:3]) if errs else None
+        except Exception as e:  # noqa: BLE001
+            msg = f"{type(e).__name__}: {str(e)[:120]}"
+        key = re.sub(r"[0-9]+", "#", msg) if msg else None
+        if key != self.said:
+            self.log("przepływ: " + (msg or "dane znów kompletne"))
+            self.said = key
 
     def run(self):
         while True:
             t0 = time.time()
-            try:
-                out = self.flow.step()
-                if out["errors"]:
-                    self.log("przepływ: " + "; ".join(out["errors"][:3]))
-            except Exception as e:  # noqa: BLE001
-                self.log(f"przepływ: {type(e).__name__}: {str(e)[:120]}")
+            self.tick()
             time.sleep(max(30.0, self.every - (time.time() - t0)))
 
 

@@ -54,8 +54,10 @@ td{padding:7px 9px;border-bottom:1px solid var(--line)} .r{text-align:right}
 <textarea id="in" placeholder="Zapytaj o pomysł, ocenę oferty, plan na ten tydzień…"></textarea>
 <button class="btn p" id="send" type="button">Wyślij</button>
 <button class="btn" id="first" type="button">Zaproponuj 3 pomysły dla mnie</button>
+<button class="btn" id="trend" type="button">Co jest teraz na topie (szuka w internecie)</button>
 <button class="btn" id="clear" type="button">Wyczyść rozmowę</button>
 <p class="note" id="st"></p>
+<p class="note" id="lim"></p>
 </section>
 </div>
 <script>
@@ -72,23 +74,25 @@ let hist = []; try { hist = JSON.parse(lg('mentor_hist')) || []; } catch (e) { h
 const profile = () => 'Mój profil: kapitał ' + ($('p_cap').value || 'nie podano') + ' zł; wolny czas ' + ($('p_time').value || 'nie podano') + ' godz./tydz.; ryzyko: ' + $('p_risk').value + '; umiejętności i sprzęt: ' + ($('p_skills').value.trim() || 'nie podano') + '; cel: ' + ($('p_goal').value.trim() || 'nie podano') + '. Region: między Dębicą a Rzeszowem.';
 function draw() { const c = $('chat'); c.replaceChildren(); hist.forEach(m => { const d = document.createElement('div'); d.className = 'm ' + (m.role === 'user' ? 'u' : 'a'); d.textContent = m.shown || m.content; c.appendChild(d); }); ls('mentor_hist', JSON.stringify(hist.slice(-20))); }
 let busy = false;
-async function ask(text) {
-  if (busy || !text.trim()) return; busy = true; $('st').textContent = 'Mentor myśli…';
+async function ask(text, search) {
+  if (busy || !text.trim()) return; busy = true; $('st').textContent = search ? 'Mentor przegląda internet (do ok. 2 minut)…' : 'Mentor myśli…';
   hist.push({role: 'user', content: text.trim()}); draw();
   const msgs = hist.slice(-20).map((m, i, a) => ({role: m.role, content: i === 0 && m.role === 'user' ? profile() + '\n\n' + m.content : m.content}));
   if (msgs[0].role !== 'user') msgs.shift();
   try {
-    const {id} = await post('ai/chat', {messages: msgs, role: 'mentor'}); let r, t0 = Date.now();
+    const {id} = await post('ai/chat', {messages: msgs, role: 'mentor', search: !!search}); let r, t0 = Date.now();
     do { await new Promise(ok => setTimeout(ok, 1500)); r = await api('ai/chat?id=' + id); } while (r.status === 'run' && Date.now() - t0 < 180000);
     if (r.status !== 'done') throw new Error(r.error || 'brak odpowiedzi w 3 minuty');
     hist.push({role: 'assistant', content: r.text}); $('st').textContent = '';
   } catch (e) { $('st').textContent = 'Błąd: ' + e.message; hist.pop(); }
-  busy = false; draw();
+  busy = false; draw(); limits();
 }
+async function limits() { try { const i = await api('ai/chat'); $('lim').textContent = i.search_limit != null ? 'Przeglądy internetu dziś: zostało ' + i.search_left + ' z ' + i.search_limit + '. Każdy kosztuje (wyszukiwania są płatne w API).' : ''; } catch (e) { $('lim').textContent = ''; } }
 $('send').addEventListener('click', () => { const t = $('in').value; $('in').value = ''; ask(t); });
 $('first').addEventListener('click', () => ask('Na podstawie mojego profilu zaproponuj 3 konkretne, legalne pomysły na dodatkowy dochód w mojej okolicy, od najmniej ryzykownego. Jeśli czegoś brakuje w profilu, najpierw zadaj pytania.'));
+$('trend').addEventListener('click', () => ask('Znajdź w internecie aktualne pomysły na dochód, które pasują do mojego profilu i regionu, także trendy z TikToka. Podaj 3 najlepsze: dla każdego dlaczego teraz, kapitał, jak sprawdzić popyt lokalnie przed wydaniem pieniędzy i największe ryzyko.', true));
 $('clear').addEventListener('click', () => { hist = []; draw(); });
-draw();
+draw(); limits();
 })();
 </script>
 </body>

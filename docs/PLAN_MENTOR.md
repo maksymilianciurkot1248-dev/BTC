@@ -17,7 +17,7 @@ Zasada: nie budujemy niczego, co łamie regulamin serwisu albo wymaga ukrywania,
 
 ## 2. Etapy
 
-### Etap A: przegląd rynku na życzenie (1 sesja)
+### Etap A: przegląd rynku na życzenie (ZROBIONE 19.11.2026, niesprawdzone z prawdziwym kluczem)
 - Przycisk „Co jest teraz na topie” na stronie Mentor. Mentor szuka w sieci, a odpowiedź ma: pomysł, dlaczego teraz, źródło z linkiem i datą, kapitał, ocenę dla Twojego profilu i regionu, ryzyko.
 - Wymóg w prompcie: każdy trend z linkiem i datą publikacji; bez źródła pomysł jest oznaczony „bez potwierdzenia”; trendy starsze niż 90 dni oznaczone jako stare.
 - Limity: najwyżej N wyszukiwań na dobę (`MENTOR_MAX_SEARCH_PER_DAY` w `ai.env`), żeby koszt był przewidywalny.

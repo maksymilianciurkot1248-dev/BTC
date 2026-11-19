@@ -98,4 +98,48 @@ ai.tick(d, ask_fn=lambda d_, msgs, role="panel": got.append((msgs[-1]["content"]
 check(("pomysł na biznes", "mentor") in got, f"usługa przekazuje rolę {got}")
 jid2 = ai.start(d, {"messages": [{"role": "user", "content": "x"}], "role": "root"})
 check(json.load(open(os.path.join(d, ai.JOBS_DIR, jid2 + ".json")))["role"] == "panel", "nieznana rola = panel")
+# wyszukiwanie w internecie (mentor): narzędzie, pause_turn, źródła, limit dobowy
+import types as _t
+check(ai.search_tool("claude-opus-5-5", 5)["type"] == "web_search_20260209" and ai.search_tool("claude-haiku-4-5", 3)["type"] == "web_search_20250305", "wariant narzędzia zależy od modelu")
+tl = ai.search_tool("claude-opus-5-5", 5)
+check(tl["name"] == "web_search" and tl["max_uses"] == 5 and tl["user_location"]["country"] == "PL", "max_uses i lokalizacja")
+def blk(type, **k): return _t.SimpleNamespace(type=type, **k)
+cite = _t.SimpleNamespace(url="https://przyklad.pl/a", title="Trend A", page_age="3 dni temu")
+R = [blk("server_tool_use", name="web_search", input={}), blk("web_search_tool_result", content=[cite, _t.SimpleNamespace(url="https://przyklad.pl/b", title="B", page_age=None)]),
+     blk("text", text="Pomysł 1.", citations=[cite]), blk("text", text=" Pomysł 2.", citations=None)]
+st = ai.sources_text(R)
+check(st.count("przyklad.pl/a") == 1 and "przyklad.pl/b" in st and "brak daty" in st and "3 dni temu" in st, f"źródła bez duplikatów, z datą {st}")
+check(ai.sources_text([blk("text", text="x", citations=None)]) == "", "bez źródeł nic nie dopisujemy")
+calls = []
+def mk_msg(stop, content, i=1, o=1): return _t.SimpleNamespace(stop_reason=stop, content=content, usage=_t.SimpleNamespace(input_tokens=i, output_tokens=o), model="claude-opus-5-5")
+class SeqClient:
+    def __init__(s, seq): s.seq = list(seq); s.beta = s; s.messages = s
+    def stream(s, **k):
+        calls.append(k); m = s.seq.pop(0)
+        class C:
+            def __enter__(c): return c
+            def __exit__(c, *a): return False
+            def get_final_message(c): return m
+        return C()
+cl = SeqClient([mk_msg("pause_turn", R[:2], 10, 5), mk_msg("end_turn", R[2:], 20, 7)])
+text, usage = ai.ask(d, [{"role": "user", "content": "co na topie"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=cl, role="mentor", search=True)
+check(len(calls) == 2 and calls[0]["tools"][0]["name"] == "web_search" and len(calls[0]["system"]) == 2 and "Źródła" in text and "Pomysł 1." in text and "Pomysł 2." in text, "pause_turn: wznowienie i złożenie odpowiedzi")
+check(calls[1]["messages"][-1]["role"] == "assistant" and usage["in"] == 30 and usage["out"] == 12 and usage["searches"] == 1, f"wznowienie od przerwanej tury, zużycie zsumowane {usage}")
+calls.clear()
+ai.ask(d, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=SeqClient([mk_msg("end_turn", R[2:])]), role="mentor")
+check("tools" not in calls[0] and len(calls[0]["system"]) == 1, "bez search: bez narzędzia")
+calls.clear()
+ai.ask(d, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=SeqClient([mk_msg("pause_turn", R[:2])] * 4), role="mentor", search=True)
+check(len(calls) == ai.SEARCH_LOOPS, "pętla pause_turn ma twardy limit")
+err = [blk("web_search_tool_result", content=_t.SimpleNamespace(error_code="max_uses_exceeded")), blk("text", text="Odp.", citations=None)]
+t2, _ = ai.ask(d, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=SeqClient([mk_msg("end_turn", err)]), role="mentor", search=True)
+check("max_uses_exceeded" in t2, "błąd wyszukiwania (HTTP 200 z obiektem błędu) jest widoczny, nie wywala odpowiedzi")
+ai._calls.clear()
+open(os.path.join(d, "ai.env"), "a").write("MENTOR_MAX_SEARCH_PER_DAY=2\n")
+for _ in range(2): ai.start(d, {"messages": [{"role": "user", "content": "x"}], "role": "mentor", "search": True})
+try: ai.start(d, {"messages": [{"role": "user", "content": "x"}], "role": "mentor", "search": True}); check(False, "limit")
+except ValueError as e: check("przeglądów internetu" in str(e), "limit dobowy przeglądów")
+j = ai.start(d, {"messages": [{"role": "user", "content": "x"}], "role": "mentor"})
+check(json.load(open(os.path.join(d, ai.JOBS_DIR, j + ".json")))["search"] is False and ai.info(d)["search_left"] == 0, "zwykła rozmowa nie zużywa limitu; info pokazuje pozostałe")
+j = ai.start(d, {"messages": [{"role": "user", "content": "x"}], "role": "panel", "search": True}) if False else None
 print("ai ok", ok)

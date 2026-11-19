@@ -43,6 +43,19 @@ Zasady:
 - Jednostka R to wynik transakcji w wielokrotności ryzyka początkowego. „Cień” to transakcje symulowane na żywo bez zleceń.
 - Jeśli widzisz w migawce coś groźnego (wyłącznik ryzyka, błąd, pozycja bez stopa, ryzyko wyższe niż domyślne 0,5% na transakcję), wspomnij o tym krótko, nawet gdy pytanie dotyczy czegoś innego."""
 
+MENTOR = """Jesteś prywatnym mentorem biznesowym i doradcą finansowym właściciela panelu. Mieszka w okolicy między Dębicą a Rzeszowem (Podkarpacie, Polska).
+Cel: pomóc mu realnie poprawić stan finansów przez legalne, małe i sprawdzalne przedsięwzięcia, zaczynając od niewielkiego kapitału.
+
+Jak pracujesz:
+- Odpowiadaj po polsku, konkretnie, zwykłym tekstem bez Markdownu. Najpierw odpowiedź, potem krótkie uzasadnienie.
+- Na początku brakuje Ci danych: gdy nie znasz budżetu, wolnego czasu, umiejętności, sprzętu albo ryzyka, jakie akceptuje, zadaj najwyżej 3 pytania naraz i dopiero potem proponuj.
+- Proponując pomysł podaj: co dokładnie robić, potrzebny kapitał, orientacyjny koszt i przychód z założeniami, pierwszy krok na ten tydzień, jak sprawdzić popyt zanim wyda pieniądze, największe ryzyko i kiedy się wycofać. Liczby oznaczaj jako szacunek.
+- Zaczynaj od pomysłów o małym ryzyku: odsprzedaż przedmiotów z lokalnych ogłoszeń, drobne usługi (naprawy, montaż, sprzątanie, korepetycje, transport), produkty własnej roboty, legalne dokumenty i szablony (umowy, wzory pism, kosztorysy, grafiki), sprzedaż cyfrowa. Uwzględnij konkurencję lokalną i sezonowość.
+- Mówisz uczciwie o niepewności. Nie obiecujesz zysków. Nie polecasz hazardu, pożyczek na inwestycje, schematów piramidowych, kryptowalut z dźwignią ani zadłużania się. Radzisz oddzielić pieniądze na życie od pieniędzy na ryzyko.
+- Przypominaj o podstawach prawnych i podatkowych w Polsce (działalność nieewidencjonowana do limitu przychodu, CEIDG, VAT, PIT, zasady sprzedaży z ogłoszeń przez osoby prywatne) i wskazuj, że przy konkretnej sprawie warto sprawdzić aktualne przepisy lub zapytać księgowego.
+- Nie pomagasz w niczym nielegalnym: nie fałszujesz i nie przygotowujesz fałszywych dokumentów (dowody, dyplomy, zaświadczenia, faktury, podpisy), nie pomagasz w oszustwach, sprzedaży kradzionych lub podrabianych rzeczy ani w unikaniu podatków. Gdy ktoś o to prosi, odmów jednym zdaniem i zaproponuj legalną alternatywę z tej samej dziedziny (np. wzory i szablony prawdziwych dokumentów, usługa pisania pism)."""
+ROLES = {"panel": SYSTEM, "mentor": MENTOR}
+
 _lock, _calls, _running = threading.Lock(), [], set()
 
 
@@ -171,7 +184,7 @@ def _allow(cfg, now=None):
         _calls.append(now)
 
 
-def ask(d, messages, cfg=None, client=None):
+def ask(d, messages, cfg=None, client=None, role="panel"):
     """Jedno zapytanie do modelu. Zwraca (tekst, zużycie)."""
     import anthropic
     cfg = cfg or load_env(d)
@@ -179,8 +192,11 @@ def ask(d, messages, cfg=None, client=None):
         if not cfg.get("ANTHROPIC_API_KEY"):
             raise RuntimeError("brak klucza: wpisz ANTHROPIC_API_KEY=... do pliku ai.env obok programu")
         client = anthropic.Anthropic(api_key=cfg["ANTHROPIC_API_KEY"], timeout=120.0, max_retries=1)
-    system = [{"type": "text", "text": SYSTEM},
-              {"type": "text", "text": "Migawka stanu systemu (JSON):\n" + json.dumps(snapshot(d), ensure_ascii=False, default=str, separators=(",", ":"))}]
+    if role == "mentor":                      # mentor nie dostaje stanu bota: zna tylko to, co użytkownik sam napisze
+        system = [{"type": "text", "text": MENTOR}]
+    else:
+        system = [{"type": "text", "text": SYSTEM},
+                  {"type": "text", "text": "Migawka stanu systemu (JSON):\n" + json.dumps(snapshot(d), ensure_ascii=False, default=str, separators=(",", ":"))}]
     try:
         with client.beta.messages.stream(model=cfg.get("AI_MODEL") or MODEL_DEFAULT, max_tokens=8000, system=system, messages=messages,
                                          output_config={"effort": cfg.get("AI_EFFORT") or "low"},
@@ -239,7 +255,8 @@ def start(d, body):
         raise ValueError("usługa asystenta nie działa (sudo systemctl status btc-ai)")
     _allow(cfg)
     jid = uuid.uuid4().hex[:16]
-    _write_job(os.path.join(_jobs_dir(d), jid + ".json"), {"status": "new", "ts": time.time(), "messages": messages})
+    role = body.get("role") if body.get("role") in ROLES else "panel"
+    _write_job(os.path.join(_jobs_dir(d), jid + ".json"), {"status": "new", "ts": time.time(), "messages": messages, "role": role})
     return jid
 
 
@@ -270,7 +287,8 @@ def process(d, path, ask_fn=ask):
     job["status"] = "run"
     _write_job(path, job)
     try:
-        text, usage = ask_fn(d, clean_messages(job.get("messages")))
+        msgs = clean_messages(job.get("messages"))
+        text, usage = ask_fn(d, msgs, role=job["role"]) if job.get("role") in ROLES and job["role"] != "panel" else ask_fn(d, msgs)
         out = {"status": "done", "ts": job["ts"], "text": text, "usage": usage}
     except Exception as e:  # noqa: BLE001
         out = {"status": "error", "ts": job["ts"], "error": str(e)[:300] if isinstance(e, (RuntimeError, ValueError)) else f"{type(e).__name__}: {str(e)[:200]}"}

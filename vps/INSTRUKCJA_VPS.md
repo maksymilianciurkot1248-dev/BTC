@@ -326,3 +326,8 @@ Sprawdzenie, czy serwer ma dostęp do OKX i co moduł widzi (jedno odświeżenie
     sudo -u btc BTC_BOT_DIR=/opt/btc /opt/btc/venv/bin/python /opt/btc/btc_flow.py
 
 Strategia z tego wskaźnika wchodzi najwyżej raz na jeden godzinowy odczyt (po stopie nie wraca na tym samym sygnale).
+
+## Strony Produkty i Mentor
+
+- `produkty.html`: linki do wyszukiwań ofert (OLX, Allegro Lokalnie, Vinted, Marketplace) w okolicy Dębicy i Rzeszowa oraz kalkulator odsprzedaży. Nie pobiera ofert sam; lista kandydatów zapisuje się w przeglądarce.
+- `mentor.html`: czat z doradcą biznesowym (ta sama usługa `btc-ai` i ten sam `ANTHROPIC_API_KEY` w `ai.env`, rola `mentor`). Mentor nie dostaje stanu bota ani kluczy, zna tylko profil wpisany na stronie. Odmawia pomocy przy fałszowaniu dokumentów i innych działaniach niezgodnych z prawem. Pytania wliczają się do limitów asystenta (`AI_MAX_PER_DAY`).

@@ -161,7 +161,8 @@ const NAV = [
     {href: 'okazje.html', label: 'Okazje', hint: 'Skaner okazji i raport pozycji'},
     {href: 'strategie.html', label: 'Strategie', hint: 'Portfele od ochronnego do agresywnego'},
     {href: 'bot.html', label: 'Bot', hint: 'Automat: status, statystyki, ustawienia'},
-    {href: 'produkty.html', label: 'Produkty', hint: 'Oferty w okolicy i kalkulator odsprzedaży'}]},
+    {href: 'produkty.html', label: 'Produkty', hint: 'Oferty w okolicy i kalkulator odsprzedaży'},
+    {href: 'mentor.html', label: 'Mentor', hint: 'Doradca biznesowy: pomysły na dochód'}]},
   {href: 'bybit.html', label: 'Mój Bybit', hint: 'Saldo, pozycje i statystyki Twojego konta'},
   {href: 'kalkulator.html', label: 'Kalkulator', hint: 'Wielkość pozycji i ryzyko'},
 ];

@@ -72,4 +72,30 @@ ai._calls.clear(); ai.tick(d, ask_fn=boom, threaded=False)
 for i in range(ai.MAX_PER_HOUR): ai.start(d, {"messages": m})
 try: ai.start(d, {"messages": m}); check(False, "limit")
 except ValueError as e: check("limit" in str(e), "limit godzinowy")
+# rola mentora: osobny prompt bez migawki bota, nieznana rola = panel
+import unittest.mock as um
+seen = {}
+class FakeStream:
+    def __init__(s, **k): seen.update(k)
+    def __enter__(s): return s
+    def __exit__(s, *a): return False
+    def get_final_message(s):
+        B = type("B", (), {"type": "text", "text": "odp"}); U = type("U", (), {"input_tokens": 1, "output_tokens": 1})
+        return type("M", (), {"stop_reason": "end_turn", "content": [B], "usage": U, "model": "m"})()
+class FakeClient:
+    class beta:
+        class messages:
+            stream = staticmethod(lambda **k: FakeStream(**k))
+ai.ask(d, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=FakeClient, role="mentor")
+check(len(seen["system"]) == 1 and "mentorem biznesowym" in seen["system"][0]["text"] and "nie fałszujesz" in seen["system"][0]["text"], "mentor: własny prompt, bez migawki stanu bota")
+ai.ask(d, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=FakeClient)
+check(len(seen["system"]) == 2 and "Migawka" in seen["system"][1]["text"], "panel: prompt i migawka")
+ai._calls.clear()
+jid = ai.start(d, {"messages": [{"role": "user", "content": "pomysł na biznes"}], "role": "mentor"})
+check(json.load(open(os.path.join(d, ai.JOBS_DIR, jid + ".json")))["role"] == "mentor", "rola zapisana w zadaniu")
+got = []
+ai.tick(d, ask_fn=lambda d_, msgs, role="panel": got.append((msgs[-1]["content"], role)) or ("ok", {"in": 1, "out": 1, "model": "m"}), threaded=False)
+check(("pomysł na biznes", "mentor") in got, f"usługa przekazuje rolę {got}")
+jid2 = ai.start(d, {"messages": [{"role": "user", "content": "x"}], "role": "root"})
+check(json.load(open(os.path.join(d, ai.JOBS_DIR, jid2 + ".json")))["role"] == "panel", "nieznana rola = panel")
 print("ai ok", ok)

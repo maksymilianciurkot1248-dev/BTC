@@ -71,7 +71,7 @@ const ls = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* tryb p
 const F = ['p_cap', 'p_time', 'p_risk', 'p_skills', 'p_goal'];
 F.forEach(i => { const v = lg('mentor_' + i); if (v != null) $(i).value = v; $(i).addEventListener('input', () => ls('mentor_' + i, $(i).value)); });
 let hist = []; try { hist = JSON.parse(lg('mentor_hist')) || []; } catch (e) { hist = []; }
-const profile = () => 'Mój profil: kapitał ' + ($('p_cap').value || 'nie podano') + ' zł; wolny czas ' + ($('p_time').value || 'nie podano') + ' godz./tydz.; ryzyko: ' + $('p_risk').value + '; umiejętności i sprzęt: ' + ($('p_skills').value.trim() || 'nie podano') + '; cel: ' + ($('p_goal').value.trim() || 'nie podano') + '. Region: między Dębicą a Rzeszowem.';
+const profile = () => 'Mój profil: kapitał ' + ($('p_cap').value || 'nie podano') + ' zł; wolny czas ' + ($('p_time').value || 'nie podano') + ' godz./tydz.; ryzyko: ' + $('p_risk').value + '; umiejętności i sprzęt: ' + ($('p_skills').value.trim() || 'nie podano') + '; cel: ' + ($('p_goal').value.trim() || 'nie podano') + '. Region: między Dębicą a Rzeszowem.' + (lg('zarobki_podsumowanie') ? ' ' + lg('zarobki_podsumowanie') : '');
 function draw() { const c = $('chat'); c.replaceChildren(); hist.forEach(m => { const d = document.createElement('div'); d.className = 'm ' + (m.role === 'user' ? 'u' : 'a'); d.textContent = m.shown || m.content; c.appendChild(d); }); ls('mentor_hist', JSON.stringify(hist.slice(-20))); }
 let busy = false;
 async function ask(text, search) {

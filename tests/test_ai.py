@@ -142,4 +142,23 @@ except ValueError as e: check("przeglądów internetu" in str(e), "limit dobowy 
 j = ai.start(d, {"messages": [{"role": "user", "content": "x"}], "role": "mentor"})
 check(json.load(open(os.path.join(d, ai.JOBS_DIR, j + ".json")))["search"] is False and ai.info(d)["search_left"] == 0, "zwykła rozmowa nie zużywa limitu; info pokazuje pozostałe")
 j = ai.start(d, {"messages": [{"role": "user", "content": "x"}], "role": "panel", "search": True}) if False else None
+# wyszukiwarka ofert: tylko serwisy z ogłoszeniami, oferty ze zmyślonym adresem odrzucone
+check(ai.search_tool("claude-opus-5-5", 5, ai.OFFER_DOMAINS)["allowed_domains"][0] == "olx.pl" and "allowed_domains" not in ai.search_tool("claude-opus-5-5", 5), "domeny ofert")
+UR = ["https://www.olx.pl/d/oferta/rower-A-CID1.html", "https://allegrolokalnie.pl/oferta/rower-b"]
+js = ai.offers_json('tekst {"offers":[{"title":"Rower A","price_pln":300,"place":"Dębica","url":"https://www.olx.pl/d/oferta/rower-A-CID1.html","source":"olx","why":"tanio","est_sell_pln":450},'
+                    '{"title":"Zmyślony","price_pln":1,"url":"https://olx.pl/d/oferta/nie-ma-takiej.html"},{"title":"B","price_pln":"abc","url":"https://allegrolokalnie.pl/oferta/rower-b/#x"},"śmieć"]} koniec', set(UR))
+dd = json.loads(js[0])
+check(len(dd["offers"]) == 2 and dd["dropped"] == 2 and dd["offers"][0]["est_sell_pln"] == 450 and dd["offers"][1]["price_pln"] is None, f"adres spoza wyników odrzucony, zła cena = null {dd}")
+check(ai.offers_json("brak json", set()) is None and ai.offers_json('{"offers":"x"}', set()) is None, "nieczytelna odpowiedź = None")
+Rr = [blk("server_tool_use", name="web_search", input={}), blk("web_search_tool_result", content=[_t.SimpleNamespace(url=UR[0], title="t", page_age=None), _t.SimpleNamespace(url=UR[1], title="t", page_age=None)]),
+      blk("text", text='{"offers":[{"title":"Rower A","price_pln":300,"url":"%s","source":"olx","why":"x"},{"title":"Fałsz","url":"https://olx.pl/zmyslone"}]}' % UR[0], citations=None)]
+calls.clear()
+t3, u3 = ai.ask(d, [{"role": "user", "content": "rower"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=SeqClient([mk_msg("end_turn", Rr)]), role="offers")
+o3 = json.loads(t3)
+check(calls[0]["tools"][0]["allowed_domains"] == ai.OFFER_DOMAINS and calls[0]["system"][0]["text"] == ai.OFFERS and len(o3["offers"]) == 1 and o3["dropped"] == 1 and u3["searches"] == 1, "ask(role=offers): wynik tylko z prawdziwych adresów")
+t4, _ = ai.ask(d, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=SeqClient([mk_msg("end_turn", [blk("text", text="nie umiem", citations=None)])]), role="offers")
+check(json.loads(t4)["offers"] == [] and "error" in json.loads(t4), "niepoprawna odpowiedź modelu nie psuje strony")
+ai._calls.clear(); open(os.path.join(d, "mentor_search.json"), "w").write("{}")
+j2 = ai.start(d, {"messages": [{"role": "user", "content": "rower"}], "role": "offers"})
+check(json.load(open(os.path.join(d, ai.JOBS_DIR, j2 + ".json")))["search"] is True, "oferty zawsze liczą się do limitu przeglądów")
 print("ai ok", ok)

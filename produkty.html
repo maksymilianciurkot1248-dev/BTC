@@ -46,7 +46,15 @@ td{padding:7px 9px;border-bottom:1px solid var(--line)} .r{text-align:right}
 <label>Kategoria (podpowiedź)<select id="cat"><option value="">— własna fraza —</option></select></label>
 </div>
 <div id="links"></div>
+<button class="btn p" id="find" type="button">Znajdź oferty w internecie (szuka sam)</button>
+<span class="note" id="fst"></span>
 <p class="note">OLX ma stałe promienie (2, 5, 10, 15, 30, 50, 75, 100 km), więc dla 40 km użyto 50 km od Sędziszowa Małopolskiego. W Allegro Lokalnie i Vinted lokalizację ustaw w filtrach serwisu. Adresy wyszukiwań zbudowałem według układu serwisów z pamięci i nie sprawdzałem ich z tego środowiska: jeśli któryś nie otworzy wyników, wpisz frazę w samym serwisie.</p>
+</section>
+
+<section class="card" id="foundbox" style="display:none"><h2>Znalezione oferty</h2>
+<p class="sub" id="fmeta"></p>
+<div class="tbl-w"><table><thead><tr><th>Oferta</th><th class="r">Cena</th><th>Miejsce</th><th>Serwis</th><th>Uwagi</th><th></th></tr></thead><tbody id="foundlist"></tbody></table></div>
+<p class="note">Oferty znajduje wyszukiwarka internetowa, a nie bezpośredni odczyt serwisów: mogą być nieaktualne (sprzedane, zmieniona cena) i nie jest to pełna lista. Pokazuję tylko oferty, których adres faktycznie zwróciła wyszukiwarka. Zawsze sprawdź ofertę w serwisie przed zakupem. Przeglądy są płatne (API) i mają dobowy limit.</p>
 </section>
 
 <section class="card"><h2>2. Ile naprawdę da się sprzedać</h2>
@@ -118,6 +126,29 @@ function calc() {
   return {name: $('name').value.trim() || 'bez nazwy', buy, sell, profit, roi, hr};
 }
 ['buy', 'sell', 'fee', 'ship', 'oth', 'hrs', 'name'].forEach(i => $(i).addEventListener('input', calc));
+const api = async (path, opt) => { const r = await fetch('api/' + path, Object.assign({cache: 'no-store'}, opt)); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); return j; };
+const post = (path, body) => api(path, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Requested-With': 'btc-ui'}, body: JSON.stringify(body)});
+function showFound(o, when) {
+  const box = $('foundbox'), tb = $('foundlist'); tb.replaceChildren(); box.style.display = '';
+  const xs = (o && o.offers) || [];
+  $('fmeta').textContent = (xs.length ? `Znaleziono ${xs.length} ofert` : 'Nic nie znaleziono dla tej frazy') + (o && o.dropped ? `, odrzucono ${o.dropped} bez potwierdzonego adresu` : '') + (when ? ` (${new Date(when).toLocaleString('pl-PL')})` : '') + (o && o.error ? ': ' + o.error : '') + '.';
+  xs.forEach(x => { const tr = document.createElement('tr'), ok = /^https?:\/\//.test(x.url);
+    const t = document.createElement('td'), a = document.createElement(ok ? 'a' : 'span'); a.textContent = x.title || x.url; if (ok) { a.href = x.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; } t.appendChild(a); tr.appendChild(t);
+    [[x.price_pln == null ? 'brak ceny' : nf(x.price_pln) + ' zł', 'r'], [x.place || '', ''], [x.source || '', ''], [x.why || '', '']].forEach(([v, c]) => { const d = document.createElement('td'); d.textContent = v; d.className = c; tr.appendChild(d); });
+    const d = document.createElement('td'), b = document.createElement('button'); b.className = 'btn'; b.type = 'button'; b.textContent = 'Policz'; b.addEventListener('click', () => { $('name').value = x.title || ''; $('buy').value = x.price_pln == null ? '' : x.price_pln; $('sell').value = x.est_sell_pln == null ? '' : x.est_sell_pln; calc(); $('calc').scrollIntoView({behavior: 'smooth', block: 'center'}); }); d.appendChild(b); tr.appendChild(d); $('foundlist').appendChild(tr); });
+}
+let finding = false;
+$('find').addEventListener('click', async () => {
+  const q = $('q').value.trim(); if (!q || finding) { $('fst').textContent = q ? '' : ' Wpisz frazę.'; return; } finding = true; $('fst').textContent = ' Szukam w internecie (do ok. 2 minut)…';
+  try {
+    const {id} = await post('ai/chat', {role: 'offers', messages: [{role: 'user', content: 'Fraza: ' + q + '. Region: okolice między Dębicą a Rzeszowem, promień ok. 40 km.'}]}); let r, t0 = Date.now();
+    do { await new Promise(ok => setTimeout(ok, 1500)); r = await api('ai/chat?id=' + id); } while (r.status === 'run' && Date.now() - t0 < 180000);
+    if (r.status !== 'done') throw new Error(r.error || 'brak odpowiedzi w 3 minuty');
+    const o = JSON.parse(r.text); showFound(o, Date.now()); try { localStorage.setItem('produkty_found', JSON.stringify({o, t: Date.now(), q})); } catch (e) { /* tryb prywatny */ } $('fst').textContent = '';
+  } catch (e) { $('fst').textContent = ' Błąd: ' + e.message; }
+  finding = false;
+});
+try { const f = JSON.parse(localStorage.getItem('produkty_found')); if (f && f.o) { $('q').value = $('q').value || f.q; links(); showFound(f.o, f.t); } } catch (e) { /* brak */ }
 const KEY = 'produkty_lista';
 const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } };
 const store = xs => { try { localStorage.setItem(KEY, JSON.stringify(xs)); } catch (e) { /* tryb prywatny */ } };

@@ -181,4 +181,33 @@ out = sc.read_out(d7)
 check(s7["shadow"]["last"].get("BTCUSDT") == bars[-1][0] and s7["seeded"] == ["BTCUSDT"], "giełda nie odpowiada na zapytania o konto: cień policzony")
 check("konto niedostępne" in (out["blocked"] or "") and any("konto niedostępne" in n for n in notes), f"powód wstrzymania zleceń widoczny w panelu {out['blocked']}")
 check(out["criteria"]["min_t"] == sc.GATE_MIN_T and out["brake"] == {} and out["gate_on"] == [] and "t" in out["strategies"]["mr"], "scalp.json: nowe pola dla panelu")
+# 8. wymuszona aktywność na demo: min. N transakcji dziennie mimo bramki, weta i hamulca; live bez tego
+check(sc.scalp_cfg({"mode": "demo", "max_capital": 0, "max_lev": 2.0}, {}.get)["min_day"] == 2 and sc.scalp_cfg({"mode": "live", "max_capital": 100, "max_lev": 2.0}, {}.get)["min_day"] == 0, "min. 2 dziennie na demo, 0 na live")
+check(sc.scalp_cfg({"mode": "demo", "max_capital": 0, "max_lev": 2.0}, {"SCALP_MIN_TRADES_DAY": "0"}.get)["min_day"] == 0, "wyłączenie przez 0")
+d8 = tempfile.mkdtemp(); c8 = {"mode": "demo", "max_capital": 0, "max_lev": 2.0, "symbols": ["BTCUSDT"]}
+sc8 = sc.scalp_cfg(c8, {}.get); sc8["symbols"] = ["BTCUSDT"]
+T8 = int(NOW) // 300 * 300 - 90 * 300
+bars8 = [[T8 + i * 300, 100.0, 100.05, 99.95, 100.0 + (0.01 if i % 2 else -0.01), 10.0] for i in range(90)]
+brk = [bars8[-1][0] + 300, 100.0, 100.5, 99.99, 100.45, 40.0]           # wybicie: sygnał bo
+api8 = Api(); pub8 = PubBars(bars8); live8 = sc.Live(d8, c8, sc8, api8, pub8); s8 = sc.load_state(d8)
+sc.cycle(d8, c8, sc8, pub8, live8, s8, bars8[-1][0] + 305, True)        # rozbieg
+s8["shadow"]["trades"] += [[brk[0] - i * 7200, "bo", "BTCUSDT", 1, -0.5 + (0.1 if i % 2 else -0.1)] for i in range(40)] + [[brk[0] - i * 7200, "mr", "BTCUSDT", 1, -0.8] for i in range(40)]
+s8["gate_on"] = {}
+pub8.bars = bars8 + [brk]
+sc.cycle(d8, c8, sc8, pub8, live8, s8, brk[0] + 305, True)
+o8 = sc.read_out(d8)
+create = [x[2] for x in api8.calls if "order/create" in x[1]]
+check(len(create) == 1 and o8["gate"] == "brak" and s8["live"]["open"]["BTCUSDT"]["forced"] and s8["live"]["open"]["BTCUSDT"]["strat"] == "bo" and o8["forced_today"] == 1, f"gdy nic nie przechodzi bramki, wymuszona aktywność składa zlecenie (najlepsza strategia, połowa ryzyka) {o8['gate']} {create}")
+# po osiągnięciu minimum wymuszanie się kończy
+s8["live"]["open"].clear(); s8["live"]["day_n"] = 2; api8.calls.clear()
+brk2 = [brk[0] + 300, 100.45, 100.5, 99.99, 100.9, 40.0]; pub8.bars = bars8 + [brk, brk2]
+sc.cycle(d8, c8, sc8, pub8, live8, s8, brk2[0] + 305, True)
+check(not [x for x in api8.calls if "order/create" in x[1]], "dwie transakcje dziś: wymuszanie wyłączone")
+# live: nigdy
+cl = {"mode": "live", "max_capital": 100.0, "max_lev": 2.0, "symbols": ["BTCUSDT"]}; scl = sc.scalp_cfg(cl, {"SCALP_CONFIRM_LIVE": "I_ACCEPT_THE_RISK"}.get); scl["symbols"] = ["BTCUSDT"]
+d9 = tempfile.mkdtemp(); api9 = Api(); live9 = sc.Live(d9, cl, scl, api9, pub8); s9 = sc.load_state(d9)
+pub8.bars = bars8; sc.cycle(d9, cl, scl, pub8, live9, s9, bars8[-1][0] + 305, True)
+s9["shadow"]["trades"] += [[brk[0] - i * 7200, "bo", "BTCUSDT", 1, -0.5] for i in range(40)]
+pub8.bars = bars8 + [brk]; sc.cycle(d9, cl, scl, pub8, live9, s9, brk[0] + 305, True)
+check(not [x for x in api9.calls if "order/create" in x[1]], "live: bez wymuszonej aktywności")
 print("two bots ok", ok)

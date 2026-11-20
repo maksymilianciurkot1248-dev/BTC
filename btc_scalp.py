@@ -16,7 +16,10 @@ a z warunkiem t >= 2 w 0,7% (docs/badania_bramka).
 Hamulec: strategia, której PRAWDZIWE transakcje są istotnie ujemne (>= 10 transakcji, t <= −2), nie składa zleceń mimo dodatniego cienia.
 Na demo/testnecie, gdy żadna nie przechodzi bramki, bot handluje najlepszą z połową ryzyka („rozpoznanie”, SCALP_EXPLORE=no wyłącza),
 ale tylko taką, która w cieniu nie traci wyraźnie (średnia >= −0,10R): strategiami, o których wiemy, że tracą, bot nie handluje wcale.
-Na koncie live bot składa zlecenia wyłącznie przez bramkę i tylko z SCALP_CONFIRM_LIVE=I_ACCEPT_THE_RISK.
+Wymuszona aktywność (tylko demo i testnet, SCALP_MIN_TRADES_DAY, domyślnie 2): gdy dziś było mniej transakcji, niż wynosi minimum, scalper bierze świeży sygnał
+strategii z najlepszą średnią w cieniu, z połową ryzyka, także gdy bramka, weto pary i hamulec by go zatrzymały. To celowo handel strategiami bez dowodu,
+żeby na demo zbierać prawdziwe wykonanie i wyniki; oczekiwana strata to ok. 0,04% kapitału na transakcję. Limity konta, pauza, STOP i dzienny limit w R nadal obowiązują.
+Na koncie live bot składa zlecenia wyłącznie przez bramkę i tylko z SCALP_CONFIRM_LIVE=I_ACCEPT_THE_RISK (wymuszona aktywność wyłączona).
 Limity konta są wspólne z botem dziennym: dźwignia i kapitał z panelu, pauza, wyłączniki (strata dzienna, tygodniowa, spadek kapitału).
 
 Prowizje są głównym przeciwnikiem: wejście i wyjście rynkowe to ok. 0,13% nominału, dlatego stop ma minimum 0,30% ceny
@@ -400,6 +403,7 @@ def scalp_cfg(c, e=os.environ.get):
     sc = {"symbols": syms, "risk_pct": float(e("SCALP_RISK_PCT") or 0.2), "max_pos": int(e("SCALP_MAX_POSITIONS") or 3), "max_trades": int(e("SCALP_MAX_TRADES_DAY") or 30),
           "max_loss_r": float(e("SCALP_MAX_DAILY_LOSS_R") or 5), "max_x": float(e("SCALP_MAX_NOTIONAL_X") or 1.0),
           "explore": (e("SCALP_EXPLORE") or "yes").lower() != "no" and c["mode"] in ("demo", "testnet")}
+    sc["min_day"] = max(0, min(10, int(e("SCALP_MIN_TRADES_DAY") or 2))) if c["mode"] in ("demo", "testnet") else 0
     if not (0 < sc["risk_pct"] <= 0.5):
         sys.exit("SCALP_RISK_PCT musi być w (0, 0.5]")
     if not (0 < sc["max_x"] <= c["max_lev"]):
@@ -479,7 +483,7 @@ class Live:
                 pnl = sum(float(x["closedPnl"]) for x in rows)
                 r = pnl / (t["qty"] * t["sd"]) if rows else None
                 row = {"ts": int(now_s), "sym": sym, "strat": t["strat"], "side": t["side"], "qty": t["qty"], "entry": t["entry"], "pnl": round(pnl, 4), "r": round(r, 3) if r is not None else None,
-                       "held_s": int(now_s - t["ts"]), "mode": self.c["mode"], "explore": t.get("explore", False)}
+                       "held_s": int(now_s - t["ts"]), "mode": self.c["mode"], "explore": t.get("explore", False), "forced": t.get("forced", False)}
                 with open(os.path.join(self.d, LEDGER), "a", encoding="utf-8") as f:
                     f.write(json.dumps(row, ensure_ascii=False) + "\n")
                 lv["day_r"] += r or 0.0
@@ -512,7 +516,7 @@ class Live:
             return f"dzienna strata {lv['day_r']:.1f}R: przerwa do końca dnia UTC"
         return None
 
-    def enter(self, lv, sym, strat, plan, mult, price, capital, pos, now_s):
+    def enter(self, lv, sym, strat, plan, mult, price, capital, pos, now_s, forced=False):
         if sym in lv["open"] or len(lv["open"]) >= self.sc["max_pos"] or lv["cool"].get(sym, 0) > now_s:
             return None
         if any(p["symbol"] == sym for p in pos):
@@ -533,7 +537,7 @@ class Live:
         self.api.ok("POST", "/v5/order/create", {"category": "linear", "symbol": sym, "side": "Buy" if sg == 1 else "Sell", "orderType": "Market", "qty": bt.fmt_qty(qty, step),
                                                  "stopLoss": bt.fmt_px(price - sg * plan["stop_dist"], tick), "takeProfit": bt.fmt_px(price + sg * plan["tp_dist"], tick),
                                                  "tpslMode": "Full", "positionIdx": 0, "orderLinkId": link})
-        lv["open"][sym] = {"strat": strat, "side": sg, "qty": round(qty, 8), "entry": price, "sd": plan["stop_dist"], "ts": now_s, "hold_s": plan["hold"] * BAR_S, "link": link, "explore": mult < 1}
+        lv["open"][sym] = {"strat": strat, "side": sg, "qty": round(qty, 8), "entry": price, "sd": plan["stop_dist"], "ts": now_s, "hold_s": plan["hold"] * BAR_S, "link": link, "explore": mult < 1, "forced": forced}
         lv["day_n"] += 1
         bt.log(f"[scalp {sym}] {strat} {'long' if sg == 1 else 'short'} {bt.fmt_qty(qty, step)} po ~{price:g}, stop {plan['stop_dist'] / price * 100:.2f}%, cel {plan['tp_dist'] / price * 100:.2f}%")
         return None
@@ -601,15 +605,17 @@ def cycle(d, c, sc, pub, live, s, now_s, new_bar, flow=None):
         block = f"rozpoznanie: limit {EXPLORE_MAX_TRADES} transakcji na dobę"
     if not block and fresh:
         for sym, sig in fresh.items():
-            for strat, plan in sig.items():
-                if strat in allowed and not vetoed(st, strat, sym):
-                    try:
-                        why = live.enter(lv, sym, strat, plan, allowed[strat], prices[sym], capital, pos, now_s)
-                        if why:
-                            notes.append(f"{sym} {strat}: {why}")
-                    except Exception as e:  # noqa: BLE001
-                        notes.append(f"{sym} {strat}: zlecenie odrzucone: {str(e)[:100]}")
-                    break
+            ok = [(strat, plan, allowed[strat], False) for strat, plan in sig.items() if strat in allowed and not vetoed(st, strat, sym)]
+            if not ok and sc.get("min_day") and lv["day_n"] < sc["min_day"] and lv["day_n"] < EXPLORE_MAX_TRADES:
+                best = max(sig, key=lambda k: st[k]["mean_r"])                 # wymuszona aktywność (demo): najlepsza w cieniu, połowa ryzyka
+                ok = [(best, sig[best], 0.5, True)]
+            for strat, plan, mult, forced in ok[:1]:
+                try:
+                    why = live.enter(lv, sym, strat, plan, mult, prices[sym], capital, pos, now_s, forced=forced)
+                    if why:
+                        notes.append(f"{sym} {strat}: {why}")
+                except Exception as e:  # noqa: BLE001
+                    notes.append(f"{sym} {strat}: zlecenie odrzucone: {str(e)[:100]}")
     rs = [x["r"] for x in led if x.get("r") is not None]
     real_by = {}
     for strat in STRATS:
@@ -618,7 +624,7 @@ def cycle(d, c, sc, pub, live, s, now_s, new_bar, flow=None):
             real_by[strat] = {"n": len(rows), "mean_r": round(_mean([r for _, r in rows]), 3), "t": round(tstat(rows), 2)}
     _write(os.path.join(d, OUT), {"ts": now_s, "mode": c["mode"], "symbols": sc["symbols"], "strategies": st, "allowed": allowed, "gate": how, "blocked": block,
                                   "gate_on": sorted(k for k in s["gate_on"] if k in STRATS), "brake": brake, "real_by": real_by,
-                                  "explore": sc["explore"], "risk_pct": sc["risk_pct"], "cost_pct": COST_PCT * 100, "min_stop_pct": MIN_STOP_PCT * 100,
+                                  "explore": sc["explore"], "min_day": sc.get("min_day", 0), "forced_today": sum(1 for x in lv["open"].values() if x.get("forced")) + sum(1 for x in led if x.get("forced") and time.strftime("%Y-%m-%d", time.gmtime(x.get("ts", 0))) == day), "risk_pct": sc["risk_pct"], "cost_pct": COST_PCT * 100, "min_stop_pct": MIN_STOP_PCT * 100,
                                   "open": [{"sym": k, **{f: v[f] for f in ("strat", "side", "qty", "entry", "ts")}} for k, v in lv["open"].items()],
                                   "shadow_open": len(sh["open"]), "day": {"n": lv["day_n"], "r": round(lv["day_r"], 2)},
                                   "real": {"n": len(rs), "mean_r": round(_mean(rs), 3), "total_r": round(sum(rs), 2), "pnl": round(sum(x.get("pnl") or 0 for x in led), 2), "last": led[-8:][::-1]},

@@ -303,6 +303,8 @@ miała średnią ≥ +0,05R w 17% okien po 30 transakcji (badanie: `docs/badania
 i tylko taką, która w cieniu nie traci wyraźnie (średnia ≥ −0,10R przy co najmniej 10 transakcjach). `SCALP_EXPLORE=no` wyłącza.
 Na koncie live zlecenia wymagają `SCALP_CONFIRM_LIVE=I_ACCEPT_THE_RISK` i przejścia bramki.
 
+**Wymuszona aktywność (tylko demo i testnet).** `SCALP_MIN_TRADES_DAY` (domyślnie 2, 0 wyłącza): gdy dziś było mniej transakcji niż minimum, scalper bierze świeży sygnał strategii z najlepszą średnią w cieniu, z połową ryzyka, nawet gdy bramka, weto pary i hamulec by go zatrzymały. To celowo handel strategiami bez dowodu: oczekiwana strata to ok. 0,04% kapitału na transakcję (ok. 2% miesięcznie przy 2 dziennie), a zysk to prawdziwe wykonanie i wyniki z demo. Limity konta, pauza, STOP i dzienny limit w R obowiązują. Na live wyłączona.
+
 **Wspólne limity konta.** Scalper stosuje dźwignię i kapitał ustawione w zakładce Bot (tak jak bot dzienny), pauzę z panelu oraz wyłączniki konta:
 dzienną stratę, stratę tygodniową i spadek kapitału od szczytu. Seria strat z rzędu dotyczy tylko bota dziennego i liczy się bez transakcji scalpera
 (scalper zamyka wiele małych pozycji dziennie; ma własną przerwę po stracie i własny dzienny limit w R). Pozycji scalpera bot dzienny nie zamyka.

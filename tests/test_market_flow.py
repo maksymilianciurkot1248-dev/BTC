@@ -248,7 +248,7 @@ class FlowStub:
 
 dd = tempfile.mkdtemp()
 cfg = {"mode": "demo", "max_capital": 0, "max_lev": 2.0}
-scf = sc.scalp_cfg(cfg, {}.get)
+scf = sc.scalp_cfg(cfg, {"SCALP_MIN_TRADES_DAY": "0"}.get)      # bez wymuszonej aktywności: sprawdzamy samą bramkę
 scf["symbols"] = ["BTCUSDT"]
 pub, ap = Pub(), Api()
 pub.bars["BTCUSDT"] = bars

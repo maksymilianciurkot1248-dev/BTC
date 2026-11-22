@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Dane użytkownika zapisywane na serwerze, żeby nie ginęły z przeglądarką i były widoczne na każdym urządzeniu (telefon, komputer).
 
-Trzy klucze (lista zamknięta, nic innego strona nie zapisze):
+Klucze (lista zamknięta, nic innego strona nie zapisze):
   zarobki         notatnik przychodów i kosztów (strona Zarobki)
   produkty_lista  lista kandydatów do odsprzedaży (strona Produkty)
   mentor_profile  profil dla mentora (strona Mentor)
+  alfred_tasks    zadania i priorytety dnia (strona Alfred)
+  alfred_habits   nawyki z odhaczeniami po dniach (strona Alfred)
+  alfred_goals    cele z postępem (strona Alfred)
+  alfred_journal  wieczorne przeglądy dnia (strona Alfred)
 Plik userdata.json leży w katalogu bota i wchodzi do kopii zapasowej (btc_backup.py). Nie zawiera kluczy ani haseł.
 
 Konflikty: każdy zapis ma znacznik czasu (ts, ms). Klient przysyła base_ts, czyli ts wersji, którą wczytał. Gdy na serwerze jest nowsza wersja
@@ -26,7 +30,8 @@ import btc_botcfg as bb  # noqa: E402  (zapis atomowy z prawami 640)
 
 FILE = "userdata.json"
 MAX_BODY = 300 * 1024
-LIMITS = {"zarobki": 256 * 1024, "produkty_lista": 128 * 1024, "mentor_profile": 16 * 1024}
+LIMITS = {"zarobki": 256 * 1024, "produkty_lista": 128 * 1024, "mentor_profile": 16 * 1024,
+          "alfred_tasks": 160 * 1024, "alfred_habits": 200 * 1024, "alfred_goals": 32 * 1024, "alfred_journal": 220 * 1024}
 _lock = threading.Lock()
 
 
@@ -92,7 +97,63 @@ def _clean_profile(v):
     return {k: _str(v.get(k), k, 500) for k in ("p_cap", "p_time", "p_risk", "p_skills", "p_goal")}
 
 
-CLEAN = {"zarobki": _clean_zarobki, "produkty_lista": _clean_lista, "mentor_profile": _clean_profile}
+def _date(v, name, empty_ok=False):
+    s = _str(v, name, 10)
+    if not s and empty_ok:
+        return ""
+    try:
+        datetime.date.fromisoformat(s)
+    except ValueError:
+        raise ValueError(f"{name}: zła data") from None
+    return s
+
+
+def _clean_tasks(v):
+    if not isinstance(v, list) or len(v) > 500:
+        raise ValueError("alfred_tasks: oczekiwano listy do 500 zadań")
+    out = []
+    for x in v:
+        if not isinstance(x, dict) or not _str(x.get("text"), "text", 200):
+            raise ValueError("alfred_tasks: zadanie bez treści")
+        dts = x.get("done_ts")
+        out.append({"t": int(_num(x.get("t"), "t", 0, 1e15)), "text": _str(x.get("text"), "text", 200), "date": _date(x.get("date"), "date", True),
+                    "done": x.get("done") is True, "top": x.get("top") is True, "done_ts": int(_num(dts, "done_ts", 0, 1e15)) if dts not in (None, "") else None})
+    return out
+
+
+def _clean_habits(v):
+    if not isinstance(v, dict) or not isinstance(v.get("habits"), list) or len(v["habits"]) > 30:
+        raise ValueError("alfred_habits: oczekiwano {habits: [...]} do 30 nawyków")
+    out = []
+    for h in v["habits"]:
+        if not isinstance(h, dict) or not _str(h.get("name"), "name", 60) or not isinstance(h.get("days"), list) or len(h["days"]) > 2000:
+            raise ValueError("alfred_habits: zły nawyk")
+        out.append({"id": _str(h.get("id"), "id", 20), "name": _str(h.get("name"), "name", 60), "days": sorted({_date(x, "days") for x in h["days"]})[-400:]})
+    return {"habits": out}
+
+
+def _clean_goals(v):
+    if not isinstance(v, list) or len(v) > 30:
+        raise ValueError("alfred_goals: oczekiwano listy do 30 celów")
+    out = []
+    for g in v:
+        if not isinstance(g, dict) or not _str(g.get("name"), "name", 100) or g.get("kind") not in ("manual", "zarobki"):
+            raise ValueError("alfred_goals: zły cel")
+        out.append({"t": int(_num(g.get("t"), "t", 0, 1e15)), "name": _str(g.get("name"), "name", 100), "kind": g["kind"], "target": _num(g.get("target"), "target", 0, 1e12, True),
+                    "current": _num(g.get("current"), "current", -1e12, 1e12, True), "unit": _str(g.get("unit"), "unit", 12), "due": _date(g.get("due"), "due", True)})
+    return out
+
+
+def _clean_journal(v):
+    if not isinstance(v, list) or len(v) > 400:
+        raise ValueError("alfred_journal: oczekiwano listy przeglądów")
+    out = [{"date": _date(x.get("date") if isinstance(x, dict) else None, "date"), "wins": _str(x.get("wins"), "wins", 500), "lesson": _str(x.get("lesson"), "lesson", 500),
+            "tomorrow": _str(x.get("tomorrow"), "tomorrow", 500)} for x in v]
+    return sorted(out, key=lambda e: e["date"])[-120:]
+
+
+CLEAN = {"zarobki": _clean_zarobki, "produkty_lista": _clean_lista, "mentor_profile": _clean_profile,
+         "alfred_tasks": _clean_tasks, "alfred_habits": _clean_habits, "alfred_goals": _clean_goals, "alfred_journal": _clean_journal}
 
 
 def _path(d):

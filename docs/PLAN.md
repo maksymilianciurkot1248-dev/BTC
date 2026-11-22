@@ -101,3 +101,6 @@ Jeśli warunek 2 nie zostanie spełniony, system zostaje narzędziem analityczny
 - Nie dodajemy strategii ani wskaźników bez testu poza próbą.
 - Nie zmieniamy parametrów w trakcie zbierania dowodów (punkt 4).
 - Nie zwiększamy dźwigni ponad x2 ani ryzyka na pozycję ponad limity kodu.
+
+## 9. Alfred (plan dnia i asystent)
+Osobny wątek rozwoju poza botem: strona `alfred.html` z kalendarzem Google, zadaniami, nawykami, celami, porannym briefingiem i czatem. Co działa, źródła, ocena narzędzi i plan A1-A7: `ALFRED.md`. Instrukcja podłączenia kalendarza: `vps/INSTRUKCJA_VPS.md`, sekcja „Alfred”.

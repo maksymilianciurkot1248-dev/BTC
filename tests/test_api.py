@@ -145,5 +145,18 @@ code,r=call('/api/backup'); assert code==200 and r['configured'] is False and r[
 json.dump({"ts":int(time.time())-100,"ok":True,"name":"btc-20261120-0350.tar.gz","size":123456,"files":12,"archives":5,"last_ok_ts":int(time.time())-100,"skipped":[],"warnings":[],"remote":"gdrive:btc-backup"},open(os.path.join(botd,'backup_status.json'),'w'))
 code,r=call('/api/backup'); assert code==200 and 90<r['age_s']<130 and r['archives']==5 and r['name'].startswith('btc-'), r
 print('backup http ok')
+# --- Alfred: kalendarz i briefing
+code,r=call('/api/agenda'); assert code==200 and r['events']==[] and r['age_s'] is None and not r.get('configured'), r
+json.dump({"ts":int(time.time())-60,"ts_ok":int(time.time())-60,"ok":True,"configured":True,"tz":"Europe/Warsaw","calendars":[{"name":"Dom","ok":True,"n":1,"error":None}],
+           "events":[{"id":"a1","title":"Trening","s":int(time.time())+3600,"e":int(time.time())+7200,"all_day":False,"day":"2026-11-23","end_day":"2026-11-23","loc":"","busy":True,"cal":"Dom"}]},open(os.path.join(botd,'agenda.json'),'w'))
+code,r=call('/api/agenda'); assert code==200 and r['configured'] and r['events'][0]['title']=='Trening' and 50<r['age_s']<90, r
+code,r=call('/api/alfred'); assert code==200 and r['briefing']=={} and set(r['prompts'])>={'morning','tomorrow','week','review','radar'} and 'ready' in r['ai'], r
+json.dump({"date":"2026-11-23","ts":int(time.time()),"kind":"ai","text":"Dzień dobry"},open(os.path.join(botd,'alfred_briefing.json'),'w'))
+code,r=call('/api/alfred'); assert code==200 and r['briefing']['text']=='Dzień dobry' and r['briefing']['kind']=='ai', r
+for k,v in (("alfred_tasks",[{"t":1,"text":"Raport","date":"2026-11-23","done":False,"top":True,"done_ts":None}]),("alfred_habits",{"habits":[{"id":"h","name":"Ruch","days":["2026-11-22"]}]}),("alfred_goals",[{"t":1,"name":"Cel","kind":"manual","target":3,"current":1,"unit":"szt.","due":""}]),("alfred_journal",[{"date":"2026-11-22","wins":"a","lesson":"b","tomorrow":"c"}])):
+    code,r=call('/api/userdata','POST',{"key":k,"value":v,"base_ts":0},X); assert code==200, (k,r)
+    code,r=call('/api/userdata?key='+k); assert code==200 and r['found'], (k,r)
+code,r=call('/api/userdata','POST',{"key":"alfred_tasks","value":[{"t":1,"text":"","date":"","done":False,"top":False}],"base_ts":0},X); assert code in (400,409), r
+print('alfred http ok')
 srv.shutdown(); stop.set();
 print('api ok')

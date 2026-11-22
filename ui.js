@@ -153,6 +153,7 @@ function auto() {
 /* ---- nawigacja: jeden pasek na wszystkich stronach, menu rozwijane, motyw, zwijanie sekcji ---- */
 const NAV = [
   {href: 'index.html', label: 'Panel', hint: 'Bitcoin na żywo'},
+  {href: 'alfred.html', label: 'Alfred', hint: 'Plan dnia, kalendarz, nawyki i asystent'},
   {label: 'Analiza', items: [
     {href: 'rynki.html', label: 'Rynki', hint: 'Waluty, złoto, surowce, spółki'},
     {href: 'sytuacje.html', label: 'Sytuacje', hint: 'Co wpływa na kierunek ruchu'},

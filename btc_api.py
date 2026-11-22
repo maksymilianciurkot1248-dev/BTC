@@ -13,6 +13,8 @@ GET  /api/account                                     moje konto Bybit: saldo, p
 GET  /api/shadow                                      tryb cienia: wyniki obu strategii na żywo, bez zleceń
 GET  /api/learn                                       mapa przewagi, dziennik nauki, historia decyzji (dopuszczone/wycofane) i kwarantanny aktywów
 GET  /api/ai/chat[?id=]                               asystent AI: gotowość albo wynik zadania; POST /api/ai/chat {"messages":[...]} zadaje pytanie (klucz w ai.env)
+GET  /api/agenda                                      kalendarz (iCal, tylko odczyt): wydarzenia na najbliższe dni, stan i wiek danych (bez adresu kalendarza)
+GET  /api/alfred                                      Alfred: ostatni briefing, gotowe polecenia (prompty) i stan asystenta AI (rola "alfred" w /api/ai/chat)
 GET  /api/backup                                      kopia zapasowa na Dysk Google: ostatni wynik, wiek, rozmiar, czy rclone jest skonfigurowany
 GET  /api/userdata?key=zarobki|produkty_lista|mentor_profile    dane użytkownika zapisane na serwerze; POST /api/userdata {"key","value","base_ts"} (409 przy zapisie ze starej wersji)
 GET  /api/flow                                        rynek na żywo: przepływ zleceń i pozycjonowanie (wolumen agresywny, konta long/short, premia), wskaźnik łączny i jego trafność
@@ -242,6 +244,14 @@ def make_handler(state):
                         code, obj = btc_ai.result(state.bot_dir, q["id"][0])
                         return self._send(code, obj)
                     return self._send(200, btc_ai.info(state.bot_dir))
+                if u.path == "/api/agenda":
+                    import btc_agenda
+                    a = btc_agenda.read(state.bot_dir)
+                    return self._send(200, {**a, "age_s": round(time.time() - a["ts_ok"], 1) if a.get("ts_ok") else None, "last_try_age_s": round(time.time() - a["ts"], 1) if a.get("ts") else None})
+                if u.path == "/api/alfred":
+                    import btc_ai
+                    import btc_alfred
+                    return self._send(200, {"briefing": btc_alfred.read_briefing(state.bot_dir), "prompts": btc_alfred.PROMPTS, "ai": btc_ai.info(state.bot_dir)})
                 if u.path == "/api/backup":
                     import btc_backup
                     st = btc_backup.read_status(state.bot_dir)

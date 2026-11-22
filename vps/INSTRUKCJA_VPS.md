@@ -393,3 +393,40 @@ Sumy SHA-256 plików są w `MANIFEST.json` wewnątrz archiwum.
 - **Szyfrowanie (opcjonalnie).** Dane o transakcjach i zarobkach leżą na Dysku jawnie (to Twoje konto). Jeśli chcesz je szyfrować, w `rclone config` dodaj zdalny typu `crypt` wskazujący na `gdrive:btc-backup-szyfr` i ustaw w `/opt/btc/backup.env` `BACKUP_REMOTE=nazwa_crypt:`. Hasło zapisz w bezpiecznym miejscu: bez niego kopii nie odzyskasz.
 - **Miejsce.** Archiwum to zwykle dziesiątki megabajtów, więc 5 TB nie jest ograniczeniem; wartość to długa historia kopii i miejsce na ewentualne większe dane badawcze później. Miejsce na koncie Google dzielą Dysk, Gmail i Zdjęcia.
 - Zmiana godziny kopii: `sudo systemctl edit btc-backup.timer`. Wyłączenie: `sudo systemctl disable --now btc-backup.timer`.
+
+## Alfred: plan dnia, kalendarz i asystent (alfred.html)
+
+Strona `alfred.html` (menu „Alfred”) to Twój codzienny plan: powitanie, poranny briefing, kalendarz z wolnymi oknami, zadania z priorytetami, nawyki, cele, wieczorny przegląd i czat z asystentem (rola `alfred` w `btc_ai.py`). Opis, źródła i plan rozwoju: `docs/ALFRED.md`.
+Dane zadań, nawyków, celów i przeglądów leżą w `userdata.json` (kopia na Dysk Google), kalendarz w `agenda.json`, ostatni briefing w `alfred_briefing.json`.
+
+### Co działa bez żadnej konfiguracji
+Zadania, nawyki, cele i przegląd dnia. Kalendarz i briefing z AI wymagają kroków poniżej.
+
+### Podłączenie Kalendarza Google (tylko odczyt, bez OAuth)
+1. Kalendarz Google na komputerze → Ustawienia (zębatka) → Ustawienia → po lewej wybierz swój kalendarz (sekcja „Ustawienia moich kalendarzy”) → „Integrowanie kalendarza” → skopiuj **„Tajny adres w formacie iCal”**.
+   To **sekret**: kto go ma, czyta cały kalendarz. Nie wklejaj go do rozmów, wiadomości ani repozytorium. Gdy wycieknie, w tym samym miejscu zresetuj adres.
+2. Wpisz go na serwerze do `/opt/btc/alfred.env` (plik ma prawa 640 i jest poza kopią zapasową):
+
+       ssh -t -i "C:\Users\maksy\Downloads\ssh-key-2026-11-01.key" ubuntu@141.147.29.90 "sudo nano /opt/btc/alfred.env"
+
+   Ustaw linię `AGENDA_ICS_URLS=Dom|https://calendar.google.com/calendar/ical/.../basic.ics` (nazwa przed `|` jest opcjonalna; kilka kalendarzy po przecinku, do 5; tylko https). Zapisz: Ctrl+O, Enter, wyjdź: Ctrl+X.
+3. Odśwież teraz i sprawdź (pokazuje liczbę wydarzeń na kalendarz, bez adresów):
+
+       ssh -i "C:\Users\maksy\Downloads\ssh-key-2026-11-01.key" ubuntu@141.147.29.90 "sudo -u btc BTC_BOT_DIR=/opt/btc /opt/btc/venv/bin/python /opt/btc/btc_agenda.py"
+
+   Dalej kalendarz odświeża się sam co 15 minut (`btc-agenda.timer`). Okno: od wczoraj do 15 dni naprzód. Opisów i uczestników wydarzeń nie czytamy.
+4. **Zmierz opóźnienie:** dodaj w Kalendarzu Google wydarzenie, odczekaj i zobacz, po jakim czasie pojawi się w Alfredzie (Google nie podaje czasu odświeżania adresu iCal).
+
+### Poranny briefing i wieczorne przypomnienie
+- `btc-alfred-morning.timer` (07:00 czasu Europe/Warsaw): briefing z AI (wymaga `ANTHROPIC_API_KEY` w `ai.env`) zapisany na stronie i wysłany na Telegram. Bez klucza lub przy awarii AI powstaje briefing zwykły z tych samych danych (z dopiskiem, dlaczego bez AI).
+- `btc-alfred-evening.timer` (20:30): krótkie przypomnienie o niedokończonych zadaniach, nawykach i przeglądzie dnia; cisza, gdy nie ma o czym przypominać.
+- Ustawienia w `alfred.env`: `ALFRED_MORNING=no` (briefing bez AI), `ALFRED_TELEGRAM=no` (bez Telegrama), `ALFRED_URL=https://twoja-domena/alfred.html` (link w przypomnieniu), `AGENDA_TZ` (strefa, domyślnie Europe/Warsaw).
+- Test od razu:
+
+      ssh -i "C:\Users\maksy\Downloads\ssh-key-2026-11-01.key" ubuntu@141.147.29.90 "sudo -u btc BTC_BOT_DIR=/opt/btc /opt/btc/venv/bin/python /opt/btc/btc_alfred.py --morning --force"
+
+- Sprawdzenie harmonogramu: `systemctl list-timers 'btc-*' --no-pager`. Dziennik: `sudo journalctl -u btc-alfred-morning -u btc-agenda -n 30 --no-pager`.
+- Wiadomości Telegram wymagają `TELEGRAM_BOT_TOKEN` i `TELEGRAM_CHAT_ID` w `trader.env` (jak powiadomienia bota).
+
+### Czat, radar i koszty
+Czat z Alfredem używa tego samego klucza i usługi `btc-ai` co asystent w zakładce Bot i mentor. Przycisk „Radar narzędzi” szuka w internecie (płatne wyszukiwanie, wspólny dobowy limit `MENTOR_MAX_SEARCH_PER_DAY`, domyślnie 10). Zwykłe pytania i briefing nie zużywają tego limitu. Do modelu trafiają tytuły i miejsca wydarzeń, zadania, nawyki, cele, skrót finansów i bota oraz ostatnie przeglądy (bez opisów wydarzeń, uczestników, kluczy i adresu kalendarza).

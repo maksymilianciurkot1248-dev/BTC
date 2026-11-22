@@ -4,7 +4,7 @@ Prywatny system analizy i bot handlujący kontraktami na Bybit (tryby: dryrun, t
 Kluczy i plików `.env`, `trader.env`, `ai.env` tu nie ma i nie może być: zostają tylko na serwerze.
 
 ## Układ
-- `btc_*.py` — program (trader, scalper, nauka, laboratorium, API panelu, asystent AI, kolektor danych, kopia zapasowa na Dysk Google, dane użytkownika)
+- `btc_*.py` — program (trader, scalper, nauka, laboratorium, API panelu, asystent AI, kolektor danych, kopia zapasowa na Dysk Google, dane użytkownika, kalendarz i Alfred)
 - `*.html`, `ui.css`, `ui.js` — panel
 - `install_bot.sh` — instalator aktualizacji (pliki, usługi systemd)
 - `btc-update` — aktualizacja serwera z tego repozytorium
@@ -12,6 +12,7 @@ Kluczy i plików `.env`, `trader.env`, `ai.env` tu nie ma i nie może być: zost
 - `vps/` — pierwsza instalacja serwera i instrukcja
 - `docs/ALGORYTM.md` — dokładny opis działania obu botów (reguły, progi, kolejność decyzji)
 - `docs/PLAN.md` — plan działania i warunki przed prawdziwymi pieniędzmi
+- `docs/ALFRED.md` — Alfred: plan dnia, kalendarz, asystent (co działa, źródła, plan rozwoju)
 - `docs/badania_*` — badania z wynikami (także negatywnymi) i skryptami do ich powtórzenia
 
 ## Aktualizacja serwera

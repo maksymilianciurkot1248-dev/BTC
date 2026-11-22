@@ -15,7 +15,7 @@ const PATHS = {
   eye: 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z' + C(12, 12, 3), pause: 'M8 5v14M16 5v14', candles: 'M7 4v3M7 17v3M5 7h4v10H5zM17 2v4M17 16v4M15 6h4v10h-4z',
   wallet: 'M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l12-3v3M17 13.5h2', globe: C(12, 12, 9) + 'M3 12h18M12 3c3.5 3.5 3.5 14.5 0 18M12 3c-3.5 3.5-3.5 14.5 0 18',
   sparkles: 'M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2zM19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z', knife: 'M5 19L19 5l-1 8-8 6zM4 20l3-3', bell: 'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4',
-  home: 'M3 11l9-8 9 8M5 10v10h14V10', moon: 'M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z', sun: C(12, 12, 4) + 'M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5', contrast: C(12, 12, 9) + 'M12 3v18', coins: C(9, 9, 6) + 'M15 9.5a6 6 0 1 1-5.5 8.5M9 7v4'
+  home: 'M3 11l9-8 9 8M5 10v10h14V10', dots: 'M5 12h.01M12 12h.01M19 12h.01', bow: 'M12 12L4 7v10zM12 12l8-5v10zM10.5 10h3v4h-3z', moon: 'M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z', sun: C(12, 12, 4) + 'M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5', contrast: C(12, 12, 9) + 'M12 3v18', coins: C(9, 9, 6) + 'M15 9.5a6 6 0 1 1-5.5 8.5M9 7v4'
 };
 const el = (tag, attrs, ...kids) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs || {})) if (v != null) e.setAttribute(k, v); kids.forEach(c => c && e.append(c)); return e; };
 const html = (tag, cls, ...kids) => { const e = document.createElement(tag); if (cls) e.className = cls; kids.forEach(c => c != null && e.append(c.nodeType ? c : document.createTextNode(String(c)))); return e; };
@@ -152,10 +152,10 @@ function auto() {
 
 /* ---- nawigacja: jeden pasek na wszystkich stronach, menu rozwijane, motyw, zwijanie sekcji ---- */
 const NAV = [
-  {href: 'alfred.html', label: 'Dziś', hint: 'Plan dnia, kalendarz, zadania, nawyki i asystent'},
-  {href: 'zarabiaj.html', label: 'Zarabiaj', hint: 'Pomysły, oferty, transakcje i wyniki'},
-  {href: 'bot.html', label: 'Bot', hint: 'Automat handlujący: status, wyniki, ustawienia'},
-  {label: 'Rynek', items: [
+  {href: 'alfred.html', label: 'Alfred', hint: 'Plan dnia i asystent głosowy', icon: 'bow'},
+  {href: 'zarabiaj.html', label: 'Zarabiaj', hint: 'Oferty, transakcje i wyniki', icon: 'wallet'},
+  {href: 'bot.html', label: 'Bot', hint: 'Automat handlujący: status, wyniki, ustawienia', icon: 'activity'},
+  {label: 'Rynek', icon: 'dots', items: [
     {href: 'index.html', label: 'Panel Bitcoin', hint: 'Bitcoin na żywo'},
     {href: 'bybit.html', label: 'Mój Bybit', hint: 'Saldo, pozycje i statystyki Twojego konta'},
     {href: 'okazje.html', label: 'Okazje', hint: 'Skaner okazji i raport pozycji'},
@@ -274,7 +274,7 @@ function navbar() {
     g.append(b, menu); tabs.append(g);
   }
   const right = html('div', 'ui-right');
-  const fold = html('button', 'ui-ibtn'); fold.type = 'button'; fold.title = 'Zwiń lub rozwiń wszystkie sekcje'; fold.setAttribute('aria-label', 'Zwiń lub rozwiń wszystkie sekcje'); fold.append(icon('layers'));
+  const fold = html('button', 'ui-ibtn ui-fold'); fold.type = 'button'; fold.title = 'Zwiń lub rozwiń wszystkie sekcje'; fold.setAttribute('aria-label', 'Zwiń lub rozwiń wszystkie sekcje'); fold.append(icon('layers'));
   fold.addEventListener('click', () => { const cards = [...document.querySelectorAll('.card.foldable')]; const anyOpen = cards.some(c => !c.classList.contains('collapsed')); cards.forEach(c => setFold(c, anyOpen)); });
   const theme = html('button', 'ui-ibtn'); theme.type = 'button'; theme.setAttribute('aria-label', 'Zmień motyw');
   const label = () => { const t = sget('btc-theme') || 'auto'; theme.title = 'Motyw: ' + (THEMES.find(x => x[0] === t) || THEMES[0])[1]; theme.replaceChildren(icon(t === 'dark' ? 'moon' : t === 'light' ? 'sun' : 'contrast')); };
@@ -285,6 +285,17 @@ function navbar() {
   document.addEventListener('click', e => { if (!nav.contains(e.target)) { closeAll(null); } });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAll(null); nav.classList.remove('open'); } });
   document.body.prepend(nav); document.body.classList.add('ui-has-nav');
+  /* pasek dolny na telefonie: trzy główne miejsca i „Rynek” z resztą stron */
+  const bottom = html('nav', 'ui-bottom'); bottom.setAttribute('aria-label', 'Nawigacja dolna');
+  for (const t of NAV) {
+    if (t.href) { const a = html('a', 'ui-bt' + (cur === t.href ? ' on' : '')); a.href = t.href; a.append(icon(t.icon), html('span', '', t.label)); if (cur === t.href) a.setAttribute('aria-current', 'page'); bottom.append(a); continue; }
+    const b = html('button', 'ui-bt' + (t.items.some(i => i.href === cur) ? ' on' : '')), panel = html('div', 'ui-more'); b.type = 'button'; b.setAttribute('aria-haspopup', 'true'); b.setAttribute('aria-expanded', 'false'); b.append(icon(t.icon), html('span', '', t.label));
+    for (const it of t.items) { const a = html('a', 'ui-item' + (cur === it.href ? ' on' : '')); a.href = it.href; a.append(html('b', '', it.label), html('small', '', it.hint)); panel.append(a); }
+    b.addEventListener('click', e => { e.stopPropagation(); const o = !panel.classList.contains('open'); panel.classList.toggle('open', o); b.setAttribute('aria-expanded', String(o)); });
+    document.addEventListener('click', e => { if (!panel.contains(e.target)) { panel.classList.remove('open'); b.setAttribute('aria-expanded', 'false'); } });
+    bottom.append(b, panel);
+  }
+  document.body.append(bottom);
 }
 /* strony miały własne przyciski przejść w nagłówkach: zastępuje je pasek nawigacji */
 function tidyHeaders() {

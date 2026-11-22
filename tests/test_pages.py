@@ -55,17 +55,25 @@ check(len(hrefs) >= 8 and hrefs[:3] == ["alfred.html", "zarabiaj.html", "bot.htm
 for h in hrefs:
     check(os.path.isfile(os.path.join(ROOT, h)) and h in WEBF | setup_web, f"pozycja nawigacji {h} istnieje i jest wdrażana")
 zar = read("zarabiaj.html")
-for stub, tab in (("produkty.html", "znajdz"), ("mentor.html", "pomysly"), ("zarobki.html", "transakcje")):
+for stub, target in (("produkty.html", "zarabiaj.html#nowa"), ("mentor.html", "zarabiaj.html"), ("zarobki.html", "zarabiaj.html#wyniki")):
     s = read(stub)
-    check(f"zarabiaj.html#{tab}" in s and f'id="tab-{tab}"' in zar, f"{stub} przekierowuje na istniejącą zakładkę {tab}")
+    check(target in s and 'http-equiv="refresh"' in s and "location.replace" in s, f"{stub} przekierowuje na {target}")
     check(len(s) < 1200 and "<script src" not in s, f"{stub} to tylko przekierowanie, bez własnej logiki")
+check("h === 'nowa'" in zar and "h === 'wyniki'" in zar, "Zarabiaj obsługuje #nowa (kreator) i #wyniki (arkusz) z przekierowań")
+check('role="tab"' not in zar and "role: 'tab'" not in zar, "Zarabiaj nie ma zakładek (jedna lista ofert i arkusze)")
 for page in sorted(html):
     s = read(page)
-    for ref in re.findall(r'(?:src|href)="([a-z_\.]+\.(?:js|css|svg))"', s):
+    for ref in re.findall(r'(?:src|href)="([a-z_\.\-]+\.(?:js|css|svg))"', s):
         check(os.path.isfile(os.path.join(ROOT, ref)), f"{page}: brak pliku {ref}")
+        check(ref in WEBF | setup_web, f"{page}: plik {ref} nie jest wdrażany przez żaden instalator (strona nie działałaby na serwerze)")
     for ref in re.findall(r'href="([a-z_]+\.html)(?:#[a-z]+)?"', s):
         check(os.path.isfile(os.path.join(ROOT, ref)), f"{page}: odnośnik do nieistniejącej strony {ref}")
-check("zarabiaj.html#transakcje" in read("alfred.html"), "Dziś linkuje do potoku ofert")
+check('href="zarabiaj.html"' in read("alfred.html"), "Alfred linkuje do Zarabiaj (linijka o pieniądzach)")
+for page in ("alfred.html", "zarabiaj.html"):
+    sp = read(page)
+    for need in ("intent.js", "assistant.js", "calm.js", "calm.css"):
+        check(need in sp, f"{page} ładuje {need}")
+    check('<body class="calm">' in sp and "Alfred.mount" in sp, f"{page} używa sceny asystenta i stylu calm")
 
 # ----------------------------------------------------------------- 3. składnia skryptów
 node = shutil.which("node")
@@ -78,8 +86,9 @@ if node:
                 f.write(m.group(1))
             r = subprocess.run([node, "--check", p], capture_output=True, text=True)
             check(r.returncode == 0, f"{page}: skrypt {i} ma błąd składni: {r.stderr[:300]}")
-    r = subprocess.run([node, "--check", os.path.join(ROOT, "ui.js")], capture_output=True, text=True)
-    check(r.returncode == 0, f"ui.js: błąd składni: {r.stderr[:300]}")
+    for f in ("ui.js", "intent.js", "assistant.js", "calm.js"):
+        r = subprocess.run([node, "--check", os.path.join(ROOT, f)], capture_output=True, text=True)
+        check(r.returncode == 0, f"{f}: błąd składni: {r.stderr[:300]}")
 
     # ----------------------------------------------------------------- 4. UD.merge i UD.sync na atrapie serwera
     a = ui.index("const UD = {")

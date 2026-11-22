@@ -2,421 +2,394 @@
 <html lang="pl" data-theme="auto">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<title>Dziś</title>
+<title>Alfred</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="ui.css">
+<link rel="stylesheet" href="calm.css">
 <script src="ui.js"></script>
-<style>
-:root{--bg:#EDF0F4;--card:#fff;--card2:#F5F7FA;--line:#DCE2E9;--ink:#111D29;--muted:#5B6978;--accent:#E8830C;--bull:#12805A;--bear:#C1334A;--warn:#B7791F;--sans:"Segoe UI Variable","Segoe UI",system-ui,sans-serif}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0F16;--card:#111A25;--card2:#16212E;--line:#223142;--ink:#E8EEF4;--muted:#93A1B1;--accent:#F7A234;--bull:#3DDC97;--bear:#FF6B81;--warn:#E6B450}}
-:root[data-theme="dark"]{--bg:#0A0F16;--card:#111A25;--card2:#16212E;--line:#223142;--ink:#E8EEF4;--muted:#93A1B1;--accent:#F7A234;--bull:#3DDC97;--bear:#FF6B81;--warn:#E6B450}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
-.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 90px}
-h1,h2,h3{margin:0} h2{font-size:1.05rem;margin-bottom:4px} h3{font-size:.84rem;color:var(--muted);margin:12px 0 4px;font-weight:600}
-a{color:var(--accent)} .sub{color:var(--muted);font-size:.85rem;margin:0 0 10px} .note{color:var(--muted);font-size:.8rem;margin:8px 0 0} .mut{color:var(--muted)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
-.hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:20px;padding:18px 22px 14px;margin-bottom:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 13%,var(--card)),var(--card) 60%)}
-.hero:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--accent)}
-.hud{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
-.hello{font-size:1.6rem;font-weight:700;line-height:1.2} .date{color:var(--muted);font-size:.95rem} .date::first-letter{text-transform:uppercase}
-.clock{font-variant-numeric:tabular-nums;font-size:2.6rem;font-weight:300;letter-spacing:.02em;line-height:1}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.chip{display:inline-block;padding:4px 12px;border-radius:999px;font-size:.78rem;border:1px solid var(--line);background:var(--card);color:var(--ink)}
-.chip.ok{border-color:var(--bull);color:var(--bull)}
-.alert{display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:8px 14px;font-size:.86rem;margin-bottom:8px;border:1px solid var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
-.alert.bad{border-color:var(--bear);background:color-mix(in srgb,var(--bear) 12%,transparent)} .alert b{flex:none}
-.next{margin-bottom:14px;border-left:4px solid var(--accent)} .next .lab{font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.next .big{font-size:1.45rem;font-weight:700;line-height:1.25;margin:2px 0} .next .why{color:var(--muted);font-size:.92rem}
-.ask{margin-bottom:14px}
-#chatHist{margin-top:8px}
-.cols{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;margin-bottom:14px} .col{display:flex;flex-direction:column;gap:14px;min-width:0}
-@media (max-width:860px){.cols{grid-template-columns:1fr}.col{display:contents}#plan{order:1}#tasks{order:2}#habits{order:3}#money{order:4}}
-input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--ink);font:inherit;font-size:.9rem}
-textarea{min-height:56px;resize:vertical} label{display:block;font-size:.76rem;color:var(--muted)}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap} .row>.grow{flex:1;min-width:130px}
-.btn{display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:.84rem;cursor:pointer;text-decoration:none}
-.btn.p{background:var(--accent);border-color:var(--accent);color:#fff} .btn.sm{padding:3px 10px;font-size:.76rem} .btn:disabled{opacity:.5;cursor:default}
-.tabs{display:flex;gap:4px;margin:8px 0 6px} .tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:4px 12px;border-radius:999px;font:inherit;font-size:.78rem;cursor:pointer}
-.tabs button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
-.item{display:flex;gap:10px;align-items:center;padding:7px 2px;border-bottom:1px solid var(--line);font-size:.9rem} .item:last-child{border-bottom:0}
-.item input[type=checkbox]{width:18px;height:18px;flex:none;margin:0} .item .t{flex:1 1 140px;min-width:0;overflow-wrap:anywhere} .item.done .t{text-decoration:line-through;color:var(--muted)}
-.star{border:0;background:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:0 4px} .star.on{color:var(--accent)}
-.x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 4px} .x:hover{color:var(--bear)}
-.badge{font-size:.72rem;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap} .badge.late{border-color:var(--bear);color:var(--bear)}
-.tl{display:flex;gap:10px;padding:6px 8px;font-size:.88rem;border-left:3px solid var(--line);margin:3px 0;align-items:center;flex-wrap:wrap}
-.tl .h{flex:none;width:96px;font-variant-numeric:tabular-nums;color:var(--muted)} .tl .t{flex:1 1 140px;min-width:0;overflow-wrap:anywhere}
-.tl.event{border-left-color:#4C8BF5;background:color-mix(in srgb,#4C8BF5 7%,transparent)} .tl.task{border-left-color:var(--accent)} .tl.past{opacity:.5} .tl.now{border-left-width:5px;font-weight:600}
-.free{font-size:.8rem;color:var(--bull);margin:6px 0 0} .sumline{font-size:.8rem;color:var(--muted);margin:2px 0 6px}
-.dots{display:flex;gap:5px} .dot{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--card2);color:var(--muted);font:inherit;font-size:.68rem;cursor:pointer;padding:0}
-.dot.on{background:var(--bull);border-color:var(--bull);color:#fff} .dot.today{outline:2px solid var(--accent);outline-offset:1px}
-.bar{height:10px;background:var(--card2);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:6px 0 2px} .bar i{display:block;height:100%;background:var(--bull)}
-.kv{display:flex;gap:10px;flex-wrap:wrap} .kv div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:110px} .kv b{display:block;font-size:1.05rem} .kv span{font-size:.72rem;color:var(--muted)}
-#chat{display:flex;flex-direction:column;gap:8px;margin:10px 0;max-height:340px;overflow-y:auto}
-.m{padding:9px 13px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.9rem;max-width:94%} .m.u{align-self:flex-end;background:color-mix(in srgb,var(--accent) 18%,transparent)} .m.a{align-self:flex-start;background:var(--card2);border:1px solid var(--line)}
-.brief{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.9rem;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:8px 0 0}
-details.card>summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px} details.card>summary::-webkit-details-marker{display:none} details.card>summary:after{content:"▾";color:var(--muted);flex:none} details.card[open]>summary:after{content:"▴"}
-details.more{margin-bottom:14px} .wk{display:flex;gap:8px;align-items:flex-end;height:96px;margin:8px 0} .wk div{flex:1;text-align:center;font-size:.7rem;color:var(--muted)} .wk i{display:block;background:var(--bull);border-radius:6px 6px 0 0;margin:0 auto;width:70%;min-height:2px}
-.prop{border:1px dashed var(--accent);border-radius:12px;padding:10px 12px;margin-top:8px} .prop label{display:flex;gap:8px;align-items:center;font-size:.88rem;color:var(--ink);padding:3px 0}
-#focus{position:fixed;left:0;right:0;bottom:0;z-index:40;display:none;padding:10px 16px;background:var(--card);border-top:2px solid var(--accent);box-shadow:0 -6px 24px rgba(0,0,0,.18)}
-#focus.on{display:block} #focus .in{max-width:1100px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap} #focus .tm{font-variant-numeric:tabular-nums;font-size:1.5rem;font-weight:600} #focus.end{background:color-mix(in srgb,var(--accent) 18%,var(--card))}
-.warnbox{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid var(--warn);border-radius:12px;padding:9px 13px;font-size:.84rem;margin-bottom:12px}
-.toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:.84rem;z-index:50;max-width:90vw}
-</style>
+<script src="intent.js"></script>
+<script src="assistant.js"></script>
+<script src="calm.js"></script>
 </head>
-<body>
-<div class="wrap">
-<div class="hero" id="hero">
-  <div class="hud"><div><div class="hello" id="hello">Dzień dobry</div><div class="date" id="date"></div></div><div class="clock" id="clock"></div></div>
-  <div class="chips" id="chips"></div>
-</div>
-<div id="banner"></div>
-<div id="alerts"></div>
-<section class="card next" id="next"></section>
-<div class="cols">
-  <div class="col"><section class="card" id="plan"></section><section class="card" id="habits"></section></div>
-  <div class="col"><section class="card" id="tasks"></section><section class="card" id="money"></section></div>
-</div>
-<section class="card ask" id="ask"></section>
-<details class="card more" id="more"><summary>Cele, przegląd dnia i tydzień w liczbach</summary><div id="moreBody"></div></details>
-<details class="card more" id="systems"><summary>Systemy i podpowiedzi</summary><div id="sysBody"></div></details>
-</div>
-<div id="focus" role="status"></div>
+<body class="calm">
+<main class="c-wrap">
+  <div id="banner"></div>
+  <section id="stage"></section>
+  <div class="c-grid">
+    <section class="pane" id="plan" aria-label="Plan dnia"></section>
+    <div class="c-col">
+      <section class="pane" id="habits" aria-label="Nawyki"></section>
+      <a class="m-line" id="money" href="zarabiaj.html" aria-label="Pieniądze: otwórz Zarabiaj"></a>
+      <section class="pane" id="alerts" aria-label="Uwagi" hidden></section>
+      <button class="c-more-btn" id="moreBtn" type="button">Więcej: cele, przegląd dnia, tydzień, głos</button>
+    </div>
+  </div>
+</main>
+<div class="f-bar" id="focus" role="status" aria-live="polite"></div>
 <script>
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
-const el = (t, a, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a || {})) { if (typeof v === 'function' && n.startsWith('on')) e.addEventListener(n.slice(2), v); else if (v != null && v !== false) e.setAttribute(n, v === true ? '' : v); } for (const c of k) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
+const el = (t, a, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a || {})) { if (typeof v === 'function' && n.startsWith('on')) e.addEventListener(n.slice(2), v); else if (v != null && v !== false) e.setAttribute(n, v === true ? '' : v); } for (const c of k.flat(Infinity)) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
 const nf = (v, d = 0) => (v == null || Number.isNaN(v)) ? 'n/d' : new Intl.NumberFormat('pl-PL', {minimumFractionDigits: d, maximumFractionDigits: d}).format(v);
-const num = v => nf(v, Number.isInteger(v) ? 0 : 1);
-const zl = v => (v < 0 ? '−' : '') + nf(Math.abs(v), Number.isInteger(v) ? 0 : 2) + ' zł';
+const zl = v => v == null ? 'n/d' : (v < 0 ? '−' : '') + nf(Math.abs(v), Math.abs(v - Math.round(v)) < 0.005 ? 0 : 2) + ' zł';
 const pad = n => String(n).padStart(2, '0');
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const hm = ts => { const d = new Date(ts * 1000); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const dur = m => m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? ' ' + m % 60 + ' min' : ''}` : `${m} min`;
+const plural = (n, a, b, c) => n === 1 ? a : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? b : c;
+const sentence = s => { s = String(s || '').trim(); return s && !/[.!?]$/.test(s) ? s + '.' : s; };
 const api = async path => { try { const r = await fetch('api/' + path, {cache: 'no-store'}); return r.ok ? await r.json() : null; } catch (e) { return null; } };
-const lg = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
-const ls = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* tryb prywatny */ } };
-let toastT = null;
-const toast = msg => { document.querySelectorAll('.toast').forEach(t => t.remove()); const t = el('div', {class: 'toast', role: 'status'}, msg); document.body.append(t); clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 4500); };
+const CHECK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
 const MAX_TOP = 3;
-// Przerysowanie karty nie może kasować tego, co użytkownik właśnie wpisuje: wartości pól data-k, które ruszył (data-d), i fokus przechodzą na nowe elementy.
-// Pola nietknięte biorą świeże dane (np. z serwera), więc stary pusty formularz nie nadpisuje wczytanych wartości.
-document.addEventListener('input', ev => { const t = ev.target; if (t && t.dataset && t.dataset.k) t.dataset.d = '1'; });
-const clean = (...els) => els.forEach(e => { delete e.dataset.d; });
-function rerender(box, kids) {
-  const old = {}, ae = document.activeElement, fk = ae && box.contains(ae) ? ae.dataset.k : null;
-  box.querySelectorAll('[data-d="1"]').forEach(e => { old[e.dataset.k] = e.value; });
-  box.replaceChildren(...kids);
-  box.querySelectorAll('[data-k]').forEach(e => { if (e.dataset.k in old) { e.value = old[e.dataset.k]; e.dataset.d = '1'; } });
-  if (fk) { const n = box.querySelector(`[data-k="${fk}"]`); if (n) { n.focus(); try { n.setSelectionRange(n.value.length, n.value.length); } catch (e) { /* pole liczby lub daty nie ma kursora */ } } }
-}
-
-// ----------------------------------------------------------------- stan
-const S = {tasks: [], habits: [], goals: [], journal: [], today: null, brief: null, ai: null, prompts: {}, offline: false, tab: 'dzis', taskTab: 'dzis', chat: [], chatOpen: false, focus: null, proposal: null, sys: null};
-const KEYS = {alfred_tasks: ['tasks', v => v || [], v => v], alfred_habits: ['habits', v => (v && v.habits) || [], v => ({habits: v})], alfred_goals: ['goals', v => v || [], v => v], alfred_journal: ['journal', v => v || [], v => v]};
 let uid = 0; const newId = () => Date.now() * 10 + (uid++ % 10);
-let rt = null; const refreshSoon = () => { clearTimeout(rt); rt = setTimeout(loadToday, 250); };
-// Konflikt zapisu (inne urządzenie albo potok ofert na serwerze zmieniły dane) nie gubi niczyich zmian: scalamy po id wersję ostatnio zsynchronizowaną, naszą i serwerową.
+
+// ----------------------------------------------------------------- stan i zapis (scalanie zmian z dwóch urządzeń jak wcześniej)
+const S = {tasks: [], habits: [], goals: [], journal: [], today: null, brief: null, ai: null, prompts: {}, offline: false, focus: null, habitEdit: false, review: null};
+const KEYS = {alfred_tasks: ['tasks', v => v || [], v => v], alfred_habits: ['habits', v => (v && v.habits) || [], v => ({habits: v})], alfred_goals: ['goals', v => v || [], v => v], alfred_journal: ['journal', v => v || [], v => v]};
 const MERGE = {
   alfred_tasks: (b, l, r) => UD.merge(b, l, r, 't'), alfred_goals: (b, l, r) => UD.merge(b, l, r, 't'), alfred_journal: (b, l, r) => UD.merge(b, l, r, 'date'),
   alfred_habits: (b, l, r) => ({habits: UD.merge(b && b.habits, l.habits, r.habits, 'id', (x, y) => ({...x, days: [...new Set([...x.days, ...y.days])].sort()}))}),
 };
+let rt = null; const refreshSoon = () => { clearTimeout(rt); rt = setTimeout(loadToday, 250); };
+let retryT = null; const retrySoon = () => { clearTimeout(retryT); retryT = setTimeout(loadToday, 20000); };
 async function persist(key) {
   const [field, parse, wrap] = KEYS[key];
   const r = await UD.sync(key, {get: () => wrap(S[field]), merge: MERGE[key], apply: v => { S[field] = parse(v); renderAll(); }});
   if (r.offline) { S.offline = true; renderBanner(); retrySoon(); }
-  else if (!r.ok && r.conflict) toast('Dane zmieniono na innym urządzeniu: wczytano najnowszą wersję.');
-  else if (!r.ok) toast('Błąd zapisu: ' + (r.error || ''));
-  else if (r.merged) toast('Scalono zmiany z innego urządzenia.');
+  else if (!r.ok && r.conflict) Calm.toast('Dane zmieniono na innym urządzeniu: wczytano najnowszą wersję.');
+  else if (!r.ok) Calm.toast('Błąd zapisu: ' + (r.error || ''));
+  else if (r.merged) Calm.toast('Scalono zmiany z innego urządzenia.');
   refreshSoon();
 }
-let retryT = null;
-function retrySoon() { clearTimeout(retryT); retryT = setTimeout(loadToday, 20000); }
 const syncAll = () => Object.keys(KEYS).forEach(persist);
 const openTasks = () => S.tasks.filter(t => !t.done);
-const todayTasks = () => { const td = ymd(new Date()); return openTasks().filter(t => t.top || (t.date && t.date <= td)); };
 const taskById = id => S.tasks.find(t => t.t === id);
-function markDone(t) { t.done = true; t.done_ts = Date.now(); persist('alfred_tasks'); renderTasks(); renderHero(); }
-function toTomorrow(t) { t.date = ymd(addDays(new Date(), 1)); t.top = false; }
+const today = () => ymd(new Date());
+const doneToday = () => S.tasks.filter(t => t.done && t.done_ts && ymd(new Date(t.done_ts)) === today());
+const habitStreak = days => { const ds = new Set(days); let d = new Date(); if (!ds.has(ymd(d))) d = addDays(d, -1); let n = 0; while (ds.has(ymd(d))) { n++; d = addDays(d, -1); } return n; };
 
-// ----------------------------------------------------------------- hero, baner, uwagi
-function renderHero() {
-  const now = new Date(), h = now.getHours(), T = S.today;
-  $('hello').textContent = h < 5 ? 'Dobrej nocy' : h < 18 ? 'Dzień dobry' : 'Dobry wieczór';
-  $('date').textContent = now.toLocaleDateString('pl-PL', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
-  $('clock').textContent = `${pad(h)}:${pad(now.getMinutes())}`;
-  const chips = $('chips'); chips.replaceChildren(); const nowS = Date.now() / 1000;
-  const next = T && T.plan.today.timeline.find(e => e.kind === 'event' && e.s > nowS);
-  if (next) { const m = Math.max(1, Math.round((next.s - nowS) / 60)); chips.append(el('span', {class: 'chip'}, `Następne: ${hm(next.s)} ${next.title.slice(0, 36)} (za ${m < 90 ? m + ' min' : Math.round(m / 60) + ' h'})`)); }
-  const tt = todayTasks(); chips.append(el('span', {class: 'chip' + (tt.length ? '' : ' ok')}, tt.length ? `Zadania na dziś: ${tt.length}` : 'Lista na dziś pusta'));
-  if (S.habits.length) { const td = ymd(now), done = S.habits.filter(x => x.days.includes(td)).length; chips.append(el('span', {class: 'chip' + (done === S.habits.length ? ' ok' : '')}, `Nawyki: ${done}/${S.habits.length}`)); }
-  const m = T && T.money; if (m && m.goal && m.profit_month != null) chips.append(el('span', {class: 'chip' + (m.profit_month >= m.goal ? ' ok' : '')}, `Zarobki w miesiącu: ${nf(m.profit_month / m.goal * 100)}% celu`));
+// ----------------------------------------------------------------- asystent (scena)
+const HELP = 'Dotknij mojej postaci i mów albo pisz. Na przykład:\n• „dodaj zadanie raport 45 minut jutro”\n• „co dalej”, „start”, „zrobione”, „później”\n• „plan na jutro”, „ile zarobiłem”\n• „zrobiłem trening” (odhaczę nawyk)\nWszystko inne zrozumiem jako zwykłe pytanie.';
+let alf, autoBubble = true, lastKey = '', lastTouch = Date.now();
+const touch = () => { lastTouch = Date.now(); };
+function chips() {
+  const h = new Date().getHours(), c = [];
+  if (h >= 19) c.push({label: 'Przegląd dnia', run: () => startReview()}); else if (h < 12 && S.brief && S.brief.text) c.push({label: 'Briefing', text: 'przeczytaj briefing'});
+  c.push({label: 'Plan na jutro', text: 'plan na jutro'}, {label: 'Co potrafisz?', text: 'pomoc'});
+  return c.slice(0, 3);
 }
-function renderBanner() { $('banner').replaceChildren(...(S.offline ? [el('div', {class: 'warnbox'}, 'Serwer niedostępny: pracujesz na kopii z tej przeglądarki, a plan dnia i alerty wymagają połączenia. Zmiany zapiszą się same, gdy serwer wróci (strona ponawia próbę co 20 s).')] : [])); }
-function renderAlerts() {
-  const box = $('alerts'); box.replaceChildren(); const list = ((S.today && S.today.alerts) || []).filter(a => a.level !== 'info').slice(0, 4);
-  list.forEach(a => box.append(el('div', {class: 'alert' + (a.level === 'bad' ? ' bad' : '')}, el('b', null, a.level === 'bad' ? 'Pilne:' : 'Uwaga:'), el('span', null, a.text))));
+function nextBubble() {
+  const T = S.today, hr = new Date().getHours(), g = hr < 5 ? 'Dobrej nocy.' : hr < 18 ? 'Dzień dobry.' : 'Dobry wieczór.';
+  if (!T) return {key: 'load' + S.offline, text: S.offline ? `${g} Nie mam połączenia z serwerem, więc nie znam planu dnia. Zadania, które dodasz, zapiszą się same, gdy serwer wróci.` : `${g} Chwileczkę, układam Twój dzień…`, actions: []};
+  const n = T.next_step, acts = [], t = n.t != null ? taskById(n.t) : null; let text;
+  if (n.kind === 'task' && t) { const m = Math.min(25, n.min || 25); text = `${g} Zaczynamy od: ${n.title} (${n.min} min). ${sentence(n.why)}`; acts.push({label: `Start ${m} min`, primary: true, onclick: () => focusStart(t, m)}, {label: 'Zrobione', onclick: () => completeTask(t.t)}, {label: 'Później', onclick: () => postpone(t)}); }
+  else if (n.kind === 'now_event' || n.kind === 'soon') text = `${sentence(n.title)} ${sentence(n.why)}`;
+  else if (n.kind === 'plan') { text = `${g} Nie masz jeszcze planu na dziś. Dodaj zadanie niżej albo powiedz mi, co jest dziś najważniejsze.`; acts.push({label: 'Dodaj zadanie', primary: true, onclick: () => { const i = $('tnew'); if (i) { i.scrollIntoView({behavior: 'smooth', block: 'center'}); i.focus(); } }}); }
+  else if (n.kind === 'overload') { text = `${sentence(n.title)} ${sentence(n.why)}`; acts.push({label: 'Przenieś je na jutro', primary: true, onclick: moveOverflow}); }
+  else if (n.kind === 'review') { text = `${g} Zróbmy krótki przegląd dnia? Trzy pytania, dwie minuty.`; acts.push({label: 'Zaczynamy', primary: true, onclick: () => startReview()}); }
+  else { text = `${sentence(n.title)} ${sentence(n.why)}`; acts.push({label: 'Zobacz jutro', onclick: () => alf.submit('plan na jutro')}); }
+  if (hr < 12 && S.brief && S.brief.text) acts.push({label: 'Posłuchaj briefingu', onclick: speakBrief});
+  return {key: [n.kind, n.title, n.t, S.brief && S.brief.ts, g].join('|'), text, actions: acts};
 }
+function showNext(force) {
+  if (!alf || (!autoBubble && !force)) return;
+  const b = nextBubble(); if (!force && b.key === lastKey) return; lastKey = b.key; autoBubble = true;
+  alf.say(b.text, {actions: b.actions, keep: true, speak: false}); alf.setChips(chips());
+  const bad = S.today && S.today.alerts.some(a => a.level === 'bad'); if (bad) alf.mood('worry');
+}
+function speakBrief() { autoBubble = false; touch(); alf.say(S.brief.text, {speak: true, keep: true}); }
+async function askPrompt(label, prompt, so = {}) { autoBubble = false; touch(); await alf.submit(label, {...so, prompt}); }
 
-// ----------------------------------------------------------------- następny krok i briefing
-function renderNext() {
-  const box = $('next'), T = S.today;
-  if (!T) { box.replaceChildren(el('div', {class: 'lab'}, 'Następny krok'), el('div', {class: 'big'}, S.offline ? 'Plan dnia wymaga połączenia z serwerem' : 'Ładuję plan…')); return; }
-  const n = T.next_step, kids = [el('div', {class: 'lab'}, 'Następny krok'), el('div', {class: 'big'}, n.title), el('div', {class: 'why'}, n.why)], row = el('div', {class: 'row', style: 'margin-top:10px'});
-  const t = n.t != null ? taskById(n.t) : null;
-  if (n.kind === 'task' && t) {
-    row.append(el('button', {class: 'btn p', type: 'button', onclick: () => focusStart(t, Math.min(25, n.min || 25))}, `Start ${Math.min(25, n.min || 25)} min`), el('button', {class: 'btn', type: 'button', onclick: () => markDone(t)}, 'Zrobione'),
-      el('button', {class: 'btn', type: 'button', onclick: () => { toTomorrow(t); persist('alfred_tasks'); renderTasks(); toast('Przeniesione na jutro.'); }}, 'Później'));
-  } else if (n.kind === 'plan') row.append(el('button', {class: 'btn p', type: 'button', onclick: () => { const i = $('tnew'); i.scrollIntoView({behavior: 'smooth', block: 'center'}); i.focus(); }}, 'Dodaj zadanie'));
-  else if (n.kind === 'overload') row.append(el('button', {class: 'btn p', type: 'button', onclick: moveOverflow}, 'Przenieś te zadania na jutro'));
-  else if (n.kind === 'review') row.append(el('button', {class: 'btn p', type: 'button', onclick: () => { $('more').open = true; $('more').scrollIntoView({behavior: 'smooth', block: 'start'}); }}, 'Otwórz przegląd dnia'));
-  else if (n.kind === 'rest') row.append(el('button', {class: 'btn', type: 'button', onclick: () => { S.tab = 'jutro'; renderPlan(); $('plan').scrollIntoView({behavior: 'smooth'}); }}, 'Zobacz jutro'));
-  row.append(el('button', {class: 'btn', type: 'button', onclick: () => { const i = $('cin'); i.scrollIntoView({behavior: 'smooth', block: 'center'}); i.focus(); }}, 'Zapytaj Alfreda'));
-  kids.push(row);
-  const b = S.brief;
-  if (b && b.text) { const d = el('details', {style: 'margin-top:10px'}, el('summary', {class: 'mut', style: 'cursor:pointer;font-size:.84rem'}, `Briefing z ${new Date(b.ts * 1000).toLocaleString('pl-PL', {day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'})}${b.kind === 'plain' ? ' (bez AI)' : ''}`), el('div', {class: 'brief'}, b.text)); if (S.briefOpen === undefined ? new Date().getHours() < 12 : S.briefOpen) d.open = true; d.addEventListener('toggle', () => { S.briefOpen = d.open; }); kids.push(d); }
-  box.replaceChildren(...kids);
+// ----------------------------------------------------------------- polecenia głosowe i tekstowe
+function planText(day) {
+  const T = S.today; if (!T) return 'Nie znam jeszcze planu: brak połączenia z serwerem.';
+  const P = T.plan[day], evs = P.timeline.filter(x => x.kind === 'event'), ts = P.blocks.length + P.unscheduled.length, label = day === 'today' ? 'dziś' : 'jutro';
+  if (!evs.length && !ts) return `Na ${label} nic nie zaplanowano.`;
+  const parts = []; if (evs.length) parts.push(`${evs.length} ${plural(evs.length, 'wydarzenie', 'wydarzenia', 'wydarzeń')}`); if (ts) parts.push(`${ts} ${plural(ts, 'zadanie', 'zadania', 'zadań')}`);
+  let text = `Na ${label} masz ${parts.join(' i ')}.`; const first = P.timeline.find(x => day !== 'today' || x.e > Date.now() / 1000);
+  if (first) text += ` Najbliżej: ${first.title} o ${hm(first.s)}.`; if (P.summary.overloaded) text += ' Nie wszystko się zmieści.';
+  return text;
 }
-function moveOverflow() {
-  const un = S.today.plan.today.unscheduled; let n = 0;
-  un.forEach(u => { const t = taskById(u.t); if (t) { toTomorrow(t); n++; } });
-  persist('alfred_tasks'); renderTasks(); toast(n ? `Przeniesiono na jutro: ${n}.` : 'Nic do przeniesienia.');
+function whenLabel(date) { const td = today(); return date === td ? 'na dziś' : date === ymd(addDays(new Date(), 1)) ? 'na jutro' : 'na ' + date.slice(8) + '.' + date.slice(5, 7); }
+function addTask(p) {
+  const top = p.top && openTasks().filter(x => x.top).length < MAX_TOP, t = {t: newId(), text: p.text, date: p.date || today(), done: false, top: !!top, done_ts: null, min: p.min || 30, ref: ''};
+  S.tasks.push(t); persist('alfred_tasks'); renderPlan(); renderHabits(); return {t, topDenied: p.top && !top};
+}
+function findDoneTarget(query) {
+  if (!query) { const n = S.today && S.today.next_step; const t = n && n.t != null ? taskById(n.t) : null; if (t) return {task: t}; const o = openTasks().filter(x => x.date && x.date <= today()); return o.length === 1 ? {task: o[0]} : {many: o}; }
+  const tm = Intent.match(query, openTasks(), t => t.text), hm_ = Intent.match(query, S.habits, h => h.name);
+  if (tm.length === 1 && !hm_.length) return {task: tm[0]}; if (hm_.length === 1 && !tm.length) return {habit: hm_[0]};
+  if (tm.length > 1) return {many: tm}; if (tm.length === 1) return {task: tm[0]};
+  return {none: true};
+}
+async function onCommand(cmd) {
+  autoBubble = false; touch();
+  switch (cmd.type) {
+    case 'add_task': { const {t, topDenied} = addTask(cmd); return {text: `Dodane ${whenLabel(t.date)}: ${t.text}, ${t.min} min.` + (topDenied ? ` Priorytetów może być najwyżej ${MAX_TOP}, więc bez gwiazdki.` : ''), mood: 'happy'}; }
+    case 'next': { const b = nextBubble(); return {text: b.text, actions: b.actions}; }
+    case 'plan': return {text: planText(cmd.day), actions: [{label: 'Zaproponuj plan (AI)', onclick: () => askPrompt(cmd.day === 'today' ? 'Zaproponuj plan na dziś' : 'Zaproponuj plan na jutro', S.prompts.tomorrow || 'Zaproponuj plan dnia.')}]};
+    case 'done': {
+      const r = findDoneTarget(cmd.query);
+      if (r.task) { completeTask(r.task.t, null, null, true); return {text: `Zrobione: ${r.task.text}.`, mood: 'happy'}; }
+      if (r.habit) { const h = r.habit; if (!h.days.includes(today())) { h.days = [...h.days, today()].sort(); persist('alfred_habits'); renderHabits(); } return {text: `Odhaczone: ${h.name}. Seria: ${habitStreak(h.days)}.`, mood: 'happy'}; }
+      if (r.many) return {text: r.many.length ? 'Które zadanie? ' + r.many.slice(0, 5).map(t => t.text).join('; ') + '.' : 'Nie mam dziś otwartych zadań.'};
+      return {text: `Nie znalazłem zadania ani nawyku pasującego do „${cmd.query}”.`};
+    }
+    case 'start': { const n = S.today && S.today.next_step, t = (n && n.t != null ? taskById(n.t) : null) || openTasks()[0]; if (!t) return {text: 'Nie mam zadania do skupienia. Najpierw jakieś dodaj.'}; const m = cmd.min || Math.min(25, t.min || 25); focusStart(t, m); return {text: `Start. Skupienie na: ${t.text}, ${m} minut.`}; }
+    case 'stopfocus': if (S.focus) { focusStop(); return {text: 'Skupienie zakończone.'}; } return {text: 'Skupienie nie jest włączone.'};
+    case 'later': { const n = S.today && S.today.next_step, t = n && n.t != null ? taskById(n.t) : null; if (!t) return {text: 'Nie mam czego przekładać.'}; postpone(t, true); return {text: `Przeniosłem na jutro: ${t.text}.`}; }
+    case 'money': { const T = S.today; if (!T) return {text: 'Nie znam jeszcze wyników: brak połączenia z serwerem.'}; const m = T.money, st = T.deals.stats, c = st.counts, prog = c.kupione + c.wystawione; return {text: `W tym miesiącu zysk ${zl(m.profit_month == null ? 0 : m.profit_month)}` + (m.goal ? `, cel ${zl(m.goal)}` : '') + `. Ofert w toku: ${prog}` + (st.invested ? `, zamrożone ${zl(st.invested)}` : '') + '.', actions: [{label: 'Otwórz Zarabiaj', onclick: () => { location.href = 'zarabiaj.html'; }}]}; }
+    case 'briefing': if (S.brief && S.brief.text) return {text: S.brief.text, speak: true}; await askPrompt('Poranny briefing', S.prompts.morning || 'Poranny briefing na dziś.'); return null;
+    case 'review': startReview(); return null;
+    case 'add_habit': { if (S.habits.length >= 30) return {text: 'Masz już 30 nawyków, to maksimum.'}; S.habits.push({id: String(newId()), name: cmd.name, days: []}); persist('alfred_habits'); renderHabits(); return {text: `Nowy nawyk: ${cmd.name}.`, mood: 'happy'}; }
+    case 'deal_bought': case 'deal_listed': case 'deal_sold': case 'deal_reject': case 'add_deal': return {text: 'Ofertami zajmujemy się na stronie Zarabiaj.', actions: [{label: 'Otwórz Zarabiaj', primary: true, onclick: () => { location.href = 'zarabiaj.html'; }}]};
+    default: return undefined;
+  }
+}
+const REVIEW_Q = ['Co dziś poszło dobrze?', 'Czego się dziś nauczyłeś?', 'Co jutro zrobisz jako pierwsze?'];
+function startReview() {
+  autoBubble = false; touch(); S.review = {i: 0, ans: []}; sheetClose();
+  alf.say(REVIEW_Q[0], {keep: true, listenAfter: true, actions: [{label: 'Anuluj', onclick: cancelReview}]}); alf.setChips([{label: 'Pomiń pytanie', run: () => reviewAnswer('')}]);
+}
+function cancelReview() { S.review = null; alf.say('Dobrze, przegląd zostawiamy na później.', {keep: true}); alf.setChips(chips()); }
+function reviewAnswer(text) {
+  const r = S.review; if (!r) return; r.ans.push(String(text || '').trim()); r.i++;
+  if (r.i < REVIEW_Q.length) { alf.say(REVIEW_Q[r.i], {keep: true, listenAfter: true, actions: [{label: 'Anuluj', onclick: cancelReview}]}); return; }
+  S.review = null; const td = today(), e = {date: td, wins: (r.ans[0] || '').slice(0, 500), lesson: (r.ans[1] || '').slice(0, 500), tomorrow: (r.ans[2] || '').slice(0, 500)};
+  if (!e.wins && !e.lesson && !e.tomorrow) { alf.say('Nic nie zapisałem. Wrócimy do tego, kiedy zechcesz.', {keep: true}); alf.setChips(chips()); return; }
+  S.journal = [...S.journal.filter(x => x.date !== td), e].sort((a, b) => a.date.localeCompare(b.date)).slice(-120); persist('alfred_journal');
+  alf.say('Zapisane. Dobra robota. ' + (e.tomorrow ? `Jutro zaczynasz od: ${e.tomorrow}.` : ''), {keep: true, mood: 'happy'}); alf.setChips(chips());
+}
+async function intercept(raw, cmd) {
+  autoBubble = false; touch();
+  if (!S.review) return undefined;
+  if (/^(anuluj|koniec|przerwij|stop|nie chce)\b/i.test(Intent.fold(raw))) { cancelReview(); return null; }
+  reviewAnswer(raw); return null;
 }
 
 // ----------------------------------------------------------------- plan dnia
-function renderPlan() {
-  const box = $('plan'), T = S.today, kids = [el('h2', null, 'Plan dnia'), el('p', {class: 'sub'}, 'Kalendarz i zadania ułożone w wolnych oknach. To propozycja: niczego nie zmienia w Twoim kalendarzu.')];
-  const tabs = el('div', {class: 'tabs', role: 'group'}); [['dzis', 'Dziś'], ['jutro', 'Jutro']].forEach(([k, l]) => tabs.append(el('button', {type: 'button', 'aria-pressed': S.tab === k ? 'true' : 'false', onclick: () => { S.tab = k; renderPlan(); }}, l))); kids.push(tabs);
-  if (!T) { kids.push(el('p', {class: 'mut'}, S.offline ? 'Brak połączenia z serwerem.' : 'Ładuję…')); box.replaceChildren(...kids); return; }
-  const P = T.plan[S.tab === 'dzis' ? 'today' : 'tomorrow'], now = Date.now() / 1000, isToday = S.tab === 'dzis';
-  const noCal = T.alerts.find(a => a.where === 'agenda' && a.level === 'info');
-  if (P.all_day.length) kids.push(el('div', {class: 'chips', style: 'margin:0 0 6px'}, ...P.all_day.map(a => el('span', {class: 'chip'}, 'cały dzień: ' + a.title))));
-  const s = P.summary; kids.push(el('div', {class: 'sumline'}, `Zajęte ${dur(s.busy_min)} · zadania ${dur(s.planned_min)} · wolne ${dur(s.free_min)}` + (s.overloaded ? ' · nie wszystko się mieści' : '')));
-  if (!P.timeline.length) kids.push(el('p', {class: 'mut'}, isToday ? 'Na dziś nic zaplanowanego. Dodaj zadania z czasem (po prawej).' : 'Na jutro nic zaplanowanego.'));
-  P.timeline.forEach(it => {
-    const past = isToday && it.e < now, cur = isToday && it.s <= now && now < it.e, row = el('div', {class: `tl ${it.kind}${past ? ' past' : ''}${cur ? ' now' : ''}`}, el('span', {class: 'h'}, `${hm(it.s)}-${hm(it.e)}`));
-    if (it.kind === 'event') row.append(el('span', {class: 't'}, it.title, it.loc ? el('span', {class: 'mut'}, ' · ' + it.loc) : null));
-    else {
-      row.append(el('span', {class: 't'}, it.top ? '★ ' : '', it.title, it.late ? el('span', {class: 'badge late', style: 'margin-left:6px'}, 'zaległe') : null, el('span', {class: 'badge', style: 'margin-left:6px'}, `${it.min} min`)));
-      const t = taskById(it.t);
-      if (t && isToday) { row.append(el('button', {class: 'btn sm p', type: 'button', onclick: () => focusStart(t, Math.min(25, it.min))}, 'Start'), el('button', {class: 'btn sm', type: 'button', 'aria-label': 'Zrobione: ' + it.title, onclick: () => markDone(t)}, '✓')); }
-    }
-    kids.push(row);
-  });
-  if (P.unscheduled.length) {
-    kids.push(el('h3', null, `Nie mieści się (${P.unscheduled.length})`));
-    P.unscheduled.forEach(u => { const t = taskById(u.t); kids.push(el('div', {class: 'item'}, el('span', {class: 't'}, u.title, el('span', {class: 'badge', style: 'margin-left:6px'}, `${u.min} min`)), isToday && t ? el('button', {class: 'btn sm', type: 'button', onclick: () => { toTomorrow(t); persist('alfred_tasks'); renderTasks(); }}, 'Na jutro') : null)); });
-  }
-  if (P.free.length) kids.push(el('p', {class: 'free'}, 'Wolne: ' + P.free.map(([a, b]) => `${hm(a)}-${hm(b)}`).join(', ')));
-  if (noCal) kids.push(el('details', {style: 'margin-top:8px'}, el('summary', {class: 'mut', style: 'cursor:pointer;font-size:.84rem'}, 'Podłącz Kalendarz Google, żeby plan znał Twoje wydarzenia'),
-    el('ol', {class: 'sub', style: 'padding-left:18px'}, el('li', null, 'Kalendarz Google (komputer) → Ustawienia → wybierz kalendarz → „Integrowanie kalendarza”.'), el('li', null, 'Skopiuj „Tajny adres w formacie iCal” (to sekret: nie wklejaj go do rozmów).'), el('li', null, 'Na serwerze wpisz go do alfred.env (AGENDA_ICS_URLS). Szczegóły: vps/INSTRUKCJA_VPS.md, sekcja „Alfred”.'))));
-  box.replaceChildren(...kids);
+function renderBanner() { $('banner').replaceChildren(...(S.offline ? [el('div', {class: 'c-banner'}, 'Serwer niedostępny: widzisz kopię z tej przeglądarki. Zadania i nawyki zapiszą się same, gdy serwer wróci.')] : [])); }
+const timeEl = it => el('span', {class: 't-time'}, hm(it.s), el('span', {class: 't-end'}, '–' + hm(it.e)));
+function evRow(it, now) {
+  const cur = it.s <= now && now < it.e, past = it.e < now;
+  return el('div', {class: 't-row ev' + (cur ? ' now' : '') + (past ? ' past' : '')}, timeEl(it), el('div', {class: 't-body', style: 'cursor:default'}, el('span', {class: 't-title'}, it.title), it.loc ? el('span', {class: 't-sub'}, it.loc) : null));
 }
+function taskRow(t, it, opts = {}) {
+  const row = el('div', {class: 't-row' + (opts.done ? ' done' : '') + (it && it.s <= Date.now() / 1000 && Date.now() / 1000 < it.e ? ' now' : ''), 'data-t': String(t.t)});
+  const chk = el('button', {class: 't-check', type: 'button', 'aria-label': (opts.done ? 'Cofnij: ' : 'Zrobione: ') + t.text}); chk.innerHTML = CHECK;
+  chk.addEventListener('click', ev => opts.done ? undone(t) : completeTask(t.t, row, ev));
+  const sub = [it ? `${dur(it.min)}` : (t.min ? dur(t.min) : ''), t.date && t.date < today() && !opts.done ? 'zaległe' : ''].filter(Boolean).join(' · ');
+  const body = el('button', {class: 't-body', type: 'button', onclick: () => openTask(t.t)}, el('span', {class: 't-title'}, (t.top ? '★ ' : '') + t.text), sub || opts.note ? el('span', {class: 't-sub'}, opts.note || sub) : null);
+  row.append(chk, it ? timeEl(it) : null, body);
+  if (t.ref) row.append(el('span', {class: 't-pill'}, 'oferta'));
+  if (!opts.done && it) row.append(el('button', {class: 't-go', type: 'button', onclick: () => focusStart(t, Math.min(25, it.min))}, 'Start'));
+  return row;
+}
+function renderPlan() {
+  const box = $('plan'), T = S.today, now = Date.now() / 1000, td = today(), kids = [];
+  const dn = doneToday(), P = T && T.plan.today;
+  const blocks = P ? P.blocks.filter(b => { const t = taskById(b.t); return t && !t.done; }) : [], un = P ? P.unscheduled.filter(u => { const t = taskById(u.t); return t && !t.done; }) : [];
+  const planned = new Set([...blocks.map(b => b.t), ...un.map(u => u.t)]);
+  const extra = openTasks().filter(t => (t.top || (t.date && t.date <= td)) && !planned.has(t.t));
+  const open = blocks.length + un.length + extra.length, total = open + dn.length;
+  const d = new Date();
+  kids.push(el('div', {class: 'pane-h'}, el('div', null, el('div', {class: 'pane-t'}, 'Dziś'), el('div', {class: 'pane-s'}, d.toLocaleDateString('pl-PL', {weekday: 'long', day: 'numeric', month: 'long'}))), total ? el('div', {class: 'pane-s'}, `${dn.length} z ${total} zrobione`) : null));
+  if (total) kids.push(el('div', {class: 'c-prog', role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': String(total), 'aria-valuenow': String(dn.length), 'aria-label': 'Postęp dnia'}, el('i', {style: `width:${Math.round(dn.length / total * 100)}%`})));
+  const list = el('div', {class: 't-list'});
+  if (P) P.timeline.forEach(it => { if (it.kind === 'event') list.append(evRow(it, now)); else { const t = taskById(it.t); if (t && !t.done) list.append(taskRow(t, it)); } });
+  un.forEach(u => { const t = taskById(u.t); if (t) list.append(taskRow(t, null, {note: `${dur(u.min)} · nie mieści się dziś`})); });
+  extra.forEach(t => list.append(taskRow(t, null, {note: 'układam w planie…'})));
+  if (!T && !S.offline && !openTasks().length) list.append(el('div', {class: 't-empty'}, 'Ładuję plan…'));
+  else if (!list.children.length) list.append(el('div', {class: 't-empty'}, el('b', null, dn.length ? 'Wszystko zrobione na dziś' : 'Czysty dzień'), dn.length ? 'Dobra robota. Odpocznij albo zerknij na jutro.' : 'Dodaj pierwsze zadanie poniżej albo powiedz mi, co dziś ważne.'));
+  kids.push(list);
+  if (P && P.free.length && open) kids.push(el('div', {class: 't-free'}, 'Wolne okna: ' + P.free.slice(0, 4).map(([a, b]) => `${hm(a)}–${hm(b)}`).join(', ')));
+  if (un.length) kids.push(el('button', {class: 'c-link', type: 'button', onclick: moveOverflow}, `Przenieś ${un.length === 1 ? 'to zadanie' : 'te zadania'} na jutro`));
+  const inp = el('input', {id: 'tnew', type: 'text', placeholder: 'Dodaj zadanie, np. Raport 45 min jutro', 'aria-label': 'Nowe zadanie', maxlength: '200', autocomplete: 'off', enterkeyhint: 'done'});
+  const add = () => { const p = Intent.parseTask(inp.value, {today: td}); if (!p.text) return; addTask(p); inp.value = ''; draft = ''; Calm.toast(`Dodane ${whenLabel(S.tasks[S.tasks.length - 1].date)}: ${p.text}`); };
+  inp.value = draft; inp.addEventListener('input', () => { draft = inp.value; }); inp.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
+  kids.push(el('div', {class: 't-add'}, inp, el('button', {type: 'button', 'aria-label': 'Dodaj zadanie', onclick: add}, '+')));
+  if (dn.length) { const det = el('details', {class: 'c-more'}, el('summary', null, `Zrobione dziś (${dn.length})`)); const l = el('div', {class: 't-list'}); dn.slice().sort((a, b) => b.done_ts - a.done_ts).forEach(t => l.append(taskRow(t, null, {done: true}))); det.append(l); if (openDone) det.open = true; det.addEventListener('toggle', () => { openDone = det.open; }); kids.push(det); }
+  if (T) { const TP = T.plan.tomorrow, tb = TP.blocks.filter(b => { const t = taskById(b.t); return t && !t.done; }), ev = TP.timeline.filter(x => x.kind === 'event');
+    const det = el('details', {class: 'c-more', id: 'tomorrow'}, el('summary', null, `Jutro · ${ev.length} ${plural(ev.length, 'wydarzenie', 'wydarzenia', 'wydarzeń')}, ${tb.length} ${plural(tb.length, 'zadanie', 'zadania', 'zadań')}`)); const l = el('div', {class: 't-list'});
+    TP.all_day.forEach(a => l.append(el('div', {class: 't-row ev'}, el('span', {class: 't-time'}, 'cały dzień'), el('div', {class: 't-body', style: 'cursor:default'}, el('span', {class: 't-title'}, a.title)))));
+    TP.timeline.forEach(it => { if (it.kind === 'event') l.append(evRow(it, 0)); else { const t = taskById(it.t); if (t && !t.done) l.append(taskRow(t, it)); } });
+    if (!l.children.length) l.append(el('div', {class: 't-sub', style: 'padding:8px'}, 'Na jutro nic nie zaplanowano.'));
+    det.append(l); if (openTom) det.open = true; det.addEventListener('toggle', () => { openTom = det.open; }); kids.push(det); }
+  const ae = document.activeElement, hadFocus = ae && ae.id === 'tnew'; box.replaceChildren(...kids); if (hadFocus) { const n = $('tnew'); n.focus(); try { n.setSelectionRange(n.value.length, n.value.length); } catch (e) { /* brak */ } }
+}
+let draft = '', openDone = false, openTom = false;
+function completeTask(id, row, ev, quiet) {
+  const t = taskById(id); if (!t || t.done) return;
+  const r = ev && ev.currentTarget ? ev.currentTarget : (row && row.querySelector('.t-check'));
+  if (row) row.classList.add('done'); if (r) Calm.confettiAt(r);
+  const finish = () => {
+    t.done = true; t.done_ts = Date.now(); persist('alfred_tasks'); renderPlan(); if (!quiet) showNext(true);
+    const left = openTasks().filter(x => x.top || (x.date && x.date <= today())).length;
+    if (!left && !quiet) { alf.say('Wszystko zrobione na dziś. Dobra robota!', {keep: true, mood: 'happy', speak: false}); const b = $('plan').getBoundingClientRect(); Calm.confetti(b.left + b.width / 2, b.top + 60, 40); autoBubble = false; touch(); }
+    else if (!left) { const b = $('plan').getBoundingClientRect(); Calm.confetti(b.left + b.width / 2, b.top + 60, 40); }
+    else if (!quiet) alf.mood('happy');
+  };
+  if (row && !Calm.reduced) { setTimeout(() => row.classList.add('leaving'), 360); setTimeout(finish, 720); } else finish();
+  Calm.toast(`Zrobione: ${t.text}`, {action: {label: 'Cofnij', fn: () => undone(t)}});
+}
+function undone(t) { t.done = false; t.done_ts = null; persist('alfred_tasks'); renderPlan(); showNext(true); }
+function postpone(t, quiet) { t.date = ymd(addDays(new Date(), 1)); t.top = false; persist('alfred_tasks'); renderPlan(); if (!quiet) showNext(true); Calm.toast(`Przeniesione na jutro: ${t.text}`); }
+function moveOverflow() { const T = S.today; if (!T) return; let n = 0; T.plan.today.unscheduled.forEach(u => { const t = taskById(u.t); if (t) { t.date = ymd(addDays(new Date(), 1)); t.top = false; n++; } }); persist('alfred_tasks'); renderPlan(); showNext(true); Calm.toast(n ? `Przeniesiono na jutro: ${n}.` : 'Nic do przeniesienia.'); }
+function openTomorrow() { const d = $('tomorrow'); if (d) { d.open = true; openTom = true; d.scrollIntoView({behavior: 'smooth', block: 'center'}); } }
 
-// ----------------------------------------------------------------- zadania
-function renderTasks() {
-  const box = $('tasks'), td = ymd(new Date()), late = openTasks().filter(t => t.date && t.date < td), kids = [el('h2', null, 'Zadania'), el('p', {class: 'sub'}, `Czas (min) pozwala ułożyć je w wolnych oknach. Najwyżej ${MAX_TOP} priorytety (gwiazdka).`)];
-  const inp = el('input', {id: 'tnew', 'data-k': 'tnew', placeholder: 'Nowe zadanie', maxlength: '200', 'aria-label': 'Nowe zadanie', class: 'grow'}), dt = el('input', {type: 'date', 'data-k': 'tdate', value: td, 'aria-label': 'Termin', style: 'width:auto'});
-  const mins = el('select', {'data-k': 'tmin', 'aria-label': 'Szacowany czas', style: 'width:auto'}, ...[10, 15, 20, 30, 45, 60, 90, 120, 180, 240].map(m => el('option', {value: String(m)}, dur(m)))); mins.value = '30';
-  const add = () => { const text = inp.value.trim(); if (!text) return; S.tasks.push({t: newId(), text, date: dt.value || '', done: false, top: false, done_ts: null, min: Number(mins.value), ref: ''}); inp.value = ''; clean(inp); persist('alfred_tasks'); renderTasks(); renderHero(); $('tnew').focus(); };
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
-  kids.push(el('div', {class: 'row'}, inp, mins, dt, el('button', {class: 'btn p', type: 'button', onclick: add}, 'Dodaj')));
-  if (late.length) kids.push(el('div', {class: 'row', style: 'margin-top:8px'}, el('span', {class: 'badge late'}, `zaległe: ${late.length}`), el('button', {class: 'btn sm', type: 'button', onclick: () => { late.forEach(t => { t.date = td; }); persist('alfred_tasks'); renderTasks(); }}, 'Przenieś na dziś')));
-  const tabs = el('div', {class: 'tabs', role: 'group'}); [['dzis', 'Na dziś'], ['wszystkie', 'Wszystkie otwarte'], ['zrobione', 'Zrobione']].forEach(([k, l]) => tabs.append(el('button', {type: 'button', 'aria-pressed': S.taskTab === k ? 'true' : 'false', onclick: () => { S.taskTab = k; renderTasks(); }}, l)));
-  kids.push(tabs);
-  let list = S.taskTab === 'dzis' ? todayTasks() : S.taskTab === 'wszystkie' ? openTasks() : S.tasks.filter(t => t.done).sort((a, b) => (b.done_ts || 0) - (a.done_ts || 0)).slice(0, 30);
-  if (S.taskTab !== 'zrobione') list = list.slice().sort((a, b) => (b.top - a.top) || (a.date || '9999').localeCompare(b.date || '9999') || a.t - b.t);
-  if (!list.length) kids.push(el('p', {class: 'mut'}, S.taskTab === 'zrobione' ? 'Nic jeszcze nie zrobione.' : 'Pusto. Dodaj trzy rzeczy, które dziś naprawdę mają się wydarzyć.'));
-  list.forEach(t => {
-    const cb = el('input', {type: 'checkbox', 'aria-label': 'Zrobione: ' + t.text}); cb.checked = t.done;
-    cb.addEventListener('change', () => { t.done = cb.checked; t.done_ts = t.done ? Date.now() : null; persist('alfred_tasks'); renderTasks(); renderHero(); });
-    const star = el('button', {class: 'star' + (t.top ? ' on' : ''), type: 'button', 'aria-label': t.top ? 'Zdejmij priorytet' : 'Ustaw priorytet', 'aria-pressed': t.top ? 'true' : 'false', title: 'Priorytet'}, t.top ? '★' : '☆');
-    star.addEventListener('click', () => { if (!t.top && openTasks().filter(x => x.top).length >= MAX_TOP) { toast(`Priorytety to maksymalnie ${MAX_TOP}: zdejmij jeden, żeby dodać nowy.`); return; } t.top = !t.top; persist('alfred_tasks'); renderTasks(); });
-    const del = el('button', {class: 'x', type: 'button', 'aria-label': 'Usuń zadanie', title: 'Usuń'}, '×'); del.addEventListener('click', () => { S.tasks = S.tasks.filter(x => x.t !== t.t); persist('alfred_tasks'); renderTasks(); renderHero(); });
-    kids.push(el('div', {class: 'item' + (t.done ? ' done' : '')}, cb, star, el('span', {class: 't'}, t.text, t.ref ? el('span', {class: 'badge', style: 'margin-left:6px', title: 'Zadanie z potoku ofert (Zarabiaj)'}, 'oferta') : null), t.min ? el('span', {class: 'badge'}, `${t.min} min`) : null,
-      t.date ? el('span', {class: 'badge' + (!t.done && t.date < td ? ' late' : '')}, t.date === td ? 'dziś' : t.date) : null, del));
-  });
-  rerender(box, kids);
+// arkusz zadania: nazwa, czas, termin, priorytet, start, przeniesienie, usunięcie
+function openTask(id) {
+  const t = taskById(id); if (!t) return;
+  const body = el('div', null), name = el('input', {class: 's-in', value: t.text, maxlength: '200', 'aria-label': 'Treść zadania'});
+  const mins = el('select', {class: 's-in', 'aria-label': 'Szacowany czas'}, ...[10, 15, 20, 30, 45, 60, 90, 120, 180, 240].map(m => el('option', {value: String(m)}, dur(m)))); mins.value = String(t.min || 30);
+  const date = el('input', {class: 's-in', type: 'date', value: t.date || today(), 'aria-label': 'Termin'});
+  const lab = (l, c) => el('label', {class: 'f-lab', style: 'margin-top:10px'}, l, c);
+  const star = el('button', {class: 'alf-btn' + (t.top ? ' p' : ''), type: 'button', 'aria-pressed': String(!!t.top)}, t.top ? '★ Priorytet' : '☆ Priorytet');
+  const sh = Calm.sheet({title: 'Zadanie', body});
+  const save = () => { const v = name.value.trim(); if (v) t.text = v.slice(0, 200); t.min = Number(mins.value); t.date = date.value || ''; persist('alfred_tasks'); renderPlan(); showNext(true); };
+  [name, mins, date].forEach(i => i.addEventListener('change', save));
+  star.addEventListener('click', () => { if (!t.top && openTasks().filter(x => x.top).length >= MAX_TOP) { Calm.toast(`Priorytety to najwyżej ${MAX_TOP}: zdejmij jeden, żeby dodać nowy.`); return; } t.top = !t.top; star.className = 'alf-btn' + (t.top ? ' p' : ''); star.textContent = t.top ? '★ Priorytet' : '☆ Priorytet'; persist('alfred_tasks'); renderPlan(); showNext(true); });
+  const row = el('div', {class: 'alf-actions', style: 'margin-top:16px'}, el('button', {class: 'alf-btn p', type: 'button', onclick: () => { save(); sh.close(); focusStart(t, Math.min(25, t.min || 25)); }}, 'Start skupienia'), star,
+    el('button', {class: 'alf-btn', type: 'button', onclick: () => { sh.close(); postpone(t); }}, 'Na jutro'), el('button', {class: 'alf-btn', type: 'button', onclick: () => { S.tasks = S.tasks.filter(x => x.t !== t.t); persist('alfred_tasks'); sh.close(); renderPlan(); showNext(true); Calm.toast('Usunięte: ' + t.text); }}, 'Usuń'));
+  body.append(lab('Treść', name), lab('Czas', mins), lab('Termin', date), row);
 }
 
 // ----------------------------------------------------------------- nawyki
 function renderHabits() {
-  const box = $('habits'), kids = [el('h2', null, 'Nawyki'), el('p', {class: 'sub'}, 'Mała rzecz codziennie. Kliknij dzień, żeby odhaczyć.')];
-  const streak = days => { const ds = new Set(days); let d = new Date(); if (!ds.has(ymd(d))) d = addDays(d, -1); let n = 0; while (ds.has(ymd(d))) { n++; d = addDays(d, -1); } return n; };
-  const inp = el('input', {'data-k': 'hnew', placeholder: 'Nowy nawyk, np. Ruch 30 min', maxlength: '60', 'aria-label': 'Nowy nawyk', class: 'grow'});
-  const add = () => { const name = inp.value.trim(); if (!name) return; if (S.habits.length >= 30) { toast('Najwyżej 30 nawyków.'); return; } S.habits.push({id: String(newId()), name, days: []}); inp.value = ''; clean(inp); persist('alfred_habits'); renderHabits(); renderHero(); };
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
-  if (!S.habits.length) kids.push(el('p', {class: 'mut'}, 'Brak nawyków. Zacznij od jednego, który zajmie mniej niż 5 minut.'));
+  const box = $('habits'), td = today(), done = S.habits.filter(h => h.days.includes(td)).length, kids = [];
+  kids.push(el('div', {class: 'pane-h'}, el('div', null, el('div', {class: 'pane-t'}, 'Nawyki'), S.habits.length ? el('div', {class: 'pane-s'}, `${done} z ${S.habits.length} dziś`) : null), S.habits.length ? el('button', {class: 'c-link', type: 'button', onclick: () => { S.habitEdit = !S.habitEdit; renderHabits(); }}, S.habitEdit ? 'Gotowe' : 'Edytuj') : null));
+  const pills = el('div', {class: 'h-pills'});
   S.habits.forEach(h => {
-    const dots = el('div', {class: 'dots'});
-    for (let i = 6; i >= 0; i--) {
-      const d = addDays(new Date(), -i), key = ymd(d), on = h.days.includes(key), b = el('button', {class: 'dot' + (on ? ' on' : '') + (i === 0 ? ' today' : ''), type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': `${h.name}: ${d.toLocaleDateString('pl-PL', {weekday: 'long', day: 'numeric', month: 'long'})}`}, d.toLocaleDateString('pl-PL', {weekday: 'narrow'}));
-      b.addEventListener('click', () => { h.days = on ? h.days.filter(x => x !== key) : [...h.days, key].sort(); persist('alfred_habits'); renderHabits(); renderHero(); }); dots.append(b);
-    }
-    const del = el('button', {class: 'x', type: 'button', 'aria-label': 'Usuń nawyk ' + h.name, title: 'Usuń'}, '×'); del.addEventListener('click', () => { if (confirm(`Usunąć nawyk „${h.name}” razem z historią?`)) { S.habits = S.habits.filter(x => x.id !== h.id); persist('alfred_habits'); renderHabits(); renderHero(); } });
-    const st = streak(h.days);
-    kids.push(el('div', {class: 'item', style: 'flex-wrap:wrap'}, el('span', {class: 't'}, h.name, el('span', {class: 'mut'}, st ? ` · seria ${st} ${st === 1 ? 'dzień' : 'dni'}` : ' · bez serii')), dots, del));
+    const on = h.days.includes(td), st = habitStreak(h.days);
+    const b = el('button', {class: 'h-pill' + (on ? ' on' : ''), type: 'button', 'aria-pressed': String(on), 'aria-label': `${h.name}: ${on ? 'zrobione dziś' : 'jeszcze nie dziś'}`}, el('span', {class: 'h-dot'}), h.name, st ? el('span', {class: 'h-streak'}, st > 1 ? `seria ${st}` : '') : null);
+    b.querySelector('.h-dot').innerHTML = CHECK;
+    b.addEventListener('click', ev => { if (S.habitEdit) return; h.days = on ? h.days.filter(x => x !== td) : [...h.days, td].sort(); persist('alfred_habits'); renderHabits(); if (!on) { Calm.confettiAt(ev.currentTarget); alf.mood('happy'); } });
+    const wrap = el('div', {style: 'position:relative'}, b);
+    if (S.habitEdit) wrap.append(el('button', {class: 'h-x', type: 'button', 'aria-label': 'Usuń nawyk ' + h.name, onclick: () => { if (confirm(`Usunąć nawyk „${h.name}” razem z historią?`)) { S.habits = S.habits.filter(x => x.id !== h.id); persist('alfred_habits'); renderHabits(); } }}, '×'));
+    pills.append(wrap);
   });
-  kids.push(el('div', {class: 'row', style: 'margin-top:8px'}, inp, el('button', {class: 'btn sm', type: 'button', onclick: add}, 'Dodaj nawyk')));
-  rerender(box, kids);
-}
-
-// ----------------------------------------------------------------- pieniądze (z Zarabiaj)
-function renderMoney() {
-  const box = $('money'), T = S.today, kids = [el('h2', null, 'Pieniądze'), el('p', {class: 'sub'}, 'Odsprzedaż i inne dochody. Zadania z ofert (wystawić, sprawdzić) są w planie dnia.')];
-  if (!T) { box.replaceChildren(...kids, el('p', {class: 'mut'}, 'Brak danych.')); return; }
-  const m = T.money, st = T.deals.stats, c = st.counts, inProg = c.kupione + c.wystawione;
-  if (m.goal && m.profit_month != null) { kids.push(el('div', null, el('b', null, zl(m.profit_month)), el('span', {class: 'mut'}, ` w tym miesiącu, cel ${zl(m.goal)}`)), el('div', {class: 'bar'}, el('i', {style: `width:${Math.max(0, Math.min(100, m.profit_month / m.goal * 100))}%`}))); }
-  else if (m.profit_month != null) kids.push(el('div', null, el('b', null, zl(m.profit_month)), el('span', {class: 'mut'}, ' w tym miesiącu (ustaw cel w Zarabiaj)')));
-  if (inProg || st.sold_n) kids.push(el('div', {class: 'kv', style: 'margin-top:8px'}, el('div', null, el('b', null, String(inProg)), el('span', null, 'ofert w toku')), el('div', null, el('b', null, zl(st.invested)), el('span', null, 'zamrożone')), el('div', null, el('b', null, zl(st.expected_profit)), el('span', null, 'oczekiwany zysk'))));
-  else kids.push(el('p', {class: 'mut'}, 'Nic w toku. Zacznij od jednej oferty: Zarabiaj → Znajdź.'));
-  T.deals.attention.slice(0, 3).forEach(a => kids.push(el('div', {class: 'alert' + (a.level === 'info' ? '' : ''), style: 'margin:8px 0 0'}, el('b', null, a.level === 'warn' ? 'Uwaga:' : 'Do decyzji:'), el('span', null, a.text))));
-  kids.push(el('div', {class: 'row', style: 'margin-top:10px'}, el('a', {class: 'btn p', href: 'zarabiaj.html#transakcje'}, 'Otwórz Zarabiaj')));
+  kids.push(S.habits.length ? pills : el('div', {class: 't-sub'}, 'Mała rzecz codziennie. Dodaj pierwszy nawyk, na przykład „Ruch 30 min”.'));
+  if (S.habitEdit || !S.habits.length) { const i = el('input', {type: 'text', placeholder: 'Nowy nawyk', maxlength: '60', 'aria-label': 'Nowy nawyk'}); const add = () => { const n = i.value.trim(); if (!n || S.habits.length >= 30) return; S.habits.push({id: String(newId()), name: n, days: []}); persist('alfred_habits'); renderHabits(); }; i.addEventListener('keydown', e => { if (e.key === 'Enter') add(); }); kids.push(el('div', {class: 'h-add'}, i, el('button', {class: 'alf-btn', type: 'button', onclick: add}, 'Dodaj'))); }
   box.replaceChildren(...kids);
 }
 
-// ----------------------------------------------------------------- cele, przegląd, tydzień
-function renderMore() {
-  const box = $('moreBody'), td = ymd(new Date()), T = S.today, kids = [];
-  // cele
-  kids.push(el('h2', {style: 'margin-top:12px'}, 'Cele'), el('p', {class: 'sub'}, 'Kilka celów z liczbą i terminem. Cel „Zarobki” sam liczy postęp z Zarabiaj (zysk w tym miesiącu).'));
-  const name = el('input', {'data-k': 'gname', placeholder: 'Cel, np. Przeczytać 3 książki', maxlength: '100', 'aria-label': 'Nowy cel', class: 'grow'}), kind = el('select', {'data-k': 'gkind', 'aria-label': 'Rodzaj celu', style: 'width:auto'}, el('option', {value: 'manual'}, 'Ręczny'), el('option', {value: 'zarobki'}, 'Zarobki (auto)'));
-  const target = el('input', {'data-k': 'gtarget', type: 'number', min: '0', step: 'any', placeholder: 'Cel (liczba)', 'aria-label': 'Wartość docelowa', style: 'width:110px'}), unit = el('input', {'data-k': 'gunit', placeholder: 'jedn.', maxlength: '12', 'aria-label': 'Jednostka', style: 'width:70px'}), due = el('input', {'data-k': 'gdue', type: 'date', 'aria-label': 'Termin celu', style: 'width:auto'});
-  const addGoal = () => { const n = name.value.trim(); if (!n) return; if (S.goals.length >= 30) { toast('Najwyżej 30 celów.'); return; } S.goals.push({t: newId(), name: n, kind: kind.value, target: target.value === '' ? null : Number(target.value), current: kind.value === 'manual' ? 0 : null, unit: unit.value.trim(), due: due.value || ''}); name.value = target.value = unit.value = due.value = ''; kind.value = 'manual'; clean(name, target, unit, due, kind); persist('alfred_goals'); renderMore(); };
-  kids.push(el('div', {class: 'row'}, name, kind, target, unit, due, el('button', {class: 'btn p', type: 'button', onclick: addGoal}, 'Dodaj')));
-  if (!S.goals.length) kids.push(el('p', {class: 'mut'}, 'Brak celów. Jeden dobry cel z terminem wystarczy na start.'));
-  const mp = T ? T.money : {profit_month: null, goal: null};
-  S.goals.forEach(g => {
-    const auto = g.kind === 'zarobki', cur = auto ? mp.profit_month : g.current, tgt = auto ? (g.target || mp.goal) : g.target, pct = cur != null && tgt ? Math.max(0, Math.min(100, cur / tgt * 100)) : 0, ut = auto ? 'zł' : g.unit;
-    const left = g.due ? Math.ceil((new Date(g.due + 'T23:59:59') - new Date()) / 86400000) : null;
-    const del = el('button', {class: 'x', type: 'button', 'aria-label': 'Usuń cel ' + g.name, title: 'Usuń'}, '×'); del.addEventListener('click', () => { if (confirm(`Usunąć cel „${g.name}”?`)) { S.goals = S.goals.filter(x => x.t !== g.t); persist('alfred_goals'); renderMore(); } });
-    const row = el('div', {class: 'row'}, el('span', {class: 'grow'}, el('b', null, g.name), el('span', {class: 'mut'}, ` · ${cur == null ? 'brak danych' : num(cur)}${tgt ? ' z ' + num(tgt) : ''} ${ut}`.trimEnd() + (left != null ? (left >= 0 ? ` · zostało ${left} dni` : ` · termin minął ${-left} dni temu`) : ''))), del);
-    if (!auto) { const c = el('input', {type: 'number', step: 'any', value: g.current == null ? '' : String(g.current), 'aria-label': 'Aktualny postęp: ' + g.name, style: 'width:90px'}); c.addEventListener('change', () => { g.current = c.value === '' ? null : Number(c.value); persist('alfred_goals'); renderMore(); }); row.insertBefore(c, del); }
-    kids.push(el('div', {style: 'padding:8px 0;border-bottom:1px solid var(--line)'}, row, el('div', {class: 'bar'}, el('i', {style: `width:${pct}%`}))));
-  });
-  // przegląd dnia
-  const cur = S.journal.find(e => e.date === td) || {wins: '', lesson: '', tomorrow: ''};
-  const f = (id, label, ph, v) => el('label', {style: 'margin-top:8px'}, label, el('textarea', {id, 'data-k': `${id}-${td}`, placeholder: ph, maxlength: '500'}, v));
-  kids.push(el('h2', {style: 'margin-top:18px'}, 'Wieczorny przegląd'), el('p', {class: 'sub'}, 'Dwie minuty przed snem: co poszło, czego się nauczyłeś, co jutro jako pierwsze.'),
-    f('r1', 'Co poszło dobrze?', 'np. zrobiłem raport przed 11:00', cur.wins), f('r2', 'Czego się nauczyłem?', 'np. praca w blokach bez telefonu działa', cur.lesson), f('r3', 'Co jutro jako pierwsze?', 'np. zadzwonić do klienta', cur.tomorrow));
-  const save = el('button', {class: 'btn p', type: 'button'}, S.journal.some(e => e.date === td) ? 'Zaktualizuj przegląd' : 'Zapisz przegląd');
-  save.addEventListener('click', () => { const e = {date: td, wins: $('r1').value.trim(), lesson: $('r2').value.trim(), tomorrow: $('r3').value.trim()}; if (!e.wins && !e.lesson && !e.tomorrow) { toast('Wpisz choć jedną rzecz.'); return; } S.journal = [...S.journal.filter(x => x.date !== td), e].sort((a, b) => a.date.localeCompare(b.date)).slice(-120); clean($('r1'), $('r2'), $('r3')); persist('alfred_journal'); renderMore(); toast('Przegląd zapisany.'); });
-  kids.push(el('div', {class: 'row', style: 'margin-top:10px'}, save, el('button', {class: 'btn', type: 'button', onclick: () => ask('review', 'Pomóż mi z przeglądem dnia')}, 'Pomóż mi (Alfred)')));
-  const prev = S.journal.filter(e => e.date !== td).slice(-3).reverse();
-  if (prev.length) { kids.push(el('h3', null, 'Poprzednie przeglądy')); prev.forEach(e => kids.push(el('div', {class: 'note', style: 'margin:4px 0'}, el('b', null, e.date + ': '), [e.wins && 'dobrze: ' + e.wins, e.lesson && 'nauka: ' + e.lesson, e.tomorrow && 'jutro: ' + e.tomorrow].filter(Boolean).join(' · ')))); }
-  // tydzień
-  if (T) {
-    const w = T.week, max = Math.max(3, ...w.days.map(x => x.tasks_done));
-    kids.push(el('h2', {style: 'margin-top:18px'}, 'Tydzień w liczbach'), el('div', {class: 'wk', 'aria-label': 'Zrobione zadania w ostatnich 7 dniach'}, ...w.days.map(x => el('div', null, el('i', {style: `height:${Math.round(x.tasks_done / max * 72)}px`, title: `${x.date}: ${x.tasks_done}`}), String(x.tasks_done), el('br'), new Date(x.date + 'T12:00:00').toLocaleDateString('pl-PL', {weekday: 'short'})))),
-      el('p', {class: 'note'}, `Zrobione zadania: ${w.tasks_done}` + (w.habit_rate != null ? ` · nawyki wykonane w ${w.habit_rate}% dni` : '') + (w.best_streak ? ` · najdłuższa seria: ${w.best_streak} dni` : '')),
-      el('div', {class: 'row'}, el('button', {class: 'btn sm', type: 'button', onclick: () => ask('week', 'Przegląd tygodnia')}, 'Poproś Alfreda o przegląd tygodnia')));
-  }
-  rerender(box, kids);
+// ----------------------------------------------------------------- pieniądze i uwagi
+function renderMoney() {
+  const box = $('money'), T = S.today;
+  if (!T) { box.replaceChildren(el('div', null, el('div', {class: 'm-sub'}, 'Pieniądze'), el('div', {class: 'm-num'}, '…'))); return; }
+  const m = T.money, st = T.deals.stats, c = st.counts, prog = c.kupione + c.wystawione, p = m.profit_month == null ? 0 : m.profit_month, att = T.deals.attention.length;
+  const num = el('div', {class: 'm-num ' + (p > 0 ? 'c-up' : p < 0 ? 'c-down' : '')}); Calm.countUp(num, p, {fmt: zl});
+  const sub = [prog ? `${prog} ${plural(prog, 'oferta', 'oferty', 'ofert')} w toku` : 'Brak ofert w toku', m.goal ? `cel ${zl(m.goal)}` : ''].filter(Boolean).join(' · ');
+  box.replaceChildren(el('div', null, el('div', {class: 'm-sub'}, 'Pieniądze w tym miesiącu', att ? el('span', {class: 'm-dot', title: 'Coś czeka na decyzję'}) : null), num, el('div', {class: 'm-sub'}, sub)), el('span', {class: 'm-arrow', 'aria-hidden': 'true'}, '›'));
 }
-
-// ----------------------------------------------------------------- pytaj Alfreda (rola „alfred”), zamiana rozmowy na zadania, głos
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition, canSpeak = 'speechSynthesis' in window;
-let busy = false, speakOn = lg('alfred_speak') === '1';
-try { S.chat = JSON.parse(lg('alfred_chat')) || []; } catch (e) { S.chat = []; }
-function drawChat() {
-  const c = $('chat'); if (!c) return; c.replaceChildren(...S.chat.map(m => el('div', {class: 'm ' + (m.role === 'user' ? 'u' : 'a')}, m.shown || m.content)));
-  const show = S.chat.length > 0 && S.chatOpen, hist = $('chatHist'); c.style.display = show ? '' : 'none'; c.scrollTop = c.scrollHeight; ls('alfred_chat', JSON.stringify(S.chat.slice(-30)));
-  hist.style.display = S.chat.length && !S.chatOpen ? '' : 'none'; hist.textContent = `Pokaż poprzednią rozmowę (${S.chat.length})`;
-  const tools = $('chatTools'); if (tools) tools.style.display = show && S.chat.some(m => m.role === 'assistant') ? '' : 'none';
-}
-function speak(text) { if (!canSpeak || !speakOn) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text.slice(0, 1500)); u.lang = 'pl-PL'; speechSynthesis.speak(u); } catch (e) { /* głos jest dodatkiem */ } }
-function renderAsk() {
-  const box = $('ask'), inp = el('input', {id: 'cin', placeholder: 'Zapytaj Alfreda: co dziś najważniejsze? jak zmieścić trening? co z celem, który stoi?', 'aria-label': 'Wiadomość do Alfreda', maxlength: '4000', class: 'grow'});
-  const send = el('button', {class: 'btn p', type: 'button'}, 'Wyślij'); send.addEventListener('click', () => { const t = inp.value; inp.value = ''; ask(null, t); });
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter') send.click(); });
-  const row = el('div', {class: 'row'}, inp, send);
-  if (SR) { const mic = el('button', {class: 'btn', type: 'button', title: 'Powiedz zamiast pisać (w Chrome rozpoznawanie mowy korzysta z usług Google)'}, 'Mów'); mic.addEventListener('click', () => { const r = new SR(); r.lang = 'pl-PL'; r.interimResults = false; mic.textContent = 'Słucham…'; r.onresult = ev => { inp.value = (inp.value + ' ' + ev.results[0][0].transcript).trim(); }; r.onend = () => { mic.textContent = 'Mów'; }; r.onerror = () => { mic.textContent = 'Mów'; toast('Nie udało się rozpoznać mowy (zezwól na mikrofon lub użyj klawiatury).'); }; try { r.start(); } catch (e) { mic.textContent = 'Mów'; } }); row.append(mic); }
-  const quick = el('div', {class: 'row', style: 'margin-top:8px'}); [['morning', 'Briefing teraz'], ['tomorrow', 'Plan na jutro'], ['week', 'Przegląd tygodnia']].forEach(([k, l]) => quick.append(el('button', {class: 'btn sm', type: 'button', onclick: () => ask(k, l)}, l)));
-  quick.append(el('button', {class: 'btn sm', type: 'button', title: 'Szuka w internecie (płatne wyszukiwanie, dobowy limit)', onclick: () => ask('radar', 'Radar narzędzi i pomysłów', true)}, 'Radar narzędzi (szuka w internecie)'));
-  const tools = el('div', {class: 'row', id: 'chatTools', style: 'display:none;margin-top:4px'}, el('button', {class: 'btn sm p', type: 'button', onclick: chatToTasks}, 'Zamień rozmowę na zadania'), el('button', {class: 'btn sm', type: 'button', onclick: () => { S.chat = []; S.proposal = null; drawChat(); renderProposal(); }}, 'Wyczyść'));
-  if (canSpeak) { const lab = el('label', {style: 'display:inline-flex;gap:6px;align-items:center;font-size:.8rem;color:var(--ink);margin-left:auto'}), cb = el('input', {type: 'checkbox', style: 'width:16px;height:16px'}); cb.checked = speakOn; cb.addEventListener('change', () => { speakOn = cb.checked; ls('alfred_speak', speakOn ? '1' : '0'); if (!speakOn) { try { speechSynthesis.cancel(); } catch (e) { /* brak */ } } }); lab.append(cb, 'Czytaj odpowiedzi na głos'); quick.append(lab); }
-  box.replaceChildren(el('h2', null, 'Zapytaj Alfreda'), row, quick, el('button', {class: 'btn sm', id: 'chatHist', type: 'button', onclick: () => { S.chatOpen = true; drawChat(); }}), el('div', {id: 'chat', 'aria-live': 'polite'}), el('div', {id: 'proposal'}), tools, el('p', {class: 'note', id: 'cst'}, ''));
-  drawChat(); renderProposal();
-}
-async function ask(promptKey, label, search) {
-  if (busy) { toast('Alfred jeszcze odpowiada.'); return; }
-  const text = promptKey ? (S.prompts[promptKey] || '') : label; if (!text.trim()) { toast(promptKey ? 'Prompt niedostępny: odśwież stronę.' : ''); return; }
-  busy = true; S.chatOpen = true; const cst = $('cst'); cst.textContent = search ? 'Alfred przeszukuje internet (do ok. 2 minut)…' : 'Alfred myśli…';
-  S.chat.push({role: 'user', content: text, shown: promptKey ? `▸ ${label}` : text}); drawChat(); $('ask').scrollIntoView({behavior: 'smooth', block: 'nearest'});
-  try {
-    const msgs = S.chat.slice(-20).map(m => ({role: m.role, content: m.content})); while (msgs.length && msgs[0].role !== 'user') msgs.shift();
-    const reply = await AI.run('alfred', msgs, !!search);
-    S.chat.push({role: 'assistant', content: reply}); cst.textContent = ''; speak(reply);
-    if (promptKey === 'morning') { S.brief = {date: ymd(new Date()), ts: Math.floor(Date.now() / 1000), kind: 'ai', text: reply}; renderNext(); }
-  } catch (e) { cst.textContent = 'Błąd: ' + e.message; S.chat.pop(); }
-  busy = false; drawChat(); loadMeta();
-}
-async function chatToTasks() {
-  if (busy) { toast('Alfred jeszcze odpowiada.'); return; }
-  busy = true; const cst = $('cst'); cst.textContent = 'Alfred wybiera zadania z rozmowy…';
-  try {
-    const msgs = [...S.chat.slice(-20).map(m => ({role: m.role, content: m.content})), {role: 'user', content: S.prompts.tasks || ''}]; while (msgs.length && msgs[0].role !== 'user') msgs.shift();
-    const j = JSON.parse(await AI.run('tasks', msgs, false)); cst.textContent = '';
-    if (!j.tasks.length) toast(j.error || 'Alfred nie znalazł konkretnych zadań w tej rozmowie.');
-    else { S.proposal = j.tasks.map(t => ({...t, on: true})); renderProposal(); }
-  } catch (e) { cst.textContent = 'Błąd: ' + e.message; }
-  busy = false;
-}
-function renderProposal() {
-  const box = $('proposal'); if (!box) return; box.replaceChildren(); if (!S.proposal) return;
-  const p = el('div', {class: 'prop'}, el('b', null, 'Proponowane zadania (odznacz zbędne):'));
-  S.proposal.forEach(t => { const cb = el('input', {type: 'checkbox', style: 'width:16px;height:16px;flex:none'}); cb.checked = t.on; cb.addEventListener('change', () => { t.on = cb.checked; }); p.append(el('label', null, cb, el('span', null, `${t.text} `, el('span', {class: 'badge'}, `${t.min} min`), ' ', el('span', {class: 'badge'}, t.date)))); });
-  p.append(el('div', {class: 'row', style: 'margin-top:8px'}, el('button', {class: 'btn p sm', type: 'button', onclick: () => { const add = S.proposal.filter(t => t.on); add.forEach(t => S.tasks.push({t: newId(), text: t.text, date: t.date, done: false, top: false, done_ts: null, min: t.min, ref: ''})); S.proposal = null; persist('alfred_tasks'); renderTasks(); renderProposal(); renderHero(); toast(`Dodano do planu: ${add.length}.`); }}, 'Dodaj zaznaczone do planu'), el('button', {class: 'btn sm', type: 'button', onclick: () => { S.proposal = null; renderProposal(); }}, 'Anuluj')));
-  box.append(p);
+function renderAlerts() {
+  const box = $('alerts'), xs = ((S.today && S.today.alerts) || []).filter(a => a.level !== 'info').slice(0, 4);
+  box.hidden = !xs.length; if (!xs.length) return;
+  box.replaceChildren(el('div', {class: 'pane-h'}, el('div', {class: 'pane-t'}, 'Uwagi')), ...xs.map(a => el('div', {class: 'a-item'}, el('span', {class: 'a-ico' + (a.level === 'bad' ? ' bad' : '')}, '!'), el('span', null, a.text))));
 }
 
 // ----------------------------------------------------------------- tryb skupienia
-let focusT = null;
-function focusStart(t, mins) { S.focus = {t: t.t, title: t.text, end: Date.now() + mins * 60000, mins, over: false}; clearInterval(focusT); focusT = setInterval(renderFocus, 1000); renderFocus(); }
+let focusT = null, ringC = null, audio = null;
+function beep() { try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); [0, .28].forEach(d => { const o = audio.createOscillator(), g = audio.createGain(); o.frequency.value = 880; o.type = 'sine'; g.gain.setValueAtTime(.0001, audio.currentTime + d); g.gain.exponentialRampToValueAtTime(.25, audio.currentTime + d + .03); g.gain.exponentialRampToValueAtTime(.0001, audio.currentTime + d + .24); o.connect(g).connect(audio.destination); o.start(audio.currentTime + d); o.stop(audio.currentTime + d + .26); }); } catch (e) { /* brak dźwięku */ } }
+function focusStart(t, mins) {
+  S.focus = {t: t.t, title: t.text, end: Date.now() + mins * 60000, total: mins * 60000, over: false}; clearInterval(focusT); focusT = setInterval(renderFocus, 1000);
+  ringC = Calm.ring(56, 6); renderFocus(true); alf.mood(null); touch();
+}
 function focusStop() { S.focus = null; clearInterval(focusT); renderFocus(); }
-function renderFocus() {
-  const box = $('focus'), f = S.focus; if (!f) { box.className = ''; box.replaceChildren(); document.title = 'Dziś'; return; }
+function renderFocus(first) {
+  const box = $('focus'), f = S.focus; if (!f) { box.classList.remove('on', 'over'); document.title = 'Alfred'; return; }
   const left = Math.max(0, Math.round((f.end - Date.now()) / 1000)), txt = `${pad(Math.floor(left / 60))}:${pad(left % 60)}`;
-  if (left === 0 && !f.over) { f.over = true; toast('Czas minął. Zrobione?'); }
-  document.title = left ? `⏱ ${txt} · ${f.title.slice(0, 30)}` : 'Czas minął · Dziś';
-  box.className = 'on' + (f.over ? ' end' : '');
-  const t = taskById(f.t);
-  box.replaceChildren(el('div', {class: 'in'}, el('span', {class: 'tm'}, f.over ? 'Koniec' : txt), el('span', {style: 'flex:1;min-width:120px'}, 'Skupienie: ', el('b', null, f.title)),
-    t ? el('button', {class: 'btn p', type: 'button', onclick: () => { markDone(t); focusStop(); }}, 'Zrobione') : null, f.over ? el('button', {class: 'btn', type: 'button', onclick: () => focusStart(t || {t: f.t, text: f.title}, 10)}, '+10 min') : null, el('button', {class: 'btn', type: 'button', onclick: focusStop}, 'Zakończ')));
+  if (left === 0 && !f.over) { f.over = true; beep(); alf.say('Czas minął. Zrobione?', {keep: true, speak: Voice.cfg.on, mood: 'happy', actions: [{label: 'Zrobione', primary: true, onclick: () => { const t = taskById(f.t); focusStop(); if (t) completeTask(t.t); }}, {label: '+10 min', onclick: () => { f.end = Date.now() + 600000; f.total = 600000; f.over = false; }}]}); autoBubble = false; }
+  document.title = left ? `⏱ ${txt} · ${f.title.slice(0, 28)}` : 'Czas minął · Alfred';
+  if (first || !box.firstChild) { box.replaceChildren(el('div', {class: 'f-ring'}, ringC.el, el('div', {class: 'f-tm'})), el('div', {class: 'f-info'}, el('b', null, f.title), el('span', null, 'Skupienie')), el('button', {class: 'alf-btn p', type: 'button', onclick: () => { const t = taskById(f.t); focusStop(); if (t) completeTask(t.t); }}, 'Zrobione'), el('button', {class: 'alf-btn', type: 'button', onclick: focusStop}, 'Zakończ')); }
+  box.querySelector('.f-tm').textContent = f.over ? '✓' : txt; ringC.set(1 - left / (f.total / 1000)); box.classList.toggle('over', f.over); box.classList.add('on');
 }
 
-// ----------------------------------------------------------------- systemy (leniwie)
-async function renderSystems() {
-  const box = $('sysBody'); box.replaceChildren(el('p', {class: 'mut'}, 'Ładuję…'));
+// ----------------------------------------------------------------- szuflada „Więcej”
+let sheetRef = null; const sheetClose = () => { if (sheetRef) { sheetRef.close(); sheetRef = null; } };
+function openMore() {
+  const body = el('div'), sec = (title, ...k) => { const d = el('details', {class: 's-sec'}, el('summary', null, title), el('div', null, ...k)); return d; };
+  const td = today();
+  // cele
+  const goals = el('div'); const drawGoals = () => {
+    goals.replaceChildren(); const mp = S.today ? S.today.money : {profit_month: null, goal: null};
+    if (!S.goals.length) goals.append(el('p', {class: 'c-note'}, 'Jeden dobry cel z liczbą i terminem wystarczy na start. Cel „Zarobki” sam liczy postęp z zakładki Zarabiaj.'));
+    S.goals.forEach(g => {
+      const auto = g.kind === 'zarobki', cur = auto ? mp.profit_month : g.current, tgt = auto ? (g.target || mp.goal) : g.target, pct = cur != null && tgt ? Math.max(0, Math.min(100, cur / tgt * 100)) : 0, ut = auto ? 'zł' : g.unit;
+      const left = g.due ? Math.ceil((new Date(g.due + 'T23:59:59') - new Date()) / 86400000) : null;
+      const row = el('div', {class: 'row'}, el('span', null, el('b', null, g.name), el('span', {class: 'c-mut'}, ` · ${cur == null ? 'brak danych' : nf(cur, Number.isInteger(cur) ? 0 : 1)}${tgt ? ' z ' + nf(tgt, Number.isInteger(tgt) ? 0 : 1) : ''} ${ut}`.trimEnd() + (left != null ? (left >= 0 ? ` · zostało ${left} dni` : ` · termin minął ${-left} dni temu`) : ''))));
+      const ctl = el('span', {style: 'display:flex;gap:6px;align-items:center'});
+      if (!auto) { const c = el('input', {class: 's-in', type: 'number', step: 'any', value: g.current == null ? '' : String(g.current), 'aria-label': 'Postęp: ' + g.name, style: 'width:86px;min-height:38px;margin:0;padding:6px 10px'}); c.addEventListener('change', () => { g.current = c.value === '' ? null : Number(c.value); persist('alfred_goals'); drawGoals(); }); ctl.append(c); }
+      ctl.append(el('button', {class: 'alf-btn', type: 'button', 'aria-label': 'Usuń cel ' + g.name, style: 'padding:4px 12px;min-height:36px', onclick: () => { if (confirm(`Usunąć cel „${g.name}”?`)) { S.goals = S.goals.filter(x => x.t !== g.t); persist('alfred_goals'); drawGoals(); } }}, '×')); row.append(ctl);
+      goals.append(el('div', {class: 's-goal'}, row, el('div', {class: 'c-prog', style: 'margin:8px 0 0'}, el('i', {style: `width:${pct}%`}))));
+    });
+  }; drawGoals();
+  const gname = el('input', {class: 's-in', placeholder: 'Nowy cel, np. Przeczytać 3 książki', maxlength: '100', 'aria-label': 'Nowy cel'}), gkind = el('select', {class: 's-in', 'aria-label': 'Rodzaj celu'}, el('option', {value: 'manual'}, 'Ręczny'), el('option', {value: 'zarobki'}, 'Zarobki (liczy się sam)'));
+  const gt = el('input', {class: 's-in', type: 'number', min: '0', step: 'any', placeholder: 'Wartość docelowa', 'aria-label': 'Wartość docelowa'}), gu = el('input', {class: 's-in', placeholder: 'Jednostka', maxlength: '12', 'aria-label': 'Jednostka'}), gd = el('input', {class: 's-in', type: 'date', 'aria-label': 'Termin celu'});
+  const addGoal = () => { const n = gname.value.trim(); if (!n || S.goals.length >= 30) return; S.goals.push({t: newId(), name: n, kind: gkind.value, target: gt.value === '' ? null : Number(gt.value), current: gkind.value === 'manual' ? 0 : null, unit: gu.value.trim(), due: gd.value || ''}); persist('alfred_goals'); gname.value = gt.value = gu.value = gd.value = ''; drawGoals(); };
+  const sGoals = sec('Cele', goals, el('div', {class: 'f-grid', style: 'margin-top:12px'}, gname, gkind, gt, gu, gd), el('button', {class: 'alf-btn p', type: 'button', style: 'margin-top:12px', onclick: addGoal}, 'Dodaj cel'));
+  // przegląd dnia
+  const cur = S.journal.find(e => e.date === td) || {wins: '', lesson: '', tomorrow: ''};
+  const ta = (l, v, ph) => el('label', {class: 'f-lab', style: 'margin-top:10px'}, l, el('textarea', {placeholder: ph, maxlength: '500'}, v));
+  const r1 = ta('Co poszło dobrze?', cur.wins, 'np. zrobiłem raport przed 11:00'), r2 = ta('Czego się nauczyłem?', cur.lesson, 'np. praca w blokach bez telefonu działa'), r3 = ta('Co jutro jako pierwsze?', cur.tomorrow, 'np. zadzwonić do klienta');
+  const saveRev = el('button', {class: 'alf-btn p', type: 'button', onclick: () => { const e = {date: td, wins: r1.querySelector('textarea').value.trim(), lesson: r2.querySelector('textarea').value.trim(), tomorrow: r3.querySelector('textarea').value.trim()}; if (!e.wins && !e.lesson && !e.tomorrow) { Calm.toast('Wpisz choć jedną rzecz.'); return; } S.journal = [...S.journal.filter(x => x.date !== td), e].sort((a, b) => a.date.localeCompare(b.date)).slice(-120); persist('alfred_journal'); Calm.toast('Przegląd zapisany.'); }}, 'Zapisz przegląd');
+  const sRev = sec('Przegląd dnia', el('p', {class: 'c-note', style: 'margin-top:0'}, 'Dwie minuty przed snem. Możesz też poprosić Alfreda, żeby poprowadził Cię pytaniami (głosem albo pisząc).'), r1, r2, r3, el('div', {class: 'alf-actions', style: 'margin-top:12px'}, saveRev, el('button', {class: 'alf-btn', type: 'button', onclick: () => startReview()}, 'Poprowadź mnie')));
+  if (new Date().getHours() >= 19) sRev.open = true;
+  // tydzień
+  const T = S.today, wk = el('div');
+  if (T) { const w = T.week, max = Math.max(3, ...w.days.map(x => x.tasks_done)); wk.append(el('div', {class: 's-wk', 'aria-label': 'Zrobione zadania w ostatnich 7 dniach'}, ...w.days.map(x => el('div', null, el('i', {style: `height:${Math.round(x.tasks_done / max * 78)}px`, title: `${x.date}: ${x.tasks_done}`}), String(x.tasks_done), el('br'), new Date(x.date + 'T12:00:00').toLocaleDateString('pl-PL', {weekday: 'short'})))),
+    el('p', {class: 'c-note'}, `Zrobione zadania: ${w.tasks_done}` + (w.habit_rate != null ? ` · nawyki wykonane w ${w.habit_rate}% dni` : '') + (w.best_streak ? ` · najdłuższa seria: ${w.best_streak} dni` : '')), el('button', {class: 'alf-btn', type: 'button', onclick: () => { sheetClose(); askPrompt('Przegląd tygodnia', S.prompts.week || 'Przegląd mojego tygodnia.'); }}, 'Przegląd tygodnia od Alfreda')); } else wk.append(el('p', {class: 'c-note'}, 'Brak danych (serwer niedostępny).'));
+  const sWeek = sec('Tydzień w liczbach', wk);
+  // briefing
+  const sBrief = sec('Poranny briefing', S.brief && S.brief.text ? el('div', {style: 'white-space:pre-wrap;overflow-wrap:anywhere;font-size:.94rem'}, S.brief.text) : el('p', {class: 'c-note'}, 'Brak briefingu.'), el('div', {class: 'alf-actions', style: 'margin-top:12px'}, S.brief && S.brief.text ? el('button', {class: 'alf-btn', type: 'button', onclick: () => { sheetClose(); speakBrief(); }}, 'Posłuchaj') : null, el('button', {class: 'alf-btn', type: 'button', onclick: () => { sheetClose(); askPrompt('Poranny briefing', S.prompts.morning || 'Poranny briefing na dziś.'); }}, 'Zrób nowy (AI)')));
+  // rozmowa
+  const hist = el('div', {class: 's-hist'}); const hs = alf.history; if (!hs.length) hist.append(el('p', {class: 'c-note'}, 'Jeszcze nie rozmawialiśmy.')); hs.forEach(m => hist.append(el('div', {class: 'm ' + (m.role === 'user' ? 'u' : 'a')}, Intent.plain(m.shown || m.content))));
+  const sChat = sec('Rozmowa', hist, el('button', {class: 'alf-btn', type: 'button', style: 'margin-top:12px', onclick: () => { alf.clear(); hist.replaceChildren(el('p', {class: 'c-note'}, 'Wyczyszczone.')); }}, 'Wyczyść rozmowę'));
+  // głos
+  const vbox = el('div'); const sVoice = sec('Głos', vbox); Alfred.settingsUI(vbox, alf);
+  // co potrafię
+  const ex = el('ul', {class: 's-ex'}, ...['„dodaj zadanie raport 45 minut jutro”', '„co dalej”, „start”, „zrobione”, „później”', '„plan na jutro”, „ile zarobiłem”', '„dodaj nawyk czytanie”', '„otwórz zarabiaj”'].map(x => el('li', null, x)));
+  const sCan = sec('Co potrafię', ex, el('div', {class: 'alf-actions', style: 'margin-top:12px'}, el('button', {class: 'alf-btn', type: 'button', title: 'Szuka w internecie (płatne wyszukiwanie, dobowy limit)', onclick: () => { sheetClose(); askPrompt('Radar narzędzi', S.prompts.radar || 'Radar narzędzi i pomysłów.', {search: true}); }}, 'Radar narzędzi (szuka w internecie)')));
+  // systemy
+  const sysBox = el('div'); const sSys = sec('Systemy', sysBox); let loaded = false;
+  sSys.addEventListener('toggle', async () => { if (!sSys.open || loaded) return; loaded = true; sysBox.replaceChildren(el('p', {class: 'c-note'}, 'Ładuję…')); await renderSystems(sysBox); });
+  body.append(sGoals, sRev, sWeek, sBrief, sChat, sVoice, sCan, sSys);
+  sheetRef = Calm.sheet({title: 'Więcej', body, onClose: () => { sheetRef = null; }});
+}
+async function renderSystems(box) {
   const [bot, bk, ag] = await Promise.all([api('bot'), api('backup'), api('agenda')]); const st = bot && bot.status;
   const ago = s => s == null ? 'n/d' : s < 5400 ? Math.round(s / 60) + ' min temu' : s < 172800 ? Math.round(s / 3600) + ' h temu' : Math.round(s / 86400) + ' dni temu';
-  const tile = (v, l, s, c) => el('div', null, el('b', {class: c || ''}, v), el('span', null, l), s ? el('small', {class: 'mut', style: 'display:block'}, s) : null);
+  const tile = (v, l, s) => el('div', null, el('b', null, v), el('span', null, l), s ? el('span', {style: 'display:block'}, s) : null);
   const tiles = [st ? tile(st.equity != null ? nf(st.equity) + ' USDT' : 'n/d', `bot (${st.mode || '?'})`, st.pnl_today != null ? `dziś ${st.pnl_today >= 0 ? '+' : '−'}${nf(Math.abs(st.pnl_today), 2)} USDT` : '') : tile('n/d', 'bot', 'brak danych'),
-    bk && bk.ts ? tile(bk.age_s == null ? 'brak' : ago(bk.age_s), 'kopia zapasowa', bk.ok === false ? 'ostatnia próba nieudana' : '') : tile('nie ma', 'kopia zapasowa', 'Dysk Google nie podłączony', 'mut'),
-    ag && ag.configured ? tile(ag.age_s == null ? 'brak' : ago(ag.age_s), 'kalendarz', ag.ok ? `${(ag.events || []).length} wydarzeń` : 'są błędy') : tile('nie ma', 'kalendarz', 'nie podłączony', 'mut'),
+    bk && bk.ts ? tile(bk.age_s == null ? 'brak' : ago(bk.age_s), 'kopia zapasowa', bk.ok === false ? 'ostatnia próba nieudana' : '') : tile('nie ma', 'kopia zapasowa', 'Dysk Google nie podłączony'),
+    ag && ag.configured ? tile(ag.age_s == null ? 'brak' : ago(ag.age_s), 'kalendarz', ag.ok ? `${(ag.events || []).length} wydarzeń` : 'są błędy') : tile('nie ma', 'kalendarz', 'nie podłączony'),
     S.ai ? tile(S.ai.ready ? 'działa' : 'wyłączony', 'Alfred (AI)', S.ai.search_limit != null ? `przeglądy internetu dziś: ${S.ai.search_left}/${S.ai.search_limit}` : '') : tile('n/d', 'Alfred (AI)', '')];
-  const kids = [el('div', {class: 'kv', style: 'margin-top:8px'}, ...tiles)];
-  const info = ((S.today && S.today.alerts) || []).filter(a => a.level === 'info'); if (info.length) { kids.push(el('h3', null, 'Podpowiedzi')); info.forEach(a => kids.push(el('p', {class: 'note', style: 'margin:3px 0'}, '• ' + a.text))); }
-  kids.push(el('p', {class: 'note'}, 'Szczegóły bota: zakładka Bot. Kopia zapasowa i kalendarz: instrukcja serwera.'));
-  box.replaceChildren(...kids);
+  const info = ((S.today && S.today.alerts) || []).filter(a => a.level === 'info');
+  box.replaceChildren(el('div', {class: 's-tiles'}, ...tiles), ...(info.length ? [el('p', {class: 'c-note'}, 'Podpowiedzi:')].concat(info.map(a => el('p', {class: 'c-note', style: 'margin:3px 0'}, '• ' + a.text))) : []), el('p', {class: 'c-note'}, 'Szczegóły bota: zakładka Bot. Kopia zapasowa i kalendarz: instrukcja serwera.'));
 }
+$('moreBtn').addEventListener('click', openMore);
 
 // ----------------------------------------------------------------- start
-function renderAll() { renderHero(); renderBanner(); renderAlerts(); renderNext(); renderPlan(); renderTasks(); renderHabits(); renderMoney(); renderMore(); }
-async function loadToday() { const t = await api('today'); if (t) { S.today = t; if (S.offline) { S.offline = false; syncAll(); } } else { S.offline = true; retrySoon(); } renderBanner(); renderHero(); renderAlerts(); renderNext(); renderPlan(); renderMoney(); renderMore(); }
-async function loadMeta() { const al = await api('alfred'); if (al) { S.ai = al.ai; S.prompts = al.prompts || {}; const sb = al.briefing; if (sb && sb.text && !(S.brief && S.brief.ts >= (sb.ts || 0))) S.brief = sb; renderNext(); } }
+function renderAll() { renderBanner(); renderPlan(); renderHabits(); renderMoney(); renderAlerts(); showNext(); }
+async function loadToday() {
+  const t = await api('today');
+  if (t) { S.today = t; if (S.offline) { S.offline = false; syncAll(); } } else { S.offline = true; retrySoon(); }
+  if (!autoBubble && Date.now() - lastTouch > 90000 && !alf.busy && !S.review && !S.focus) autoBubble = true;
+  renderAll();
+}
+async function loadMeta() { const al = await api('alfred'); if (al) { S.ai = al.ai; S.prompts = al.prompts || {}; const sb = al.briefing; if (sb && sb.text && !(S.brief && S.brief.ts >= (sb.ts || 0))) S.brief = sb; showNext(); alf.setChips(autoBubble ? chips() : []); } }
 (async () => {
-  renderAsk(); renderAll();
+  alf = Alfred.mount($('stage'), {role: 'alfred', page: 'dzis', onCommand, intercept, helpText: HELP, ask: (msgs, so) => AI.run('alfred', msgs, !!so.search)});
+  renderAll(); showNext(true);
   const loaded = await Promise.all(Object.keys(KEYS).map(k => UD.load(k)));
   Object.keys(KEYS).forEach((k, i) => { S[KEYS[k][0]] = KEYS[k][1](loaded[i].value); if (loaded[i].offline) S.offline = true; });
-  if (new Date().getHours() >= 19) $('more').open = true;
-  renderAll(); await Promise.all([loadToday(), loadMeta()]);
-  $('systems').addEventListener('toggle', () => { if ($('systems').open) renderSystems(); });
-  setInterval(() => { renderHero(); }, 30000); setInterval(loadToday, 120000);
+  renderAll(); await Promise.all([loadToday(), loadMeta()]); showNext(true);
+  setInterval(loadToday, 120000); setInterval(() => { if (!S.focus) renderPlan(); }, 60000);
+  window.__alfred = alf;
 })();
 })();
 </script>

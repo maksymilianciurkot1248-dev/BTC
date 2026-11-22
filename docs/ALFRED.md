@@ -1,4 +1,4 @@
-# Alfred: osobisty plan dnia i asystent (strona `alfred.html`, w menu „Dziś”)
+# Alfred: asystent głosowy, plan dnia i kalendarz (strona `alfred.html`)
 
 Stan na 22.11.2026. Cel: strona, z którą rozwijasz się codziennie: widzi Twój kalendarz, zadania, nawyki i cele, rano mówi, co dziś najważniejsze,
 wieczorem pomaga podsumować dzień i przez cały czas odpowiada jak doradca (inspiracja: Alfred z Batmana i J.A.R.V.I.S. z Iron Mana, bez teatralności).
@@ -77,3 +77,20 @@ Cel zmiany: mniej klikania i żeby pieniądze, plan dnia i rozmowy z doradcą op
 6. **Menu.** Dziś | Zarabiaj | Bot | Rynek (reszta stron analitycznych). Stare adresy `produkty.html`, `mentor.html`, `zarobki.html` przekierowują do Zarabiaj.
 
 Czego nie sprawdzałem: wszystko działa w testach na atrapach (kalendarz iCal z przykładu, model AI jako funkcja, rclone i giełdy jako atrapy) i w przeglądarce (Chromium) na prawdziwym API z tymi atrapami. Nie było próby z Twoim kalendarzem, prawdziwym modelem ani serwerem; pierwsze uruchomienie jest testem integracji.
+
+## 6. Interfejs: postać, głos i mniej wyborów (22.11, wieczór)
+
+Uwaga użytkownika: za dużo opcji i zakładek, nieczytelne; ma być miły dla oka, z animacjami i postacią z asystentem głosowym. Wybrana postać: kamerdyner w muszce (wariant C).
+
+| Decyzja | Dlaczego |
+|---|---|
+| Jeden ekran „Alfred”: postać, dymek z następnym krokiem, pole „powiedz albo napisz”, plan, nawyki, linijka o pieniądzach | mniej kart i przycisków naraz; reszta w szufladzie „Więcej” |
+| Zarabiaj bez zakładek: lista ofert z jednym głównym przyciskiem, kreator „Nowa oferta”, arkusz „Wyniki”, doradca jako ta sama postać | cztery zakładki zastąpione jedną listą i trzema wyskakującymi arkuszami |
+| Menu: Alfred, Zarabiaj, Bot, „Rynek”; na telefonie pasek na dole | było 3 pozycje + 8 stron w jednym rozwijanym menu na górze, bez paska dolnego |
+| Postać w SVG rysowana w kodzie (`assistant.js`) | działa bez obrazków i bibliotek, ładuje się od razu, dobrze się skaluje (od 44 do 600 px sprawdziłem na zrzutach) |
+| Głos przez Web Speech API przeglądarki, bez słowa wywołującego | bez kluczy i kosztów, bez podsłuchiwania w tle; dźwięk idzie do usługi przeglądarki (w Chrome, z tego co wiem, do Google) |
+| Proste polecenia obsługuje sama strona (`intent.js`), reszta idzie do AI | szybciej i bez kosztu API, a polecenia da się przetestować (72 przypadki w `tests/intent_cases.js`) |
+| Animacje CSS, wyłączane przez „ogranicz ruch” w systemie | wygląd bez utraty dostępności; test sprawdza, że przy ograniczonym ruchu animacje postaci są wyłączone |
+
+Pliki: `assistant.js` (postać, głos, scena), `intent.js` (polecenia po polsku), `calm.js` i `calm.css` (arkusze, powiadomienia z „Cofnij”, konfetti, wygląd), `alfred.html`, `zarabiaj.html`.
+Ograniczenia i ryzyka: jakość polskiego rozpoznawania mowy i głosu zależy od przeglądarki i systemu (nie sprawdzałem na prawdziwym urządzeniu); mikrofon wymaga HTTPS; rysunek postaci jest moim wyborem estetycznym i łatwo go zmienić w jednym miejscu (szablon SVG na początku `assistant.js`).

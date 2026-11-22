@@ -126,5 +126,24 @@ code,r=call('/api/flow'); assert code==200 and r['symbols']=={} and r['age_s'] i
 json.dump({"ts": int(time.time())-30, "symbols": {"BTCUSDT": {"score": 1.2, "lean": "wzrostowe", "parts": [], "info": {}}}, "accuracy": {"all": {"n": 0}, "oos": {"n": 0}}}, open(os.path.join(botd,'flow.json'),'w'))
 code,r=call('/api/flow'); assert code==200 and r['symbols']['BTCUSDT']['lean']=='wzrostowe' and 25<r['age_s']<60, r
 print('flow http ok')
+# --- dane użytkownika (zarobki, produkty, profil mentora): zapis, odczyt, konflikt, walidacja, CSRF
+code,r=call('/api/userdata?key=zarobki'); assert code==200 and r['found'] is False, r
+Zv={"entries":[{"idea":"rowery","kind":"in","amt":450,"date":"2026-11-20","note":"","t":1}],"goal":1000}
+code,r=call('/api/userdata','POST',{"key":"zarobki","value":Zv,"base_ts":0},X); assert code==200 and r['ts']>0, r
+ts1=r['ts']
+code,r=call('/api/userdata?key=zarobki'); assert code==200 and r['found'] and r['value']['goal']==1000 and r['ts']==ts1, r
+code,r=call('/api/userdata','POST',{"key":"zarobki","value":Zv,"base_ts":0},X); assert code==409 and r['ts']==ts1 and r['value']['goal']==1000, r
+code,r=call('/api/userdata','POST',{"key":"zarobki","value":Zv,"base_ts":ts1},X); assert code==200 and r['ts']>ts1, r
+code,r=call('/api/userdata','POST',{"key":"hasla","value":{},"base_ts":0},X); assert code==400, r
+code,r=call('/api/userdata?key=hasla'); assert code==400, r
+code,r=call('/api/userdata','POST',{"key":"zarobki","value":{"entries":"x"},"base_ts":0},X); assert code==400, r
+code,r=call('/api/userdata','POST',{"key":"zarobki","value":Zv,"base_ts":0}); assert code==403, r
+code,r=call('/api/userdata','POST',raw=b'x'*(300*1024+10),headers=dict(X,**{'Content-Type':'application/json'})); assert code==400, r
+print('userdata http ok')
+# --- kopia zapasowa: stan dla panelu
+code,r=call('/api/backup'); assert code==200 and r['configured'] is False and r['age_s'] is None and r['ts']==0, r
+json.dump({"ts":int(time.time())-100,"ok":True,"name":"btc-20261120-0350.tar.gz","size":123456,"files":12,"archives":5,"last_ok_ts":int(time.time())-100,"skipped":[],"warnings":[],"remote":"gdrive:btc-backup"},open(os.path.join(botd,'backup_status.json'),'w'))
+code,r=call('/api/backup'); assert code==200 and 90<r['age_s']<130 and r['archives']==5 and r['name'].startswith('btc-'), r
+print('backup http ok')
 srv.shutdown(); stop.set();
 print('api ok')

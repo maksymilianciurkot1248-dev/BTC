@@ -69,7 +69,7 @@ Rozmiar: S = kilka godzin, M = jedna sesja, L = kilka sesji.
 |---|---|---|---|
 | 5.1 | Kontrola usług i danych co 10 minut z jednym powiadomieniem na Telegram przy zmianie stanu (usługa nie działa, źródło milczy, przebieg bota starszy niż 15 minut) | S | test z zatrzymaną usługą daje jedno powiadomienie |
 | 5.2 | `btc-update`: testy przed instalacją i automatyczny powrót do poprzedniej kopii, gdy po instalacji usługa nie wstaje | M | celowo zepsuta wersja nie zatrzymuje serwera |
-| 5.3 | Kopia stanu i baz poza serwer raz na dobę, z instrukcją odtwarzania | S | odtworzenie na czysto sprawdzone raz |
+| 5.3 | ~~Kopia stanu i baz poza serwer raz na dobę, z instrukcją odtwarzania~~ ZROBIONE 22.11 (`btc_backup.py`, Dysk Google przez rclone, zakres drive.file; wymaga jednorazowego podłączenia przez Ciebie, `vps/INSTRUKCJA_VPS.md`) | S | zostaje: odtworzenie na czysto sprawdzone raz |
 | 5.4 | Scalper: uzgodnienie stanu z giełdą po restarcie (pozycja scalpera bez wpisu w stanie, wpis bez pozycji) | S | test z atrapą rozjazdu |
 | 5.5 | Cień bota dziennego na szerszym zestawie aktywów (ok. 60 zamiast 25), tylko symulacja | M | 2–3 razy więcej transakcji z cienia na miesiąc |
 | 5.6 | Pozostałe strony (Panel, Okazje, Rynki, Sytuacje) w stylu zakładki Bot: przegląd na górze, reszta zwinięta, wartości w procentach | M | brak przewijania w bok na telefonie, spójny wygląd |

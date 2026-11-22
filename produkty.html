@@ -81,7 +81,8 @@ td{padding:7px 9px;border-bottom:1px solid var(--line)} .r{text-align:right}
 
 <section class="card"><h2>Lista kandydatów</h2>
 <div class="tbl-w"><table><thead><tr><th>Nazwa</th><th class="r">Kupno</th><th class="r">Sprzedaż</th><th class="r">Zysk</th><th class="r">Zwrot</th><th class="r">Zł / godz.</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
-<p class="note" id="empty">Lista jest pusta. Dane zapisują się tylko w tej przeglądarce.</p>
+<p class="note" id="empty">Lista jest pusta.</p>
+<p class="note" id="lsync">Lista zapisuje się na serwerze (widać ją na telefonie i komputerze, wchodzi do kopii zapasowej).</p>
 </section>
 </div>
 <script>
@@ -150,16 +151,30 @@ $('find').addEventListener('click', async () => {
 });
 try { const f = JSON.parse(localStorage.getItem('produkty_found')); if (f && f.o) { $('q').value = $('q').value || f.q; links(); showFound(f.o, f.t); } } catch (e) { /* brak */ }
 const KEY = 'produkty_lista';
-const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } };
-const store = xs => { try { localStorage.setItem(KEY, JSON.stringify(xs)); } catch (e) { /* tryb prywatny */ } };
+let LIST = [], listLoaded = false;
+const load = () => LIST.slice();
+async function store(xs) {
+  LIST = xs.slice(-500); render(); if (!listLoaded) return;
+  const r = await UD.save('produkty_lista', LIST);
+  if (r.conflict) { LIST = r.value; render(); $('lsync').textContent = 'Lista zmieniona na innym urządzeniu: wczytano najnowszą wersję. Powtórz ostatnią zmianę, jeśli jej nie widać.'; }
+  else $('lsync').textContent = r.ok ? 'Zapisano na serwerze.' : r.offline ? 'Serwer niedostępny: lista tylko w tej przeglądarce.' : 'Błąd zapisu: ' + (r.error || '');
+}
 function render() {
-  const xs = load().sort((a, b) => b.profit - a.profit), tb = $('list'); tb.replaceChildren(); $('empty').style.display = xs.length ? 'none' : '';
+  const xs = LIST.slice().sort((a, b) => b.profit - a.profit), tb = $('list'); tb.replaceChildren(); $('empty').style.display = xs.length ? 'none' : '';
   xs.forEach((x, i) => { const tr = document.createElement('tr');
     [[x.name, ''], [zl(x.buy), 'r'], [zl(x.sell), 'r'], [zl(x.profit), 'r ' + (x.profit > 0 ? 'up' : 'down')], [nf(x.roi, 0) + '%', 'r'], [x.hr == null ? 'n/d' : zl(x.hr), 'r']].forEach(([t, c]) => { const td = document.createElement('td'); td.textContent = t; td.className = c; tr.appendChild(td); });
     const td = document.createElement('td'), b = document.createElement('button'); b.className = 'btn'; b.type = 'button'; b.textContent = 'Usuń'; b.addEventListener('click', () => { const all = load(); all.splice(all.findIndex(y => y.t === x.t), 1); store(all); render(); }); td.appendChild(b); tr.appendChild(td); tb.appendChild(tr); });
 }
-$('save').addEventListener('click', () => { const r = calc(); if (!r) return; const all = load(); all.push({...r, t: Date.now()}); store(all); render(); });
+$('save').addEventListener('click', () => { const r = calc(); if (!r) return; const all = load(); all.push({...r, t: Date.now()}); store(all); });
 calc(); render();
+(async () => {
+  const r = await UD.load('produkty_lista');
+  if (r.found) LIST = r.value || [];
+  else { try { LIST = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { LIST = []; } }   // stara lista z przeglądarki
+  listLoaded = true; render();
+  if (!r.found && LIST.length && !r.offline) store(LIST);
+  if (r.offline) $('lsync').textContent = 'Serwer niedostępny: pracujesz na kopii z tej przeglądarki.';
+})();
 })();
 </script>
 </body>

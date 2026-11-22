@@ -40,7 +40,7 @@ td{padding:7px 9px;border-bottom:1px solid var(--line)} .r{text-align:right}
 <p class="sub">Prywatny doradca, który proponuje legalne sposoby na poprawę finansów: handel produktami, usługi, własne produkty, szablony i wzory dokumentów.</p>
 <div class="warn"><b>To podpowiedzi, nie gwarancja zarobku i nie porada prawna ani podatkowa.</b> Liczby są szacunkami. Mentor nie pomaga w fałszowaniu dokumentów ani w niczym niezgodnym z prawem. Nie zna Twojego konta ani bota: wie tylko to, co sam wpiszesz niżej.</div>
 <section class="card"><h2>Twój profil</h2>
-<p class="sub">Zapisuje się w tej przeglądarce i jest wysyłany do mentora razem z pytaniem. Nie wpisuj tu haseł ani numerów kont.</p>
+<p class="sub">Zapisuje się na serwerze (wchodzi do kopii zapasowej, widać go na telefonie i komputerze) i jest wysyłany do mentora razem z pytaniem. Nie wpisuj tu haseł ani numerów kont.</p>
 <div class="grid">
 <label>Kapitał na start (zł)<input id="p_cap" type="number" min="0" step="50"></label>
 <label>Wolny czas (godz. tygodniowo)<input id="p_time" type="number" min="0" step="1"></label>
@@ -48,6 +48,7 @@ td{padding:7px 9px;border-bottom:1px solid var(--line)} .r{text-align:right}
 </div>
 <label style="margin-top:10px">Umiejętności, sprzęt, auto, miejsce na towar<textarea id="p_skills" placeholder="np. mam busa, umiem naprawiać rowery, garaż 20 m2"></textarea></label>
 <label style="margin-top:10px">Cel i termin<textarea id="p_goal" placeholder="np. +1500 zł miesięcznie w ciągu 3 miesięcy"></textarea></label>
+<p class="note" id="psync"></p>
 </section>
 <section class="card"><h2>Rozmowa</h2>
 <div id="chat"></div>
@@ -69,9 +70,24 @@ const post = (path, body) => api(path, {method: 'POST', headers: {'Content-Type'
 const lg = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const ls = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* tryb prywatny */ } };
 const F = ['p_cap', 'p_time', 'p_risk', 'p_skills', 'p_goal'];
-F.forEach(i => { const v = lg('mentor_' + i); if (v != null) $(i).value = v; $(i).addEventListener('input', () => ls('mentor_' + i, $(i).value)); });
+let zsum = '', pLoaded = false, pTimer = null;
+const getProfile = () => Object.fromEntries(F.map(i => [i, $(i).value]));
+const setProfile = p => F.forEach(i => { if (p && p[i] != null && p[i] !== '') $(i).value = p[i]; });
+async function saveProfile() {
+  ls('mentor_p_all', JSON.stringify(getProfile())); if (!pLoaded) return;
+  const r = await UD.save('mentor_profile', getProfile()); if (r.conflict) setProfile(r.value);
+  $('psync').textContent = r.ok ? 'Profil zapisany na serwerze.' : r.offline ? 'Serwer niedostępny: profil tylko w tej przeglądarce.' : '';
+}
+F.forEach(i => $(i).addEventListener('input', () => { clearTimeout(pTimer); pTimer = setTimeout(saveProfile, 700); }));
+(async () => {
+  const [p, z] = await Promise.all([UD.load('mentor_profile'), UD.load('zarobki')]);
+  zsum = UD.zarobkiSummary(z.value);
+  if (p.found) setProfile(p.value);
+  else { try { setProfile(JSON.parse(lg('mentor_p_all')) || Object.fromEntries(F.map(i => [i, lg('mentor_' + i)]))); } catch (e) { /* brak */ } }
+  pLoaded = true; if (!p.found && !p.offline) saveProfile();
+})();
 let hist = []; try { hist = JSON.parse(lg('mentor_hist')) || []; } catch (e) { hist = []; }
-const profile = () => 'Mój profil: kapitał ' + ($('p_cap').value || 'nie podano') + ' zł; wolny czas ' + ($('p_time').value || 'nie podano') + ' godz./tydz.; ryzyko: ' + $('p_risk').value + '; umiejętności i sprzęt: ' + ($('p_skills').value.trim() || 'nie podano') + '; cel: ' + ($('p_goal').value.trim() || 'nie podano') + '. Region: między Dębicą a Rzeszowem.' + (lg('zarobki_podsumowanie') ? ' ' + lg('zarobki_podsumowanie') : '');
+const profile = () => 'Mój profil: kapitał ' + ($('p_cap').value || 'nie podano') + ' zł; wolny czas ' + ($('p_time').value || 'nie podano') + ' godz./tydz.; ryzyko: ' + $('p_risk').value + '; umiejętności i sprzęt: ' + ($('p_skills').value.trim() || 'nie podano') + '; cel: ' + ($('p_goal').value.trim() || 'nie podano') + '. Region: między Dębicą a Rzeszowem.' + (zsum ? ' ' + zsum : '');
 function draw() { const c = $('chat'); c.replaceChildren(); hist.forEach(m => { const d = document.createElement('div'); d.className = 'm ' + (m.role === 'user' ? 'u' : 'a'); d.textContent = m.shown || m.content; c.appendChild(d); }); ls('mentor_hist', JSON.stringify(hist.slice(-20))); }
 let busy = false;
 async function ask(text, search) {

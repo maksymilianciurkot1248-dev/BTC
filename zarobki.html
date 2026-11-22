@@ -38,7 +38,7 @@ td{padding:7px 9px;border-bottom:1px solid var(--line)} .r{text-align:right}
 <div class="wrap">
 <h1>Zarobki</h1>
 <p class="sub">Zapisuj przychody i koszty swoich pomysłów. Zobaczysz, co naprawdę się opłaca, a mentor dostanie Twoje wyniki zamiast zgadywać.</p>
-<div class="warn"><b>Dane są tylko w tej przeglądarce</b> (nie na serwerze), więc nie czyść danych witryny. To notatnik do liczenia, nie dokument księgowy ani podatkowy. Przy regularnej sprzedaży sprawdź zasady (limit działalności nieewidencjonowanej, CEIDG, PIT).</div>
+<div class="warn"><b>Dane zapisują się na serwerze</b> (widać je na telefonie i komputerze, wchodzą do kopii zapasowej) i w tej przeglądarce. To notatnik do liczenia, nie dokument księgowy ani podatkowy. Przy regularnej sprzedaży sprawdź zasady (limit działalności nieewidencjonowanej, CEIDG, PIT).</div>
 <section class="card"><h2>Cel miesięczny</h2>
 <div class="grid"><label>Cel zysku w miesiącu (zł)<input id="goal" type="number" min="0" step="50"></label></div>
 <div class="bar"><i id="barfill" style="width:0%"></i></div>
@@ -53,6 +53,7 @@ td{padding:7px 9px;border-bottom:1px solid var(--line)} .r{text-align:right}
 </div>
 <label style="margin-top:10px">Notatka<input id="note" placeholder="np. Kross Level, sprzedany na OLX"></label>
 <button class="btn p" id="add" type="button">Dodaj</button><span class="note" id="msg"></span>
+<p class="note" id="sync"></p>
 </section>
 <section class="card"><h2>Wyniki pomysłów</h2>
 <div class="tbl-w"><table><thead><tr><th>Pomysł</th><th class="r">Przychód</th><th class="r">Koszt</th><th class="r">Zysk</th><th class="r">Zwrot</th><th class="r">Wpisów</th></tr></thead><tbody id="byidea"></tbody></table></div>
@@ -72,8 +73,8 @@ const nf = (v, d = 2) => new Intl.NumberFormat('pl-PL', {minimumFractionDigits: 
 const zl = v => (v < 0 ? '−' : '') + nf(Math.abs(v)) + ' zł';
 const lg = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const ls = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* tryb prywatny */ } };
-let E = []; try { E = JSON.parse(lg('zarobki_wpisy')) || []; } catch (e) { E = []; }
-$('goal').value = lg('zarobki_cel') || ''; $('date').value = new Date().toISOString().slice(0, 10);
+let E = [], loaded = false;
+$('date').value = new Date().toISOString().slice(0, 10);
 const kv = (box, items) => { box.replaceChildren(); items.forEach(([v, l, c]) => { const d = document.createElement('div'), b = document.createElement('b'), s = document.createElement('span'); b.textContent = v; if (c) b.className = c; s.textContent = l; d.append(b, s); box.appendChild(d); }); };
 const cell = (tr, t, c) => { const d = document.createElement('td'); d.textContent = t; if (c) d.className = c; tr.appendChild(d); };
 function render() {
@@ -89,11 +90,15 @@ function render() {
   $('rows').replaceChildren();
   E.slice().sort((a, b) => b.date.localeCompare(a.date) || b.t - a.t).slice(0, 30).forEach(e => { const tr = document.createElement('tr'); cell(tr, e.date); cell(tr, e.idea || 'bez nazwy'); cell(tr, (e.kind === 'in' ? '+' : '−') + nf(e.amt) + ' zł', 'r ' + (e.kind === 'in' ? 'up' : 'down')); cell(tr, e.note || '');
     const td = document.createElement('td'), b = document.createElement('button'); b.className = 'btn'; b.type = 'button'; b.textContent = 'Usuń'; b.addEventListener('click', () => { E = E.filter(x => x.t !== e.t); save(); }); td.appendChild(b); tr.appendChild(td); $('rows').appendChild(tr); });
-  const lines = names.slice(0, 8).map(n => `${n}: przychód ${nf(by[n].i, 0)} zł, koszt ${nf(by[n].o, 0)} zł, zysk ${nf(by[n].i - by[n].o, 0)} zł`);
-  ls('zarobki_podsumowanie', names.length ? `Moje dotychczasowe wyniki: zysk w tym miesiącu ${nf(profit, 0)} zł` + (goal > 0 ? ` (cel ${nf(goal, 0)} zł)` : '') + '. Pomysły: ' + lines.join('; ') + '.' : '');
 }
-function save() { ls('zarobki_wpisy', JSON.stringify(E.slice(-2000))); render(); }
-$('goal').addEventListener('input', () => { ls('zarobki_cel', $('goal').value); render(); });
+async function save() {
+  render(); if (!loaded) return;
+  const r = await UD.save('zarobki', {entries: E.slice(-2000), goal: parseFloat($('goal').value) || null});
+  if (r.conflict) { E = r.value.entries; $('goal').value = r.value.goal || ''; render(); $('sync').textContent = 'Dane zmieniono na innym urządzeniu: wczytano najnowszą wersję. Powtórz ostatnią zmianę, jeśli jej nie widać.'; }
+  else if (r.ok) $('sync').textContent = 'Zapisano na serwerze.';
+  else $('sync').textContent = r.offline ? 'Serwer niedostępny: zapisano tylko w tej przeglądarce.' : 'Błąd zapisu: ' + r.error;
+}
+let gT = null; $('goal').addEventListener('input', () => { render(); clearTimeout(gT); gT = setTimeout(save, 500); });
 $('add').addEventListener('click', () => {
   const amt = parseFloat($('amt').value), date = $('date').value;
   if (!(amt > 0) || !date) { $('msg').textContent = ' Podaj kwotę większą od zera i datę.'; return; }
@@ -105,7 +110,16 @@ $('csv').addEventListener('click', () => {
   const txt = 'data;pomysl;rodzaj;kwota;notatka\n' + E.map(e => [e.date, e.idea, e.kind === 'in' ? 'przychod' : 'koszt', String(e.amt).replace('.', ','), e.note].map(esc).join(';')).join('\n');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + txt], {type: 'text/csv;charset=utf-8'})); a.download = 'zarobki.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 });
-render();
+(async () => {
+  const r = await UD.load('zarobki');
+  if (r.found) { E = r.value.entries || []; $('goal').value = r.value.goal || ''; }
+  else {                                              // pierwsze użycie po aktualizacji: przenosimy stare dane z przeglądarki na serwer
+    try { E = JSON.parse(lg('zarobki_wpisy')) || []; $('goal').value = lg('zarobki_cel') || ''; } catch (e) { E = []; }
+  }
+  loaded = true; render();
+  if (!r.found && E.length && !r.offline) { await save(); $('sync').textContent = 'Przeniesiono dotychczasowe wpisy z tej przeglądarki na serwer. ' + $('sync').textContent; }
+  else $('sync').textContent = r.offline ? 'Serwer niedostępny: pracujesz na kopii z tej przeglądarki.' : '';
+})();
 })();
 </script>
 </body>

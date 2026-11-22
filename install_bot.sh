@@ -4,7 +4,7 @@
 set -euo pipefail
 [ "$(id -u)" -eq 0 ] || { echo "Uruchom: sudo bash install_bot.sh"; exit 1; }
 cd "$(dirname "$0")"
-PY="btc_analysis.py btc_botcfg.py btc_decision.py btc_edge.py btc_learn.py btc_lab.py btc_copy.py btc_ai.py btc_scalp.py btc_flow.py btc_account.py btc_exec.py btc_risk.py btc_shadow.py btc_selftest.py btc_trader.py btc_api.py"
+PY="btc_analysis.py btc_botcfg.py btc_decision.py btc_edge.py btc_learn.py btc_lab.py btc_copy.py btc_ai.py btc_scalp.py btc_flow.py btc_account.py btc_exec.py btc_risk.py btc_shadow.py btc_selftest.py btc_trader.py btc_userdata.py btc_backup.py btc_api.py"
 WEBF="bybit.html bot.html index.html okazje.html rynki.html sytuacje.html badania.html strategie.html kalkulator.html produkty.html mentor.html zarobki.html ui.css ui.js"
 for f in $PY $WEBF; do
   [ -f "$f" ] || { echo "Brak pliku $f w paczce"; exit 1; }
@@ -129,6 +129,48 @@ MemoryMax=400M
 TimeoutStopSec=10
 $HARDEN
 EOT
+# kopia zapasowa na Dysk Google (rclone): konfigurację (token) robisz sam, patrz vps/INSTRUKCJA_VPS.md, sekcja "Kopia zapasowa"
+install -d -m 700 -o $U -g $U $APP/.config $APP/.config/rclone
+if [ ! -f $APP/backup.env ]; then
+  cat > $APP/backup.env <<'EOT'
+# Kopia zapasowa na Dysk Google (opcjonalnie). Domyslnie: gdrive:btc-backup, 30 dobowych, 26 tygodniowych, 24 miesieczne
+# BACKUP_REMOTE=gdrive:btc-backup
+# BACKUP_KEEP_DAILY=30
+# BACKUP_KEEP_WEEKLY=26
+# BACKUP_KEEP_MONTHLY=24
+EOT
+  chown $U:$U $APP/backup.env; chmod 640 $APP/backup.env
+fi
+cat > /etc/systemd/system/btc-backup.service <<EOT
+[Unit]
+Description=BTC kopia zapasowa stanu na Dysk Google (rclone)
+Wants=network-online.target
+After=network-online.target
+[Service]
+Type=oneshot
+User=$U
+Group=$U
+WorkingDirectory=$APP
+Environment=HOME=$APP
+EnvironmentFile=-$APP/backup.env
+ExecStart=$APP/venv/bin/python $APP/btc_backup.py
+ReadWritePaths=$APP
+TimeoutStartSec=3600
+Nice=19
+IOSchedulingClass=idle
+MemoryMax=600M
+$HARDEN
+EOT
+cat > /etc/systemd/system/btc-backup.timer <<'EOT'
+[Unit]
+Description=Kopia zapasowa raz dziennie (po nauce systemu)
+[Timer]
+OnCalendar=*-*-* 03:50:00
+RandomizedDelaySec=300
+Persistent=true
+[Install]
+WantedBy=timers.target
+EOT
 cat > /etc/systemd/system/btc-learn.timer <<'EOT'
 [Unit]
 Description=Nauka systemu raz dziennie
@@ -139,7 +181,7 @@ Persistent=true
 WantedBy=timers.target
 EOT
 systemctl daemon-reload
-systemctl enable --now btc-learn.timer btc-account.timer btc-exec.service btc-ai.service btc-scalp.service
+systemctl enable --now btc-learn.timer btc-account.timer btc-backup.timer btc-exec.service btc-ai.service btc-scalp.service
 # asystent AI: pakiet anthropic i szablon pliku z kluczem (klucz wpisujesz sam)
 sudo -u $U $APP/venv/bin/pip install --quiet anthropic || echo "UWAGA: nie udalo sie zainstalowac pakietu anthropic (asystent AI bedzie niedostepny)"
 [ -f $APP/ai.env ] || { printf '# Klucz API Anthropic dla asystenta w panelu (console.anthropic.com). Po wpisaniu: sudo systemctl restart btc-ai\nANTHROPIC_API_KEY=\n# AI_MODEL=claude-opus-5-5\n# AI_EFFORT=low\n# AI_MAX_PER_DAY=100\n' > $APP/ai.env; chown $U:$U $APP/ai.env; chmod 600 $APP/ai.env; }

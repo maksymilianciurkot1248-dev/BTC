@@ -170,6 +170,46 @@ const NAV = [
 const THEMES = [['auto', 'Auto'], ['light', 'Jasny'], ['dark', 'Ciemny']];
 const sget = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const sset = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* tryb prywatny */ } };
+// Dane użytkownika zapisywane na serwerze (api/userdata) z kopią w przeglądarce. Zapis ze starej wersji (inne urządzenie zdążyło zapisać) daje konflikt:
+// dostajesz wersję z serwera i nic nie jest po cichu nadpisane. Gdy serwer jest niedostępny, strona działa na kopii lokalnej (offline: true).
+const UD = {
+  _ts: {},
+  async load(key) {
+    try {
+      const r = await fetch('api/userdata?key=' + encodeURIComponent(key), {cache: 'no-store'});
+      if (r.ok) { const j = await r.json(); this._ts[key] = j.ts || 0; if (j.found) { sset('ud_' + key, JSON.stringify(j.value)); return {value: j.value, found: true, offline: false}; } return {value: null, found: false, offline: false}; }
+    } catch (e) { /* serwer niedostępny */ }
+    let v = null; try { v = JSON.parse(sget('ud_' + key)); } catch (e) { v = null; }
+    return {value: v, found: v != null, offline: true};
+  },
+  _q: {},
+  // Zapisy tego samego klucza idą jeden po drugim (każdy z aktualnym base_ts), więc szybkie kolejne zmiany nie kłócą się ze sobą.
+  save(key, value) {
+    const run = async () => {
+      sset('ud_' + key, JSON.stringify(value));
+      try {
+        const r = await fetch('api/userdata', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Requested-With': 'btc-ui'}, body: JSON.stringify({key, value, base_ts: this._ts[key] || 0})});
+        const j = await r.json();
+        if (r.status === 409) { this._ts[key] = j.ts; sset('ud_' + key, JSON.stringify(j.value)); return {ok: false, conflict: true, value: j.value}; }
+        if (!r.ok) return {ok: false, error: j.error || ('HTTP ' + r.status)};
+        this._ts[key] = j.ts; return {ok: true};
+      } catch (e) { return {ok: false, offline: true}; }
+    };
+    const p = (this._q[key] || Promise.resolve()).then(run, run);
+    this._q[key] = p.catch(() => {});
+    return p;
+  },
+};
+// Podsumowanie wyników z notatnika zarobków dla mentora (jedno zdanie po polsku).
+UD.zarobkiSummary = v => {
+  const E = (v && v.entries) || []; if (!E.length) return '';
+  const month = new Date().toISOString().slice(0, 7), sg = e => e.kind === 'in' ? e.amt : -e.amt, by = {};
+  E.forEach(e => { const k = e.idea || 'bez nazwy'; (by[k] = by[k] || {i: 0, o: 0}); by[k][e.kind === 'in' ? 'i' : 'o'] += e.amt; });
+  const profit = E.filter(e => e.date.startsWith(month)).reduce((a, e) => a + sg(e), 0), r0 = x => Math.round(x), goal = v.goal || 0;
+  const lines = Object.keys(by).sort((a, b) => (by[b].i - by[b].o) - (by[a].i - by[a].o)).slice(0, 8).map(n => `${n}: przychód ${r0(by[n].i)} zł, koszt ${r0(by[n].o)} zł, zysk ${r0(by[n].i - by[n].o)} zł`);
+  return `Moje dotychczasowe wyniki: zysk w tym miesiącu ${r0(profit)} zł` + (goal > 0 ? ` (cel ${r0(goal)} zł)` : '') + '. Pomysły: ' + lines.join('; ') + '.';
+};
+window.UD = UD;
 function here() { const p = location.pathname.split('/').pop() || 'index.html'; return p === '' ? 'index.html' : p; }
 function applyTheme(t) { if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); else document.documentElement.setAttribute('data-theme', 'auto'); }
 applyTheme(sget('btc-theme'));

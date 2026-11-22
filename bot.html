@@ -89,6 +89,7 @@ th{text-align:left;color:var(--muted);font-weight:600;font-size:.72rem;padding:6
 <details class="card fold" data-k="learn"><summary><b>Nauka systemu (mapa przewagi)</b><span class="fsum" id="fs_learn"></span></summary><div id="learn"></div></details>
 <details class="card fold" data-k="lab"><summary><b>Laboratorium wariantów</b><span class="fsum" id="fs_lab"></span></summary><div id="lab"></div></details>
 <details class="card fold" data-k="copy"><summary><b>Cudze transakcje</b><span class="fsum" id="fs_copy"></span></summary><div id="copy"></div></details>
+<details class="card fold" data-k="backup"><summary><b>Kopia zapasowa (Dysk Google)</b><span class="fsum" id="fs_backup"></span></summary><div id="backup"></div></details>
 <details class="card fold" data-k="events"><summary><b>Dziennik zdarzeń</b><span class="fsum" id="fs_events"></span></summary><div><p class="sub">Najnowsze na górze. Powtarzające się wpisy są pomijane.</p><div class="ev" id="events"></div></div></details>
 <details class="card fold" data-k="safety"><summary><b>Zasady bezpieczeństwa</b><span class="fsum" id="fs_safety"></span></summary><div class="note" style="margin:0"><b>Ta strona nie składa zleceń i nie zna kluczy giełdowych.</b> Zmienia tylko limity ryzyka w twardych granicach (dźwignia nigdy powyżej x2). Tryb (dryrun, testnet, demo, live) i klucze ustawiasz wyłącznie na serwerze. W trybie live ustawienia z panelu mogą tylko zmniejszać ryzyko ustawione na serwerze. Strata z rynku jest możliwa, a wynik w przeszłości nie gwarantuje przyszłego.</div></details>
 </div>
@@ -187,6 +188,7 @@ function summaries(j, D) {
   const C = D.copy; setSum('copy', C && (C.wallets || []).length ? `${C.wallets.length} portfeli, kandydatów: ${C.wallets.filter(w => w.status === 'kandydat').length}` : 'brak obserwowanych portfeli');
   const F = D.flow; if (F && F.symbols && Object.keys(F.symbols).length) { const st = Object.entries(F.symbols).filter(([, v]) => v.strong);
     const o = (F.accuracy || {}).oos || {}; setSum('flow', `przepływ zleceń i pozycjonowanie dla ${Object.keys(F.symbols).length} aktywów; wskaźnik eksperymentalny: ` + (st.length ? st.map(([s, v]) => s.replace('USDT', '') + ' ' + v.lean).join(', ') : 'bez wyraźnych wskazań') + (o.n ? `, trafność ${nf(o.hit_pct, 0)}% z ${o.n}` : '')); } else setSum('flow', 'brak danych');
+  const B = D.backup; setSum('backup', !B || (!B.ts && !B.configured) ? 'nie skonfigurowana: dane są tylko na serwerze' : B.age_s == null ? 'jeszcze żadna udana kopia' : `ostatnia udana ${ago(B.age_s)}, ${B.size ? nf(B.size / 1e6, 1) + ' MB, ' : ''}${B.archives != null ? B.archives + ' kopii na Dysku' : ''}` + (B.age_s > 36 * 3600 ? ' (za stara!)' : ''));
   setSum('ai', 'zadaj pytanie o stan bota'); setSum('safety', 'strona nie składa zleceń i nie zna kluczy');
 }
 
@@ -353,6 +355,22 @@ function scalpCard(S) {
     el('tbody', null, real.last.map(x => el('tr', null, el('td', null, fmtTs(x.ts)), el('td', null, x.sym), el('td', null, x.strat), el('td', null, x.side > 0 ? 'long' : 'short'), el('td', {class: 'r ' + (x.r == null ? 'mut' : cls(x.pnl))}, x.r == null ? 'brak wyniku' : sg(x.pnl, 2)), el('td', {class: 'r ' + cls(x.r)}, x.r == null ? '' : sg(x.r, 2))))))));
   (S.notes || []).forEach(n => parts.push(el('p', {class: 'mut'}, n)));
   parts.push(el('p', null, tog), msg);
+  box.replaceChildren(...parts);
+}
+function backupCard(B) {
+  const box = document.getElementById('backup'), head = el('h2', null, 'Kopia zapasowa stanu bota na Dysk Google');
+  const intro = el('p', {class: 'sub'}, 'Raz na dobę (ok. 03:50 UTC) serwer wysyła na Twój Dysk Google archiwum z ustawieniami, stanem botów, dziennikami transakcji, bazami i danymi ze stron Zarobki, Produkty i Mentor. Kluczy i haseł w kopii nie ma. Obok trafiają raporty CSV do podglądu w aplikacji Dysk Google.');
+  const mb = b => b == null ? 'n/d' : b >= 1e9 ? nf(b / 1e9, 1) + ' GB' : nf(b / 1e6, 1) + ' MB', big = b => b == null ? 'n/d' : b >= 1e12 ? nf(b / 1e12, 2) + ' TB' : mb(b);
+  if (!B || (!B.ts && !B.configured)) { box.replaceChildren(head, intro, el('p', {class: 'note', style: 'color:var(--warn)'}, 'Dysk Google nie jest jeszcze podłączony, więc kopii nie ma. Kroki są w instrukcji (vps/INSTRUKCJA_VPS.md, sekcja „Kopia zapasowa”): instalacja rclone, jednorazowa autoryzacja konta Google (token wpisujesz sam na serwerze) i test poleceniem btc_backup.py --check.')); return; }
+  const old = B.age_s == null || B.age_s > 36 * 3600;
+  const tiles = el('div', {class: 'kv'}, el('div', null, el('b', {class: old ? 'down' : 'up'}, B.age_s == null ? 'brak' : ago(B.age_s)), el('span', null, 'ostatnia udana kopia'), el('small', null, old ? 'starsza niż doba i pół: sprawdź błąd poniżej' : (B.name || ''))),
+    el('div', null, el('b', null, mb(B.size)), el('span', null, 'rozmiar ostatniego archiwum'), el('small', null, B.files != null ? B.files + ' plików' : '')),
+    el('div', null, el('b', null, B.archives == null ? 'n/d' : String(B.archives)), el('span', null, 'kopii na Dysku'), el('small', null, 'rotacja: 30 dobowych, 26 tygodniowych, 24 miesięczne')),
+    el('div', null, el('b', null, B.about ? big(B.about.free) : 'n/d'), el('span', null, 'wolne miejsce na koncie Google'), el('small', null, B.about ? '' : 'niedostępne przy zakresie drive.file')));
+  const parts = [head, intro, tiles];
+  if (B.ok === false && B.error) parts.push(el('p', {class: 'note down'}, 'Ostatnia próba (' + ago(B.last_try_age_s) + ') nieudana: ' + B.error));
+  [...(B.skipped || []), ...(B.warnings || [])].forEach(w => parts.push(el('p', {class: 'mut'}, 'Uwaga: ' + w)));
+  parts.push(el('p', {class: 'note'}, 'Odtwarzanie: python btc_backup.py --list, potem --fetch NAZWA (wypakowuje do osobnego katalogu, niczego nie nadpisuje). Szczegóły w instrukcji.'));
   box.replaceChildren(...parts);
 }
 function flowCard(F) {
@@ -566,7 +584,7 @@ async function load() {
     document.getElementById('proposals').style.display = (j.proposals || []).length || (j.settings || {}).require_approval ? '' : 'none';
     const part = async (k, path, fn, name) => { try { D[k] = await api(path); fn(D[k]); } catch (err) { document.getElementById(k).replaceChildren(el('p', {class: 'mut'}, name + ': ' + err.message)); } };
     aiCard();
-    await Promise.all([part('flow', 'flow', flowCard, 'Rynek na żywo niedostępny'), part('shadow', 'shadow', shadowCard, 'Tryb cienia niedostępny'), part('scalp', 'scalp', scalpCard, 'Scalper niedostępny'), part('copy', 'copy', copyCard, 'Kopiowanie niedostępne'),
+    await Promise.all([part('flow', 'flow', flowCard, 'Rynek na żywo niedostępny'), part('shadow', 'shadow', shadowCard, 'Tryb cienia niedostępny'), part('scalp', 'scalp', scalpCard, 'Scalper niedostępny'), part('copy', 'copy', copyCard, 'Kopiowanie niedostępne'), part('backup', 'backup', backupCard, 'Kopia zapasowa niedostępna'),
       part('lab', 'lab', labCard, 'Laboratorium niedostępne'), part('learn', 'learn', L => learnCard(L, j), 'Nauka niedostępna')]);
     overviewCard(j, D); summaries(j, D);
     const stale = j.age_s == null || j.age_s > 900;

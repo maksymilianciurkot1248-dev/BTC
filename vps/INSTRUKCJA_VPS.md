@@ -334,4 +334,62 @@ Strategia z tego wskaźnika wchodzi najwyżej raz na jeden godzinowy odczyt (po 
 - `produkty.html`: linki do wyszukiwań ofert (OLX, Allegro Lokalnie, Vinted, Marketplace) w okolicy Dębicy i Rzeszowa oraz kalkulator odsprzedaży. Nie pobiera ofert sam; lista kandydatów zapisuje się w przeglądarce.
 - `mentor.html`: czat z doradcą biznesowym (ta sama usługa `btc-ai` i ten sam `ANTHROPIC_API_KEY` w `ai.env`, rola `mentor`). Mentor nie dostaje stanu bota ani kluczy, zna tylko profil wpisany na stronie. Odmawia pomocy przy fałszowaniu dokumentów i innych działaniach niezgodnych z prawem. Pytania wliczają się do limitów asystenta (`AI_MAX_PER_DAY`).
   Przycisk „Co jest teraz na topie” włącza wyszukiwanie w internecie (narzędzie po stronie API Claude; wyszukiwania są płatne według cennika Anthropic). Limity w `ai.env`: `MENTOR_MAX_SEARCH_PER_DAY` (przeglądy na dobę, domyślnie 10) i `MENTOR_MAX_USES` (wyszukiwań w jednym przeglądzie, domyślnie 5). Odpowiedź kończy lista źródeł z linkami i datami; stan limitu w `mentor_search.json`. Strona Produkty ma przycisk „Znajdź oferty w internecie”: rola `offers` w `btc_ai.py` używa tego samego wyszukiwania, ograniczonego do serwisów z ogłoszeniami (olx.pl, allegrolokalnie.pl, vinted.pl, allegro.pl). Serwer niczego nie pobiera ze stron sam. Odpowiedź musi być JSON-em, a oferty, których adresu wyszukiwarka nie zwróciła, są odrzucane (ochrona przed zmyślonymi linkami). Oferty mogą być nieaktualne, a lista nie jest pełna. Każde wyszukanie liczy się do `MENTOR_MAX_SEARCH_PER_DAY`. TikToka mentor nie odczytuje bezpośrednio, tylko przez artykuły i zestawienia o trendach.
-- `zarobki.html`: notatnik przychodów i kosztów po pomysłach (zysk, zwrot, cel miesięczny, CSV). Dane tylko w przeglądarce (localStorage). Podsumowanie wyników trafia do mentora przy następnym pytaniu (klucz `zarobki_podsumowanie` odczytuje `mentor.html`).
+- `zarobki.html`: notatnik przychodów i kosztów po pomysłach (zysk, zwrot, cel miesięczny, CSV). Dane zapisują się na serwerze (`userdata.json` w katalogu bota, razem z listą z Produktów i profilem mentora) i w przeglądarce jako kopia; wchodzą do kopii zapasowej na Dysk Google. Zapis ze starej wersji (inne urządzenie zdążyło zapisać) daje konflikt: strona wczytuje wersję z serwera i niczego nie nadpisuje po cichu. Dotychczasowe dane z przeglądarki przenoszą się na serwer przy pierwszym wejściu. Podsumowanie wyników trafia do mentora przy następnym pytaniu.
+
+## Kopia zapasowa na Dysk Google (btc_backup.py)
+
+Raz na dobę (ok. 03:50 UTC, timer `btc-backup.timer`) serwer wysyła na Twój Dysk Google jedno archiwum `btc-RRRRMMDD-GGMM.tar.gz` do folderu `btc-backup`:
+pliki danych (`*.json`, `*.jsonl`, `*.csv`: ustawienia, stan botów, dzienniki transakcji, cień, laboratorium, dane ze stron Zarobki, Produkty i Mentor), bazy SQLite jako spójne migawki, katalog `api_ext` oraz `MANIFEST.json` z sumami SHA-256.
+**Kluczy i haseł w kopii nie ma** (`*.env`, `.ssh`, konfiguracja rclone, `venv` i kod programu są pomijane; kod jest w repozytorium GitHub). Plik, w którego treści widać klucz (np. `sk-ant-`), jest dodatkowo pomijany i zgłaszany w panelu.
+Obok archiwum, w `btc-backup/raporty/`, lądują czytelne pliki CSV (zarobki, transakcje bota dziennego, transakcje scalpera) do podglądu w aplikacji Dysk Google na telefonie.
+Wysyłka jest sprawdzana (rozmiar na Dysku musi się zgadzać), a stare kopie są kasowane dopiero po udanej wysyłce: zostaje 30 dobowych, po jednej z 26 ostatnich tygodni i po jednej z 24 ostatnich miesięcy (`BACKUP_KEEP_*` w `/opt/btc/backup.env`). Kasowane są wyłącznie pliki o nazwie `btc-RRRRMMDD-GGMM.tar.gz`.
+Stan widać w panelu: zakładka Bot, sekcja „Kopia zapasowa (Dysk Google)”. Nieudana kopia daje jedno powiadomienie na Telegram na dobę.
+
+### Jednorazowe podłączenie Dysku Google
+Token dostępu do Twojego konta Google powstaje na Twoim komputerze i jest wpisywany przez Ciebie na serwerze. Nie wklejaj go nigdzie indziej (ani do rozmowy z asystentem).
+
+1. **Serwer: instalacja rclone** (w PowerShellu):
+
+       ssh -i "C:\Users\maksy\Downloads\ssh-key-2026-11-01.key" ubuntu@141.147.29.90 "sudo apt-get install -y rclone && rclone version | head -1"
+
+2. **Komputer z przeglądarką: rclone** (potrzebny tylko do jednorazowej zgody w przeglądarce): `winget install Rclone.Rclone`, potem otwórz nowe okno PowerShell. Bez winget: pobierz z rclone.org/downloads.
+3. **Serwer: konfiguracja** (interaktywna, dlatego `-t`):
+
+       ssh -t -i "C:\Users\maksy\Downloads\ssh-key-2026-11-01.key" ubuntu@141.147.29.90 "sudo -u btc rclone config --config /opt/btc/.config/rclone/rclone.conf"
+
+   Odpowiadaj tak (numery pozycji mogą się różnić w zależności od wersji, ważne są nazwy):
+   - `n` (New remote), nazwa: `gdrive`
+   - Storage: `drive` (Google Drive)
+   - client_id i client_secret: puste (Enter)
+   - scope: wybierz **`drive.file`** (Files created by rclone only). To ważne: serwer dostaje dostęp tylko do plików, które sam utworzył, a nie do reszty Dysku.
+   - service_account_file: puste. Edit advanced config: `n`.
+   - Use web browser to automatically authenticate: **`n`** (serwer nie ma przeglądarki).
+   - Program wypisze polecenie `rclone authorize "drive" "eyJ..."`. **Uruchom je w PowerShellu na swoim komputerze**: otworzy się przeglądarka, zaloguj się na konto Google z 5 TB i zezwól. W PowerShellu pojawi się blok `{"access_token":...}` między liniami „Paste the following into your remote machine”. Skopiuj go i wklej w oknie SSH przy pytaniu `config_token>`.
+   - Configure as Shared Drive: `n`. Potwierdź `y`, wyjdź `q`.
+4. **Test połączenia:**
+
+       ssh -i "C:\Users\maksy\Downloads\ssh-key-2026-11-01.key" ubuntu@141.147.29.90 "sudo -u btc BTC_BOT_DIR=/opt/btc /opt/btc/venv/bin/python /opt/btc/btc_backup.py --check"
+
+   Powinno wypisać wersję rclone, folder `gdrive:btc-backup` i `kopii: 0`.
+5. **Pierwsza kopia teraz** (potem robi się sama):
+
+       ssh -i "C:\Users\maksy\Downloads\ssh-key-2026-11-01.key" ubuntu@141.147.29.90 "sudo systemctl start btc-backup.service && sudo journalctl -u btc-backup -n 20 --no-pager"
+
+   W logu: „gotowe: btc-...tar.gz”. Na Dysku Google pojawi się folder `btc-backup` (w „Mój dysk”) z archiwum i podfolderem `raporty`.
+
+Do czasu podłączenia Dysku usługa kopii zgłasza błąd „Dysk Google nie jest podłączony” (raz na dobę na Telegram i w panelu). To oczekiwane.
+
+### Odtwarzanie
+Kopie niczego nie nadpisują same. Lista i pobranie do osobnego katalogu `/opt/btc/restore/`:
+
+    sudo -u btc BTC_BOT_DIR=/opt/btc /opt/btc/venv/bin/python /opt/btc/btc_backup.py --list
+    sudo -u btc BTC_BOT_DIR=/opt/btc /opt/btc/venv/bin/python /opt/btc/btc_backup.py --fetch btc-RRRRMMDD-GGMM.tar.gz
+
+Pliki leżą w `/opt/btc/restore/btc-RRRRMMDD-GGMM/data/`. Odtworzenie jednego pliku: zatrzymaj usługę, która go używa (`sudo systemctl stop btc-scalp`), skopiuj plik do `/opt/btc/`, nadaj właściciela `sudo chown btc:btc /opt/btc/PLIK`, uruchom usługę. Nowy serwer: zainstaluj program z repozytorium (`README.md`), skopiuj dane z `data/`, klucze wpisz ręcznie (nie ma ich w kopii).
+Sumy SHA-256 plików są w `MANIFEST.json` wewnątrz archiwum.
+
+### Uwagi
+- **Zakres `drive.file`** oznacza, że ewentualne przejęcie serwera nie otwiera reszty Twojego Dysku. Token leży w `/opt/btc/.config/rclone/rclone.conf` (prawa 600, właściciel `btc`). Cofnięcie dostępu: konto Google → Bezpieczeństwo → Dostęp aplikacji innych firm → rclone → Usuń.
+- **Szyfrowanie (opcjonalnie).** Dane o transakcjach i zarobkach leżą na Dysku jawnie (to Twoje konto). Jeśli chcesz je szyfrować, w `rclone config` dodaj zdalny typu `crypt` wskazujący na `gdrive:btc-backup-szyfr` i ustaw w `/opt/btc/backup.env` `BACKUP_REMOTE=nazwa_crypt:`. Hasło zapisz w bezpiecznym miejscu: bez niego kopii nie odzyskasz.
+- **Miejsce.** Archiwum to zwykle dziesiątki megabajtów, więc 5 TB nie jest ograniczeniem; wartość to długa historia kopii i miejsce na ewentualne większe dane badawcze później. Miejsce na koncie Google dzielą Dysk, Gmail i Zdjęcia.
+- Zmiana godziny kopii: `sudo systemctl edit btc-backup.timer`. Wyłączenie: `sudo systemctl disable --now btc-backup.timer`.

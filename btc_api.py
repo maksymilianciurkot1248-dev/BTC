@@ -13,6 +13,8 @@ GET  /api/account                                     moje konto Bybit: saldo, p
 GET  /api/shadow                                      tryb cienia: wyniki obu strategii na żywo, bez zleceń
 GET  /api/learn                                       mapa przewagi, dziennik nauki, historia decyzji (dopuszczone/wycofane) i kwarantanny aktywów
 GET  /api/ai/chat[?id=]                               asystent AI: gotowość albo wynik zadania; POST /api/ai/chat {"messages":[...]} zadaje pytanie (klucz w ai.env)
+GET  /api/backup                                      kopia zapasowa na Dysk Google: ostatni wynik, wiek, rozmiar, czy rclone jest skonfigurowany
+GET  /api/userdata?key=zarobki|produkty_lista|mentor_profile    dane użytkownika zapisane na serwerze; POST /api/userdata {"key","value","base_ts"} (409 przy zapisie ze starej wersji)
 GET  /api/flow                                        rynek na żywo: przepływ zleceń i pozycjonowanie (wolumen agresywny, konta long/short, premia), wskaźnik łączny i jego trafność
 GET  /api/scalp                                       scalper: wyniki strategii w cieniu, bramka, otwarte pozycje, prawdziwe transakcje; POST /api/scalp/settings {"enabled":bool}
 GET  /api/copy                                        cudze transakcje (Hyperliquid): czy kopiowanie portfela ma przewagę poza próbą (dodawanie: btc_copy.py add)
@@ -240,6 +242,15 @@ def make_handler(state):
                         code, obj = btc_ai.result(state.bot_dir, q["id"][0])
                         return self._send(code, obj)
                     return self._send(200, btc_ai.info(state.bot_dir))
+                if u.path == "/api/backup":
+                    import btc_backup
+                    st = btc_backup.read_status(state.bot_dir)
+                    conf = btc_backup.config(state.bot_dir, {})["conf"]
+                    return self._send(200, {**st, "age_s": round(time.time() - st["last_ok_ts"], 1) if st.get("last_ok_ts") else None, "configured": os.path.isfile(conf),
+                                            "last_try_age_s": round(time.time() - st["ts"], 1) if st.get("ts") else None})
+                if u.path == "/api/userdata":
+                    import btc_userdata
+                    return self._send(200, btc_userdata.read(state.bot_dir, (q.get("key") or [""])[0]))
                 if u.path == "/api/flow":
                     import btc_flow
                     o = btc_flow.read_out(state.bot_dir)
@@ -279,6 +290,13 @@ def make_handler(state):
                 if u.path == "/api/ai/chat":
                     import btc_ai
                     return self._send(200, {"id": btc_ai.start(state.bot_dir, self._json_body(btc_ai.MAX_BODY))})
+                if u.path == "/api/userdata":
+                    import btc_userdata
+                    body = self._json_body(btc_userdata.MAX_BODY)
+                    try:
+                        return self._send(200, {"ts": btc_userdata.write(state.bot_dir, body.get("key"), body.get("value"), body.get("base_ts"))})
+                    except btc_userdata.Conflict as c:
+                        return self._send(409, {"error": "dane zostały zmienione na innym urządzeniu", "ts": c.ts, "value": c.value})
                 d = self._json_body()
                 if u.path == "/api/track":
                     f = lambda k: (float(d[k]) if d.get(k) not in (None, "") else None)

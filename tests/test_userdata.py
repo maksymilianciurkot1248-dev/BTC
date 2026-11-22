@@ -44,7 +44,7 @@ check(raises(lambda: ud.write(d, "zarobki", Z(E(amt=True), ), base_ts=ts3)), "wa
 ts4 = ud.write(d, "zarobki", Z(E(idea="x" * 500, note="n" * 500, amt=1.23456789)), base_ts=ts3)
 v = ud.read(d, "zarobki")["value"]["entries"][0]
 check(len(v["idea"]) == 60 and len(v["note"]) == 100 and v["amt"] == 1.2346, "teksty przycięte, liczby zaokrąglone")
-check(set(v) == {"idea", "kind", "amt", "date", "note", "t"}, "nieznane pola są wyrzucane")
+check(set(v) == {"idea", "kind", "amt", "date", "note", "t", "ref"}, "nieznane pola są wyrzucane")
 ts5 = ud.write(d, "zarobki", {"entries": [dict(E(), ukryte="<script>")], "goal": None, "obce": 1}, base_ts=ts4)
 check("ukryte" not in ud.read(d, "zarobki")["value"]["entries"][0] and ud.read(d, "zarobki")["value"]["goal"] is None, "obce pola wycięte, pusty cel = None")
 
@@ -76,4 +76,35 @@ def w(i):
 ths = [threading.Thread(target=w, args=(i,)) for i in range(8)]
 [t.start() for t in ths]; [t.join() for t in ths]
 check(res.count("ok") == 1 and res.count("conflict") == 7, f"równoległe zapisy: jeden wygrywa {res}")
+# 7. potok ofert: nowe pola i statusy, stare wpisy bez statusu = kandydat, odrzucone adresy spoza http(s)
+d3 = tempfile.mkdtemp()
+D = lambda **k: dict({"t": 1, "name": "Rower", "buy": 300, "sell": 450}, **k)
+t0 = ud.write(d3, "produkty_lista", [D(), D(t=2, status="kupione", url="https://www.olx.pl/d/oferta/x.html", bought_price=300, costs=20, d_bought="2026-11-20"), D(t=3, url="javascript:alert(1)"), D(t=4, url="ftp://x")], base_ts=0)
+L2 = ud.read(d3, "produkty_lista")["value"]
+check(L2[0]["status"] == "kandydat" and L2[1]["status"] == "kupione" and L2[1]["costs"] == 20 and L2[1]["d_bought"] == "2026-11-20" and L2[1]["url"].startswith("https://www.olx.pl"), "nowe pola oferty")
+check(L2[2]["url"] == "" and L2[3]["url"] == "" and L2[0]["costs"] is None and L2[0]["sold_price"] is None, "adresy inne niż http(s) wycięte, puste pola = None")
+for bad in (D(status="gotowe"), D(d_sold="wczoraj"), D(fee=150), D(costs=-5), D(sold_price=-1)):
+    check(raises(lambda b=bad: ud.write(d3, "produkty_lista", [b], base_ts=t0)), f"zła oferta odrzucona: {str(bad)[-40:]}")
+ud.write(d3, "alfred_tasks", [{"t": 1, "text": "Wystawić: Rower", "date": "2026-11-21", "done": False, "top": False, "min": 20, "ref": "d1"}], base_ts=0)
+tk = ud.read(d3, "alfred_tasks")["value"][0]
+check(tk["min"] == 20 and tk["ref"] == "d1" and ud.write(d3, "alfred_tasks", [dict(tk, min=None)], base_ts=ud.read(d3, "alfred_tasks")["ts"]) and ud.read(d3, "alfred_tasks")["value"][0]["min"] is None, "zadanie: minuty i odwołanie do oferty")
+check(raises(lambda: ud.write(d3, "alfred_tasks", [dict(tk, min=0)], base_ts=ud.read(d3, "alfred_tasks")["ts"])) and raises(lambda: ud.write(d3, "alfred_tasks", [dict(tk, min=9999)], base_ts=ud.read(d3, "alfred_tasks")["ts"])), "minuty poza zakresem odrzucone")
+
+# 8. mutate: atomowy zapis kilku kluczy, odczyt domyślnych, brak zapisu przy błędzie
+d4 = tempfile.mkdtemp()
+def fn_ok(v):
+    check(v["zarobki"] == {"entries": [], "goal": None} and v["produkty_lista"] == [], "brakujące klucze mają wartości domyślne")
+    return {"zarobki": {"entries": [E(t=5)], "goal": 100}, "produkty_lista": [D()]}
+ts, vals = ud.mutate(d4, ["zarobki", "produkty_lista", "alfred_tasks"], fn_ok, now_ms=5000)
+check(ts == {"zarobki": 5000, "produkty_lista": 5000} and vals["alfred_tasks"] == [] and ud.read(d4, "zarobki")["value"]["goal"] == 100 and ud.read(d4, "produkty_lista")["ts"] == 5000, f"zapis dwóch kluczy naraz {ts}")
+before = open(os.path.join(d4, ud.FILE)).read()
+def fn_bad(v):
+    return {"zarobki": {"entries": [E(t=6)], "goal": 1}, "produkty_lista": [D(status="zły")]}
+check(raises(lambda: ud.mutate(d4, ["zarobki", "produkty_lista"], fn_bad)) and open(os.path.join(d4, ud.FILE)).read() == before, "błąd walidacji jednego klucza: nic się nie zapisało (atomowo)")
+def fn_abort(v):
+    raise ValueError("przerwane")
+check(raises(lambda: ud.mutate(d4, ["zarobki"], fn_abort)) and open(os.path.join(d4, ud.FILE)).read() == before, "ValueError z funkcji: bez zapisu")
+check(ud.mutate(d4, ["zarobki"], lambda v: {}) [0] == {} and open(os.path.join(d4, ud.FILE)).read() == before, "brak zmian: bez zapisu")
+ts2, _ = ud.mutate(d4, ["zarobki"], lambda v: {"zarobki": dict(v["zarobki"], goal=2)}, now_ms=100)
+check(ts2["zarobki"] == 5001 and raises(lambda: ud.mutate(d4, ["hasla"], lambda v: {})) and raises(lambda: ud.mutate(d4, ["zarobki"], lambda v: {"hasla": 1})), "ts zawsze rośnie; nieznane klucze odrzucone")
 print("userdata ok", ok)

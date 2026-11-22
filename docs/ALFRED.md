@@ -1,8 +1,8 @@
-# Alfred: osobisty plan dnia i asystent (strona `alfred.html`)
+# Alfred: osobisty plan dnia i asystent (strona `alfred.html`, w menu „Dziś”)
 
 Stan na 22.11.2026. Cel: strona, z którą rozwijasz się codziennie: widzi Twój kalendarz, zadania, nawyki i cele, rano mówi, co dziś najważniejsze,
 wieczorem pomaga podsumować dzień i przez cały czas odpowiada jak doradca (inspiracja: Alfred z Batmana i J.A.R.V.I.S. z Iron Mana, bez teatralności).
-Nazwę „Alfred” zmienisz w jednym miejscu: `ALFRED` w `btc_ai.py` i napisy w `alfred.html`.
+Nazwę „Alfred” zmienisz w jednym miejscu: `ALFRED` w `btc_ai.py` i napisy w `alfred.html`. Wersja z 22.11 (wieczór) upraszcza obsługę i łączy funkcje: patrz rozdział 5.
 
 ## 1. Co już działa
 
@@ -10,15 +10,20 @@ Nazwę „Alfred” zmienisz w jednym miejscu: `ALFRED` w `btc_ai.py` i napisy w
 |---|---|---|
 | Powitanie i pasek stanu | pora dnia, następne wydarzenie, zadania na dziś, nawyki, postęp celu zarobkowego | góra strony |
 | Poranny briefing 07:00 | model AI z Twoich danych; zapis na stronie i wiadomość na Telegram; bez klucza AI powstaje briefing zwykły z tych samych danych | `btc_alfred.py --morning`, timer `btc-alfred-morning` |
-| Kalendarz Google | tylko odczyt przez „tajny adres iCal”, odświeżany co 15 min; oś dnia, wolne okna 8-20 (min. 45 min) | `btc_agenda.py`, timer `btc-agenda` |
-| Zadania z priorytetami | najwyżej 3 priorytety, terminy, zaległe | strona, dane na serwerze |
+| Kalendarz Google | tylko odczyt przez „tajny adres iCal”, odświeżany co 15 min; oś dnia, wolne okna 8-20 (zmienisz: `ALFRED_DAY_START/END`) | `btc_agenda.py`, timer `btc-agenda` |
+| Zadania z priorytetami i szacunkiem czasu | najwyżej 3 priorytety, terminy, zaległe, czas w minutach (domyślnie 30) | strona, dane na serwerze |
+| Plan dnia | zadania układane w wolnych oknach kalendarza (priorytety pierwsze, pierwsze pasujące okno, 5 min przerwy), zakładki Dziś i Jutro, zadania, które się nie mieszczą, można jednym kliknięciem przenieść na jutro | `btc_alfred.plan_day`, `GET /api/today` |
+| Następny krok | jedno zalecenie „co teraz” z planu: przegląd dnia po 19:00, trwające lub zbliżające się wydarzenie, pierwsze zadanie, przeciążenie dnia, brak planu, odpoczynek | `btc_alfred.next_step` |
+| Tryb skupienia | odliczanie czasu zadania w pasku u dołu i w tytule karty; „Zrobione” zamyka zadanie | strona |
+| Alerty | bot (wyłącznik ryzyka, brak raportu), kopia zapasowa, kalendarz, klucz AI, zaległe zadania, oferty stojące za długo; na górze tylko pilne | `btc_alfred.alerts` |
+| Pieniądze z „Zarabiaj” | zysk w miesiącu i postęp celu, oferty w toku, zamrożone pieniądze, oczekiwany zysk | kafelek w stronie, `btc_deals.py` |
 | Nawyki | odhaczanie ostatnich 7 dni, serie | strona, dane na serwerze |
 | Cele | z liczbą, jednostką i terminem; cel „Zarobki” liczy się sam z notatnika Zarobki | strona |
 | Wieczorny przegląd | trzy pytania (co poszło, czego się nauczyłem, co jutro pierwsze) | strona |
 | Przypomnienie wieczorne 20:30 | krótka wiadomość Telegram, tylko gdy jest o czym przypominać | `btc_alfred.py --evening`, timer `btc-alfred-evening` |
-| Czat z Alfredem | zna Twój dzień; szybkie polecenia (briefing, plan na jutro, przegląd tygodnia, przegląd dnia); głos (mów i słuchaj) | rola `alfred` w `btc_ai.py` |
+| Czat z Alfredem | zna Twój dzień; szybkie polecenia (briefing, plan na jutro, przegląd tygodnia, przegląd dnia); głos (mów i słuchaj); „Zamień rozmowę na zadania” | rola `alfred` i `tasks` w `btc_ai.py` |
 | Radar narzędzi | Alfred szuka w internecie nowych narzędzi i pomysłów pod Twój plan, ze źródłami i datami | przycisk w czacie (płatne wyszukiwanie, dobowy limit) |
-| Dane | zapis na serwerze (telefon i komputer), konflikty między urządzeniami wykrywane, kopia zapasowa na Dysk Google | `btc_userdata.py`, `btc_backup.py` |
+| Dane | zapis na serwerze (telefon i komputer), konflikty między urządzeniami scalane po id (nic nie ginie), praca na kopii przy braku serwera, kopia zapasowa na Dysk Google | `btc_userdata.py`, `ui.js` (UD.sync), `btc_backup.py` |
 
 Alfred niczego sam nie zmienia: nie edytuje kalendarza, zadań ani nie składa zleceń. Podpowiada, a Ty decydujesz.
 
@@ -59,3 +64,16 @@ Alfred niczego sam nie zmienia: nie edytuje kalendarza, zadań ani nie składa z
 - **Koszt AI.** Briefing to jedno zapytanie dziennie: z kontekstem rzędu kilku tysięcy tokenów szacuję je na kilka groszy (około 1 USD miesięcznie według cennika `claude-opus-5-5`, to szacunek bez pomiaru). Radar używa płatnego wyszukiwania i dobowego limitu `MENTOR_MAX_SEARCH_PER_DAY` wspólnego z mentorem i ofertami.
 - **Głos.** Jakość polskiego rozpoznawania i głosu zależy od przeglądarki i systemu; nie testowałem jej na prawdziwym urządzeniu.
 - **Nie testowałem** na Twoim kalendarzu ani na prawdziwym serwerze: testy używają przykładowego iCal i atrapy modelu. Pierwsze uruchomienie jest testem integracji.
+
+## 5. Jak funkcje współpracują (22.11, wieczór)
+
+Cel zmiany: mniej klikania i żeby pieniądze, plan dnia i rozmowy z doradcą opierały się na tych samych danych.
+
+1. **Oferta → pieniądze → plan dnia.** Na stronie Zarabiaj każdy krok oferty (kupione, wystawione, sprzedane) zapisuje jednym atomowym zapisem ofertę, wpisy w notatniku i zadania w „Dziś”: zakup daje koszt i zadanie „Wystawić” na jutro, wystawienie zadanie „Sprawdzić zainteresowanie” za 5 dni, sprzedaż przychód i prowizję. Cofnięcie kroku sprząta tylko to, co krok dodał sam. Kod: `btc_deals.py`, trasa `POST /api/deal`.
+2. **Jedna migawka dnia dla Alfreda i mentora.** Obaj dostają ten sam obraz (profil, kalendarz i wolne okna, zadania, nawyki, finanse, oferty w toku), więc mentor proponuje pomysły dopasowane do wolnych okien i do tego, co już zacząłeś, a Alfred widzi, że masz coś do wystawienia.
+3. **Rozmowa → zadania.** Z rozmowy (z Alfredem albo mentorem) model proponuje 1-4 zadania w formacie JSON; serwer sprawdza i normalizuje (tekst do 120 znaków, 10-120 min, termin do 7 dni), Ty zaznaczasz, które trafią do planu dnia.
+4. **Uwagi bez szukania.** Zaległe zadania, bot bez raportu, stara kopia zapasowa i oferty stojące za długo trafiają do jednej listy alertów na górze „Dziś” (a oferty także na górę Zarabiaj).
+5. **Dwa urządzenia bez utraty zmian.** Konflikt zapisu nie wymaga powtarzania pracy: strona scala trzy wersje (ostatnio zsynchronizowaną, swoją i serwerową) po id. Serwer sam zmienia dane przy krokach ofert, więc scalanie jest potrzebne także przy jednym urządzeniu z nieodświeżoną kartą.
+6. **Menu.** Dziś | Zarabiaj | Bot | Rynek (reszta stron analitycznych). Stare adresy `produkty.html`, `mentor.html`, `zarobki.html` przekierowują do Zarabiaj.
+
+Czego nie sprawdzałem: wszystko działa w testach na atrapach (kalendarz iCal z przykładu, model AI jako funkcja, rclone i giełdy jako atrapy) i w przeglądarce (Chromium) na prawdziwym API z tymi atrapami. Nie było próby z Twoim kalendarzem, prawdziwym modelem ani serwerem; pierwsze uruchomienie jest testem integracji.

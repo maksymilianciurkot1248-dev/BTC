@@ -4,8 +4,8 @@
 set -euo pipefail
 [ "$(id -u)" -eq 0 ] || { echo "Uruchom: sudo bash install_bot.sh"; exit 1; }
 cd "$(dirname "$0")"
-PY="btc_analysis.py btc_botcfg.py btc_decision.py btc_edge.py btc_learn.py btc_lab.py btc_copy.py btc_ai.py btc_scalp.py btc_flow.py btc_account.py btc_exec.py btc_risk.py btc_shadow.py btc_selftest.py btc_trader.py btc_userdata.py btc_backup.py btc_agenda.py btc_alfred.py btc_api.py"
-WEBF="bybit.html bot.html index.html okazje.html rynki.html sytuacje.html badania.html strategie.html kalkulator.html produkty.html mentor.html zarobki.html alfred.html ui.css ui.js"
+PY="btc_analysis.py btc_botcfg.py btc_decision.py btc_edge.py btc_learn.py btc_lab.py btc_copy.py btc_ai.py btc_scalp.py btc_flow.py btc_account.py btc_exec.py btc_risk.py btc_shadow.py btc_selftest.py btc_trader.py btc_userdata.py btc_backup.py btc_agenda.py btc_alfred.py btc_deals.py btc_api.py"
+WEBF="bybit.html bot.html index.html okazje.html rynki.html sytuacje.html badania.html strategie.html kalkulator.html produkty.html mentor.html zarobki.html alfred.html zarabiaj.html ui.css ui.js"
 for f in $PY $WEBF; do
   [ -f "$f" ] || { echo "Brak pliku $f w paczce"; exit 1; }
 done

@@ -15,6 +15,8 @@ GET  /api/learn                                       mapa przewagi, dziennik na
 GET  /api/ai/chat[?id=]                               asystent AI: gotowość albo wynik zadania; POST /api/ai/chat {"messages":[...]} zadaje pytanie (klucz w ai.env)
 GET  /api/agenda                                      kalendarz (iCal, tylko odczyt): wydarzenia na najbliższe dni, stan i wiek danych (bez adresu kalendarza)
 GET  /api/alfred                                      Alfred: ostatni briefing, gotowe polecenia (prompty) i stan asystenta AI (rola "alfred" w /api/ai/chat)
+GET  /api/today                                       ekran „Dziś”: plan dnia i jutra (zadania ułożone w wolnych oknach kalendarza), następny krok, alerty, tydzień, oferty w toku
+POST /api/deal {"id","action":"bought|listed|sold|reject|undo|delete","price","costs","fee","date"}   zmiana statusu oferty: aktualizuje ofertę, Zarobki i zadania planu jednym zapisem
 GET  /api/backup                                      kopia zapasowa na Dysk Google: ostatni wynik, wiek, rozmiar, czy rclone jest skonfigurowany
 GET  /api/userdata?key=zarobki|produkty_lista|mentor_profile    dane użytkownika zapisane na serwerze; POST /api/userdata {"key","value","base_ts"} (409 przy zapisie ze starej wersji)
 GET  /api/flow                                        rynek na żywo: przepływ zleceń i pozycjonowanie (wolumen agresywny, konta long/short, premia), wskaźnik łączny i jego trafność
@@ -244,6 +246,9 @@ def make_handler(state):
                         code, obj = btc_ai.result(state.bot_dir, q["id"][0])
                         return self._send(code, obj)
                     return self._send(200, btc_ai.info(state.bot_dir))
+                if u.path == "/api/today":
+                    import btc_alfred
+                    return self._send(200, btc_alfred.today_view(state.bot_dir))
                 if u.path == "/api/agenda":
                     import btc_agenda
                     a = btc_agenda.read(state.bot_dir)
@@ -318,6 +323,11 @@ def make_handler(state):
                 if u.path == "/api/scalp/settings":
                     import btc_scalp
                     return self._send(200, {"settings": btc_scalp.write_settings(state.bot_dir, d)})
+                if u.path == "/api/deal":
+                    import btc_deals
+                    if isinstance(d.get("id"), bool) or not isinstance(d.get("id"), int):
+                        raise ValueError("id: oczekiwano liczby całkowitej")
+                    return self._send(200, btc_deals.transition(state.bot_dir, d["id"], d.get("action"), d))
                 if u.path == "/api/bot/settings":
                     clean = bb.validate(d)
                     if "ens_variant" in clean:

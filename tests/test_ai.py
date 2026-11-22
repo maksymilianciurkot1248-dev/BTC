@@ -1,4 +1,4 @@
-import sys, os, json, tempfile, time, types
+import sys, os, json, tempfile, time, types, datetime
 sys.path.insert(0, __import__('os').path.dirname(__import__('os').path.dirname(__import__('os').path.abspath(__file__))))
 import btc_ai as ai
 import anthropic
@@ -93,7 +93,7 @@ class FakeClient:
         class messages:
             stream = staticmethod(lambda **k: FakeStream(**k))
 ai.ask(d, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=FakeClient, role="mentor")
-check(len(seen["system"]) == 1 and "mentorem biznesowym" in seen["system"][0]["text"] and "nie fałszujesz" in seen["system"][0]["text"], "mentor: własny prompt, bez migawki stanu bota")
+check(len(seen["system"]) == 2 and "mentorem biznesowym" in seen["system"][0]["text"] and "nie fałszujesz" in seen["system"][0]["text"] and seen["system"][1]["text"].startswith("Migawka dnia"), "mentor: własny prompt i migawka dnia (ta sama co u Alfreda)")
 ai.ask(d, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=FakeClient)
 check(len(seen["system"]) == 2 and "Migawka" in seen["system"][1]["text"], "panel: prompt i migawka")
 ai._calls.clear()
@@ -129,11 +129,11 @@ class SeqClient:
         return C()
 cl = SeqClient([mk_msg("pause_turn", R[:2], 10, 5), mk_msg("end_turn", R[2:], 20, 7)])
 text, usage = ai.ask(d, [{"role": "user", "content": "co na topie"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=cl, role="mentor", search=True)
-check(len(calls) == 2 and calls[0]["tools"][0]["name"] == "web_search" and len(calls[0]["system"]) == 2 and "Źródła" in text and "Pomysł 1." in text and "Pomysł 2." in text, "pause_turn: wznowienie i złożenie odpowiedzi")
+check(len(calls) == 2 and calls[0]["tools"][0]["name"] == "web_search" and len(calls[0]["system"]) == 3 and "Źródła" in text and "Pomysł 1." in text and "Pomysł 2." in text, "pause_turn: wznowienie i złożenie odpowiedzi")
 check(calls[1]["messages"][-1]["role"] == "assistant" and usage["in"] == 30 and usage["out"] == 12 and usage["searches"] == 1, f"wznowienie od przerwanej tury, zużycie zsumowane {usage}")
 calls.clear()
 ai.ask(d, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=SeqClient([mk_msg("end_turn", R[2:])]), role="mentor")
-check("tools" not in calls[0] and len(calls[0]["system"]) == 1, "bez search: bez narzędzia")
+check("tools" not in calls[0] and len(calls[0]["system"]) == 2, "bez search: bez narzędzia")
 calls.clear()
 ai.ask(d, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=SeqClient([mk_msg("pause_turn", R[:2])] * 4), role="mentor", search=True)
 check(len(calls) == ai.SEARCH_LOOPS, "pętla pause_turn ma twardy limit")
@@ -191,4 +191,25 @@ check(json.load(open(os.path.join(da, ai.JOBS_DIR, jb + ".json")))["search"] is 
 got2 = []
 ai.tick(da, ask_fn=lambda d_, msgs, role="panel", search=False: got2.append((role, search)) or ("ok", {"in": 1, "out": 1, "model": "m"}), threaded=False)
 check(("alfred", True) in got2 and ("alfred", False) in got2, f"usługa przekazuje rolę i search {got2}")
+# mentor widzi plan i pieniądze użytkownika (profil, oferty w toku, wolne okna), ale nie klucze ani stan techniczny
+import btc_deals as _bd
+dm = tempfile.mkdtemp()
+_ud.write(dm, "mentor_profile", {"p_cap": "1500", "p_time": "8", "p_risk": "małe", "p_skills": "mam busa", "p_goal": "+1000 zł"}, base_ts=0)
+_ud.write(dm, "produkty_lista", [{"t": 17900000000001, "name": "Rower Kross", "status": "kandydat", "buy": 300, "sell": 450}], base_ts=0)
+_bd.transition(dm, 17900000000001, "bought", {"price": 280}, tz_name="Europe/Warsaw")
+open(os.path.join(dm, "ai.env"), "w").write("ANTHROPIC_API_KEY=sk-ant-TAJNY-KLUCZ\n")
+calls.clear()
+ai.ask(dm, [{"role": "user", "content": "co dalej?"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=SeqClient([mk_msg("end_turn", R[2:])]), role="mentor")
+snap = calls[0]["system"][1]["text"]
+check("Rower Kross" in snap and "mam busa" in snap and "zamrozony_kapital_zl" in snap and "280" in snap and "TAJNY-KLUCZ" not in snap, "mentor: profil i oferty w toku w migawce, bez klucza")
+# rola „tasks”: tylko zwalidowany JSON, bez narzędzi, termin liczony od dziś
+calls.clear()
+raw_tasks = '{"tasks":[{"text":"Wystawić rower na OLX","minutes":25,"days_from_now":1},{"text":"","minutes":10}]}'
+tt, ut = ai.ask(dm, [{"role": "user", "content": "zamień na zadania"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=SeqClient([mk_msg("end_turn", [blk("text", text=raw_tasks, citations=None)])]), role="tasks")
+tj = json.loads(tt)
+check(len(calls[0]["system"]) == 3 and "WYŁĄCZNIE JSON" in calls[0]["system"][2]["text"] and "tools" not in calls[0] and len(tj["tasks"]) == 1 and tj["tasks"][0]["min"] == 25 and tj["dropped"] == 1, f"tasks: JSON zwalidowany {tt}")
+check(tj["tasks"][0]["date"] == (datetime.datetime.now(__import__("btc_alfred").tzone(dm)).date() + datetime.timedelta(days=1)).isoformat(), "tasks: termin liczony od dziś")
+tt2, _ = ai.ask(dm, [{"role": "user", "content": "x"}], cfg={"ANTHROPIC_API_KEY": "k"}, client=SeqClient([mk_msg("end_turn", [blk("text", text="nie umiem", citations=None)])]), role="tasks")
+check(json.loads(tt2)["tasks"] == [] and "error" in json.loads(tt2), "tasks: nieczytelna odpowiedź nie psuje strony")
+check(ai.ROLES["tasks"] == ai.ALFRED and ai.key_present(dm) is True and ai.key_present(tempfile.mkdtemp()) is False, "rola tasks i wykrywanie klucza bez ujawniania go")
 print("ai ok", ok)

@@ -13,6 +13,7 @@ Kluczy i plików `.env`, `trader.env`, `ai.env` tu nie ma i nie może być: zost
 - `docs/ALGORYTM.md` — dokładny opis działania obu botów (reguły, progi, kolejność decyzji)
 - `docs/PLAN.md` — plan działania i warunki przed prawdziwymi pieniędzmi
 - `docs/ALFRED.md` — Alfred: plan dnia, kalendarz, asystent (co działa, źródła, plan rozwoju)
+- Strony: `alfred.html` („Dziś”: plan dnia i asystent), `zarabiaj.html` (oferty, transakcje, notatnik pieniędzy, mentor), `bot.html` oraz strony rynkowe; `docs/ALFRED.md`, rozdział 5, opisuje, jak funkcje współpracują
 - `docs/badania_*` — badania z wynikami (także negatywnymi) i skryptami do ich powtórzenia
 
 ## Aktualizacja serwera

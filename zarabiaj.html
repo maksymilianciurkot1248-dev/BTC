@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="pl" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Zarabiaj</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="ui.css">
+<script src="ui.js"></script>
+<style>
+:root{--bg:#EDF0F4;--card:#fff;--card2:#F5F7FA;--line:#DCE2E9;--ink:#111D29;--muted:#5B6978;--accent:#E8830C;--bull:#12805A;--bear:#C1334A;--warn:#B7791F;--sans:"Segoe UI Variable","Segoe UI",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0A0F16;--card:#111A25;--card2:#16212E;--line:#223142;--ink:#E8EEF4;--muted:#93A1B1;--accent:#F7A234;--bull:#3DDC97;--bear:#FF6B81;--warn:#E6B450}}
+:root[data-theme="dark"]{--bg:#0A0F16;--card:#111A25;--card2:#16212E;--line:#223142;--ink:#E8EEF4;--muted:#93A1B1;--accent:#F7A234;--bull:#3DDC97;--bear:#FF6B81;--warn:#E6B450}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
+.wrap{max-width:1000px;margin:0 auto;padding:20px 16px 70px}
+h1{font-size:1.4rem;margin:0 0 4px} h2{font-size:1.05rem;margin:0 0 4px} h3{font-size:.86rem;color:var(--muted);margin:14px 0 2px;font-weight:600}
+a{color:var(--accent)} .sub{color:var(--muted);font-size:.85rem;margin:0 0 12px} .note{color:var(--muted);font-size:.82rem;margin:8px 0 0} .mut{color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:14px}
+.warn{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid var(--warn);border-radius:12px;padding:9px 14px;font-size:.84rem;margin-bottom:14px}
+.alert{display:flex;gap:10px;align-items:center;border-radius:12px;padding:8px 14px;font-size:.86rem;margin-bottom:8px;border:1px solid var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+.alert span{flex:1;min-width:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+label{display:block;font-size:.78rem;color:var(--muted)}
+input,select,textarea{width:100%;margin-top:3px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--ink);font:inherit;font-size:.9rem}
+textarea{min-height:64px;resize:vertical}
+.btn{display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);text-decoration:none;font:inherit;font-size:.84rem;cursor:pointer;margin:4px 6px 0 0}
+.btn.p{background:var(--accent);border-color:var(--accent);color:#fff} .btn.sm{padding:3px 10px;font-size:.78rem;margin-top:0} .btn:disabled{opacity:.5;cursor:default}
+.kv{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 4px} .kv div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:130px;flex:1 1 130px}
+.kv b{display:block;font-size:1.15rem} .kv span{font-size:.74rem;color:var(--muted)}
+.up{color:var(--bull)} .down{color:var(--bear)}
+.bar{height:10px;background:var(--card2);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:6px 0 2px} .bar i{display:block;height:100%;background:var(--bull)}
+.tbl-w{overflow-x:auto} table{width:100%;border-collapse:collapse;font-size:.84rem;min-width:560px}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:.74rem;padding:6px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top} .r{text-align:right}
+.tabs{display:flex;gap:6px;margin:14px 0;overflow-x:auto;padding-bottom:2px}
+.tabbtn{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 16px;border-radius:999px;font:inherit;font-size:.9rem;cursor:pointer;white-space:nowrap}
+.tabbtn.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.cnt{display:inline-block;margin-left:8px;min-width:20px;padding:0 6px;border-radius:999px;background:color-mix(in srgb,currentColor 18%,transparent);font-size:.74rem;text-align:center}
+.deal{border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:8px 0;background:var(--card2)}
+.deal .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap} .deal .nm{font-weight:600;overflow-wrap:anywhere;min-width:0;flex:1 1 200px}
+.deal .facts{color:var(--muted);font-size:.84rem;margin:2px 0 6px} .deal .acts{display:flex;gap:6px;flex-wrap:wrap}
+.deal.flash{outline:2px solid var(--accent)}
+.badge{font-size:.72rem;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.dform{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)} .dform .go{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+#chat{display:flex;flex-direction:column;gap:10px;margin:10px 0}.m{padding:10px 14px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.92rem;max-width:94%}.m.u{align-self:flex-end;background:color-mix(in srgb,var(--accent) 18%,transparent)}.m.a{align-self:flex-start;background:var(--card2);border:1px solid var(--line)}
+.prop{border:1px dashed var(--accent);border-radius:12px;padding:10px 12px;margin-top:8px} .prop label{display:flex;gap:8px;align-items:center;font-size:.88rem;color:var(--ink);padding:3px 0} .prop input{width:16px;margin:0;flex:none}
+details.card>summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px} details.card>summary::-webkit-details-marker{display:none} details.card>summary:after{content:"▾";color:var(--muted);flex:none} details.card[open]>summary:after{content:"▴"}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:.84rem;z-index:50;max-width:90vw}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ent{display:flex;gap:10px;align-items:center;padding:7px 2px;border-bottom:1px solid var(--line);font-size:.86rem} .ent:last-child{border-bottom:0} .ent .em{flex:1;min-width:0;overflow-wrap:anywhere} .ent b{white-space:nowrap}
+@media (max-width:600px){.kv div{padding:6px 10px;min-width:0;flex:1 1 44%}.kv b{font-size:1rem}.tabs{gap:4px}.tabbtn{padding:7px 10px;font-size:.84rem}.hm{display:none}table{min-width:0}.card{padding:14px}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Zarabiaj</h1>
+<p class="sub">Znajdź ofertę, policz, kup, wystaw, sprzedaj. Każdy krok sam zapisuje pieniądze w notatniku i dodaje zadania do planu dnia (<a href="alfred.html">Dziś</a>).</p>
+<div id="banner"></div>
+<div class="kv" id="tiles"></div>
+<div id="goalbar"></div>
+<p class="note" id="tilenote"></p>
+<div id="attn" style="margin-top:12px"></div>
+<div class="tabs" id="tabs" role="tablist" aria-label="Sekcje"></div>
+
+<!-- ZNAJDŹ -->
+<section id="tab-znajdz" role="tabpanel">
+<section class="card"><h2>Szukaj ofert</h2>
+<p class="sub">Okolice Dębicy i Rzeszowa (środek: Sędziszów Małopolski, promień ok. 40 km). Wpisz, czego szukasz.</p>
+<div class="grid">
+<label>Fraza<input id="q" placeholder="np. rower górski, wiertarka Makita" autocomplete="off"></label>
+<label>Kategoria (podpowiedź)<select id="cat"><option value="">— własna fraza —</option></select></label>
+</div>
+<div id="links"></div>
+<div class="row" style="margin-top:6px"><button class="btn p" id="find" type="button" style="margin:0">Znajdź oferty w internecie (szuka sam)</button><span class="note" id="fst" style="margin:0"></span></div>
+<p class="note">Przycisk korzysta z wyszukiwarki internetowej asystenta (płatne wyszukiwanie, dobowy limit). Poniższe odnośniki otwierają wyszukiwania w serwisach: OLX ma stałe promienie (2, 5, 10, 15, 30, 50, 75, 100 km), więc dla 40 km użyto 50 km od Sędziszowa Małopolskiego. W Allegro Lokalnie i Vinted lokalizację ustaw w filtrach serwisu. Adresy zbudowałem według układu serwisów z pamięci i nie sprawdzałem ich z tego środowiska: jeśli któryś nie otworzy wyników, wpisz frazę w samym serwisie.</p>
+</section>
+<section class="card" id="foundbox" style="display:none"><h2>Znalezione oferty</h2>
+<p class="sub" id="fmeta"></p>
+<div id="foundlist"></div>
+<p class="note">Oferty znajduje wyszukiwarka internetowa, a nie bezpośredni odczyt serwisów: mogą być nieaktualne (sprzedane, zmieniona cena) i nie jest to pełna lista. Pokazuję tylko oferty, których adres faktycznie zwróciła wyszukiwarka. Zawsze sprawdź ofertę w serwisie przed zakupem.</p>
+</section>
+</section>
+
+<!-- POLICZ -->
+<section id="tab-policz" role="tabpanel" hidden>
+<div class="warn"><b>To narzędzie do liczenia, nie gwarancja zarobku.</b> Cena z ogłoszenia nie jest ceną, za którą coś się sprzeda. Szacuj sprzedaż po cenach podobnych, <i>sprzedanych</i> przedmiotów, a nie wystawionych.</div>
+<section class="card"><h2>1. Ile naprawdę da się sprzedać</h2>
+<p class="sub">Wklej ceny <b>sprzedanych</b> (lub zakończonych) podobnych przedmiotów, po jednej w wierszu albo po przecinku. Wyliczę typową cenę (medianę).</p>
+<textarea id="comps" placeholder="np. 450, 480, 520, 430, 500"></textarea>
+<div class="kv" id="compout"></div>
+</section>
+<section class="card"><h2>2. Czy to się opłaca</h2>
+<div class="grid">
+<label>Nazwa<input id="name" placeholder="np. Rower Kross" maxlength="100"></label>
+<label>Cena zakupu (zł)<input id="buy" type="number" min="0" step="1"></label>
+<label>Cena sprzedaży (zł)<input id="sell" type="number" min="0" step="1"></label>
+<label>Prowizja serwisu (%)<input id="fee" type="number" min="0" max="50" step="0.1" value="0"></label>
+<label>Dojazd i wysyłka (zł)<input id="ship" type="number" min="0" step="1" value="0"></label>
+<label>Naprawa i inne (zł)<input id="oth" type="number" min="0" step="1" value="0"></label>
+<label>Czas pracy (godz.)<input id="hrs" type="number" min="0" step="0.5" value="1"></label>
+</div>
+<label style="margin-top:10px">Link do ogłoszenia (opcjonalnie)<input id="url" type="url" placeholder="https://www.olx.pl/..." maxlength="300"></label>
+<div class="kv" id="calc"></div>
+<p id="verdict" class="note"></p>
+<button class="btn p" id="addcand" type="button">Dodaj do kandydatów</button>
+<p class="note">Prowizję wpisz według aktualnego cennika serwisu (OLX dla osób prywatnych zwykle 0%, Allegro Lokalnie i wysyłki mogą mieć opłaty). Nie zakładam jej za Ciebie. Kandydaci trafiają do zakładki „Transakcje”, gdzie jednym kliknięciem oznaczysz zakup, wystawienie i sprzedaż.</p>
+</section>
+</section>
+
+<!-- MOJE TRANSAKCJE -->
+<section id="tab-transakcje" role="tabpanel" hidden>
+<section class="card"><h2>Oferty krok po kroku</h2>
+<p class="sub">Kandydat → kupione → wystawione → sprzedane. Przy zakupie powstaje koszt w notatniku i zadanie „Wystawić”, przy wystawieniu zadanie „Sprawdzić zainteresowanie” za 5 dni, przy sprzedaży przychód i prowizja. „Cofnij” sprząta to, co krok dodał.</p>
+<div id="pipeline"></div>
+</section>
+<section class="card"><h2>Notatnik pieniędzy</h2>
+<div class="warn" style="margin-top:6px">Zapisuje się na serwerze (widać go na telefonie i komputerze, wchodzi do kopii zapasowej). To notatnik do liczenia, nie dokument księgowy ani podatkowy. Przy regularnej sprzedaży sprawdź zasady (limit działalności nieewidencjonowanej, CEIDG, PIT).</div>
+<div class="grid"><label>Cel zysku w miesiącu (zł)<input id="goal" type="number" min="0" step="50"></label></div>
+<h3>Dodaj wpis ręcznie (inne przychody i koszty)</h3>
+<div class="grid">
+<label>Pomysł / projekt<input id="idea" list="ideas" placeholder="np. korepetycje" autocomplete="off" maxlength="60"><datalist id="ideas"></datalist></label>
+<label>Rodzaj<select id="kind"><option value="in">Przychód</option><option value="out">Koszt</option></select></label>
+<label>Kwota (zł)<input id="amt" type="number" min="0" step="0.01"></label>
+<label>Data<input id="date" type="date"></label>
+</div>
+<label style="margin-top:10px">Notatka<input id="note" placeholder="np. lekcja matematyki" maxlength="100"></label>
+<button class="btn p" id="add" type="button">Dodaj</button><span class="note" id="msg"></span>
+<h3>Wyniki pomysłów</h3>
+<div class="tbl-w"><table><thead><tr><th>Pomysł</th><th class="r hm">Przychód</th><th class="r hm">Koszt</th><th class="r">Zysk</th><th class="r">Zwrot</th><th class="r hm">Wpisów</th></tr></thead><tbody id="byidea"></tbody></table></div>
+<p class="note" id="noidea">Brak wpisów.</p>
+<h3>Ostatnie wpisy</h3>
+<div id="rows"></div>
+<button class="btn" id="csv" type="button">Pobierz CSV</button>
+<p class="note">Wpisy oznaczone „z oferty” powstały automatycznie z kroków transakcji: usuniesz je, cofając krok. Pozostałe usuwasz tu.</p>
+</section>
+</section>
+
+<!-- POMYSŁY -->
+<section id="tab-pomysly" role="tabpanel" hidden>
+<div class="warn"><b>To podpowiedzi, nie gwarancja zarobku i nie porada prawna ani podatkowa.</b> Liczby są szacunkami. Mentor nie pomaga w fałszowaniu dokumentów ani w niczym niezgodnym z prawem. Zna Twój profil, plan dnia, zadania i oferty w toku (ten sam obraz dnia co Alfred), ale nie zna Twojego konta ani bota.</div>
+<details class="card" id="profbox" open><summary>Twój profil</summary>
+<p class="sub" style="margin-top:8px">Zapisuje się na serwerze (wchodzi do kopii zapasowej) i trafia do mentora razem z pytaniem. Nie wpisuj tu haseł ani numerów kont.</p>
+<div class="grid">
+<label>Kapitał na start (zł)<input id="p_cap" type="number" min="0" step="50"></label>
+<label>Wolny czas (godz. tygodniowo)<input id="p_time" type="number" min="0" step="1"></label>
+<label>Ryzyko, które akceptuję<select id="p_risk"><option>małe (nie chcę stracić ani złotówki)</option><option selected>umiarkowane (mogę stracić część kapitału)</option><option>większe (mogę stracić cały kapitał z tego pudełka)</option></select></label>
+</div>
+<label style="margin-top:10px">Umiejętności, sprzęt, auto, miejsce na towar<textarea id="p_skills" placeholder="np. mam busa, umiem naprawiać rowery, garaż 20 m2" maxlength="500"></textarea></label>
+<label style="margin-top:10px">Cel i termin<textarea id="p_goal" placeholder="np. +1500 zł miesięcznie w ciągu 3 miesięcy" maxlength="500"></textarea></label>
+<p class="note" id="psync"></p>
+</details>
+<section class="card"><h2>Rozmowa z mentorem</h2>
+<div id="chat" aria-live="polite"></div>
+<textarea id="in" placeholder="Zapytaj o pomysł, ocenę oferty, plan na ten tydzień…" maxlength="4000"></textarea>
+<button class="btn p" id="send" type="button">Wyślij</button>
+<button class="btn" id="first" type="button">Zaproponuj 3 pomysły dla mnie</button>
+<button class="btn" id="trend" type="button">Co jest teraz na topie (szuka w internecie)</button>
+<button class="btn" id="tasks" type="button">Zamień rozmowę na zadania</button>
+<button class="btn" id="clear" type="button">Wyczyść rozmowę</button>
+<div id="proposal"></div>
+<p class="note" id="st"></p>
+<p class="note" id="lim"></p>
+</section>
+</section>
+</div>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const el = (t, a, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a || {})) { if (typeof v === 'function' && n.startsWith('on')) e.addEventListener(n.slice(2), v); else if (v != null && v !== false) e.setAttribute(n, v === true ? '' : v); } for (const c of k) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
+const nf = (v, d = 0) => (v == null || Number.isNaN(v)) ? 'n/d' : new Intl.NumberFormat('pl-PL', {minimumFractionDigits: d, maximumFractionDigits: d}).format(v);
+const zl = v => v == null || Number.isNaN(v) ? 'n/d' : (v < 0 ? '−' : '') + nf(Math.abs(v), Math.abs(v - Math.round(v)) < 0.005 ? 0 : 2) + ' zł';
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const lg = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const ls = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* tryb prywatny */ } };
+const api = async (path, opt) => { const r = await fetch('api/' + path, Object.assign({cache: 'no-store'}, opt)); let j = null; try { j = await r.json(); } catch (e) { /* brak JSON */ } if (!r.ok) throw new Error((j && j.error) || 'HTTP ' + r.status); return j; };
+const post = (path, body) => api(path, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Requested-With': 'btc-ui'}, body: JSON.stringify(body)});
+const soft = async path => { try { return await api(path); } catch (e) { return null; } };
+let toastT = null;
+const toast = msg => { document.querySelectorAll('.toast').forEach(t => t.remove()); const t = el('div', {class: 'toast', role: 'status'}, msg); document.body.append(t); clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 6000); };
+let uid = 0; const newId = () => Date.now() * 10 + (uid++ % 10);
+document.addEventListener('input', ev => { const t = ev.target; if (t && t.dataset && t.dataset.k) t.dataset.d = '1'; });
+// Przerysowanie listy nie kasuje wpisywanych wartości (pola data-k ruszone przez użytkownika) ani fokusu; nietknięte pola biorą świeże dane.
+function rerender(box, kids) {
+  const old = {}, ae = document.activeElement, fk = ae && box.contains(ae) ? ae.dataset.k : null;
+  box.querySelectorAll('[data-d="1"]').forEach(e => { old[e.dataset.k] = e.value; });
+  box.replaceChildren(...kids);
+  box.querySelectorAll('[data-k]').forEach(e => { if (e.dataset.k in old) { e.value = old[e.dataset.k]; e.dataset.d = '1'; } });
+  if (fk) { const n = box.querySelector(`[data-k="${fk}"]`); if (n) { n.focus(); try { n.setSelectionRange(n.value.length, n.value.length); } catch (e) { /* pole liczby lub daty */ } } }
+}
+
+// ----------------------------------------------------------------- stan, zapis i scalanie
+const S = {list: [], zar: {entries: [], goal: null}, tasks: [], profile: {}, today: null, ai: null, prompts: {}, found: null, tab: 'znajdz', offline: false, busy: false, form: null, showRejected: false, hist: [], proposal: null};
+const KEYS = {
+  produkty_lista: ['list', v => v || []],
+  zarobki: ['zar', v => (v && Array.isArray(v.entries) ? v : {entries: [], goal: null})],
+  alfred_tasks: ['tasks', v => v || []],
+  mentor_profile: ['profile', v => v || {}],
+};
+const goalOf = (b, l, r) => (b ? (l.goal !== b.goal ? l.goal : r.goal) : (l.goal != null ? l.goal : r.goal));
+const MERGE = {
+  produkty_lista: (b, l, r) => UD.merge(b, l, r, 't'),
+  alfred_tasks: (b, l, r) => UD.merge(b, l, r, 't'),
+  zarobki: (b, l, r) => ({entries: UD.merge(b && b.entries, l.entries, r.entries, 't'), goal: goalOf(b, l, r)}),
+};
+const AFTER = {mentor_profile: () => setProfileFields(), zarobki: () => setGoalField()};
+const GET = {zarobki: () => ({entries: S.zar.entries.slice(-2000), goal: S.zar.goal}), produkty_lista: () => S.list, alfred_tasks: () => S.tasks, mentor_profile: () => S.profile};
+let rt = null; const refreshSoon = () => { clearTimeout(rt); rt = setTimeout(loadToday, 250); };
+let retryT = null; const retrySoon = () => { clearTimeout(retryT); retryT = setTimeout(loadToday, 20000); };
+async function persist(key) {
+  const [field, parse] = KEYS[key];
+  const r = await UD.sync(key, {get: GET[key], merge: MERGE[key], apply: v => { S[field] = parse(v); if (AFTER[key]) AFTER[key](); renderAll(); }});
+  if (r.offline) { S.offline = true; renderBanner(); renderDeals(); retrySoon(); }
+  else if (!r.ok && r.conflict) toast('Dane zmieniono na innym urządzeniu: wczytano najnowszą wersję.');
+  else if (!r.ok) toast('Błąd zapisu: ' + (r.error || ''));
+  else if (r.merged) toast('Scalono zmiany z innego urządzenia.');
+  refreshSoon();
+}
+const syncAll = () => Object.keys(KEYS).forEach(persist);
+const settle = () => Promise.all(Object.keys(KEYS).map(k => UD._q[k]));
+
+// ----------------------------------------------------------------- górny pasek: kafelki i uwagi
+const tile = (v, l, c) => el('div', null, el('b', {class: c || ''}, v), el('span', null, l));
+function renderBanner() { $('banner').replaceChildren(...(S.offline ? [el('div', {class: 'warn'}, 'Serwer niedostępny: widzisz kopię z tej przeglądarki. Oferty i podsumowania wymagają połączenia, wpisy i profil zapiszą się same, gdy serwer wróci.')] : [])); }
+function renderTiles() {
+  const T = S.today, box = $('tiles'), bar = $('goalbar'), note = $('tilenote');
+  if (!T) { box.replaceChildren(tile('n/d', 'zysk w tym miesiącu'), tile('n/d', 'ofert w toku'), tile('n/d', 'oczekiwany zysk')); bar.replaceChildren(); note.textContent = ''; return; }
+  const m = T.money, st = T.deals.stats, c = st.counts, prog = c.kupione + c.wystawione, p = m.profit_month == null ? 0 : m.profit_month;
+  if (m.profit_month == null && !m.goal && Object.values(c).every(n => n === 0)) { box.replaceChildren(); bar.replaceChildren(); note.textContent = ''; return; }   // nowy użytkownik: bez ścianki zer
+  box.replaceChildren(
+    tile(zl(p), 'zysk w tym miesiącu' + (m.goal ? ` (cel ${zl(m.goal)}${p > 0 ? ', ' + nf(p / m.goal * 100) + '%' : ''})` : ''), p > 0 ? 'up' : p < 0 ? 'down' : ''),
+    tile(zl(st.realized_month), 'zrealizowany ze sprzedaży w tym miesiącu', st.realized_month > 0 ? 'up' : ''),
+    tile(String(prog), `ofert w toku (zamrożone ${zl(st.invested)})`),
+    tile(zl(st.expected_profit), 'oczekiwany zysk z ofert w toku', st.expected_profit > 0 ? 'up' : ''),
+    tile(String(st.sold_n), 'sprzedanych' + (st.avg_days_to_sell == null ? '' : st.avg_days_to_sell < 0.5 ? ', zwykle tego samego dnia' : `, średnio ${nf(st.avg_days_to_sell, st.avg_days_to_sell < 10 ? 1 : 0)} dni do sprzedaży`)));
+  bar.replaceChildren(...(m.goal ? [el('div', {class: 'bar', role: 'progressbar', 'aria-valuenow': String(Math.round(p / m.goal * 100)), 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-label': 'Postęp celu miesięcznego'}, el('i', {style: `width:${Math.max(0, Math.min(100, p / m.goal * 100))}%`}))] : []));
+  note.textContent = prog ? '„Zysk w tym miesiącu” liczy zakup jako koszt od razu, więc rośnie dopiero po sprzedaży. „Zrealizowany” to zysk z już sprzedanych ofert po wszystkich kosztach.' : '';
+}
+function renderAttn() {
+  const box = $('attn'), xs = ((S.today && S.today.deals.attention) || []).slice(0, 4);
+  box.replaceChildren(...xs.map(a => el('div', {class: 'alert'}, el('b', null, a.level === 'warn' ? 'Uwaga:' : 'Do decyzji:'), el('span', null, a.text), el('button', {class: 'btn sm', type: 'button', onclick: () => goDeal(a.t)}, 'Otwórz'))));
+}
+function goDeal(t) {
+  setTab('transakcje'); renderDeals();
+  const e = $('deal-' + t); if (e) { e.scrollIntoView({behavior: 'smooth', block: 'center'}); e.classList.add('flash'); setTimeout(() => e.classList.remove('flash'), 2200); }
+}
+
+// ----------------------------------------------------------------- zakładki
+const TABS = [['znajdz', 'Znajdź'], ['policz', 'Policz'], ['transakcje', 'Transakcje'], ['pomysly', 'Pomysły']];
+const ACTIVE = ['kandydat', 'kupione', 'wystawione'];
+function renderTabs() {
+  $('tabs').replaceChildren(...TABS.map(([k, l]) => { const n = k === 'transakcje' ? S.list.filter(x => ACTIVE.includes(x.status)).length : 0;
+    return el('button', {type: 'button', role: 'tab', id: 'tb-' + k, 'aria-selected': String(S.tab === k), class: 'tabbtn' + (S.tab === k ? ' on' : ''), onclick: () => setTab(k)}, l, n ? ' ' : null, n ? el('span', {class: 'cnt'}, String(n)) : null); }));
+  TABS.forEach(([k]) => { $('tab-' + k).hidden = k !== S.tab; });
+}
+function setTab(k, hash = true) { if (!TABS.some(t => t[0] === k)) return; S.tab = k; if (hash) { try { history.replaceState(null, '', '#' + k); } catch (e) { /* brak historii */ } } renderTabs(); }
+window.addEventListener('hashchange', () => setTab(location.hash.slice(1), false));
+
+// ----------------------------------------------------------------- znajdź
+const CITY = 'sedziszow-malopolski';
+const CATS = ['rower górski', 'rower szosowy', 'wiertarka', 'szlifierka kątowa', 'zestaw narzędzi', 'konsola PlayStation', 'laptop', 'telefon iPhone', 'telewizor', 'odkurzacz', 'kosiarka', 'opony zimowe', 'felgi aluminiowe', 'meble ogrodowe', 'wózek dziecięcy'];
+CATS.forEach(c => $('cat').append(el('option', {value: c}, c)));
+const SITES = [
+  ['OLX, okolica 50 km', q => `https://www.olx.pl/${CITY}/q-${encodeURIComponent(q).replace(/%20/g, '-')}/?search%5Bdist%5D=50&search%5Border%5D=created_at%3Adesc`],
+  ['OLX, Rzeszów', q => `https://www.olx.pl/rzeszow/q-${encodeURIComponent(q).replace(/%20/g, '-')}/?search%5Bdist%5D=30&search%5Border%5D=created_at%3Adesc`],
+  ['OLX, Dębica', q => `https://www.olx.pl/debica/q-${encodeURIComponent(q).replace(/%20/g, '-')}/?search%5Bdist%5D=30&search%5Border%5D=created_at%3Adesc`],
+  ['Allegro Lokalnie', q => `https://allegrolokalnie.pl/oferty/q/${encodeURIComponent(q)}`],
+  ['Vinted', q => `https://www.vinted.pl/catalog?search_text=${encodeURIComponent(q)}`],
+  ['Facebook Marketplace', q => `https://www.facebook.com/marketplace/rzeszow/search?query=${encodeURIComponent(q)}`],
+];
+function links() {
+  const q = $('q').value.trim();
+  $('links').replaceChildren(...SITES.map(([n, f]) => q ? el('a', {class: 'btn', href: f(q), target: '_blank', rel: 'noopener noreferrer'}, n) : el('span', {class: 'btn', style: 'opacity:.5', 'aria-disabled': 'true'}, n)));
+}
+$('cat').addEventListener('change', () => { if ($('cat').value) { $('q').value = $('cat').value; links(); } });
+$('q').addEventListener('input', links); links();
+let finding = false;
+$('find').addEventListener('click', async () => {
+  if (finding) return; const q = $('q').value.trim(); if (!q) { $('fst').textContent = ' Wpisz frazę.'; return; }
+  finding = true; $('find').disabled = true; $('fst').textContent = ' Szukam w internecie (do ok. 2 minut)…';
+  try {
+    const o = JSON.parse(await AI.run('offers', [{role: 'user', content: 'Fraza: ' + q + '. Region: okolice między Dębicą a Rzeszowem, promień ok. 40 km.'}]));
+    S.found = {o, t: Date.now(), q}; ls('produkty_found', JSON.stringify(S.found)); renderFound(); $('fst').textContent = '';
+  } catch (e) { $('fst').textContent = ' Błąd: ' + e.message; }
+  finding = false; $('find').disabled = false; loadMeta();
+});
+const okUrl = u => /^https?:\/\//.test(u || '');
+function renderFound() {
+  const box = $('foundbox'), f = S.found; if (!f || !f.o) { box.style.display = 'none'; return; } box.style.display = '';
+  const o = f.o, xs = o.offers || [];
+  $('fmeta').textContent = (xs.length ? `Znaleziono ${xs.length} ofert` : 'Nic nie znaleziono dla tej frazy') + (o.dropped ? `, odrzucono ${o.dropped} bez potwierdzonego adresu` : '') + (f.t ? ` (${new Date(f.t).toLocaleString('pl-PL')})` : '') + (o.error ? ': ' + o.error : '') + '.';
+  $('foundlist').replaceChildren(...xs.map(x => {
+    const ok = okUrl(x.url), onList = ok && S.list.some(d => d.url === x.url), info = [x.place, x.source, x.why].filter(Boolean).join(' · ') + (x.est_sell_pln != null ? ` · szac. sprzedaż ${zl(x.est_sell_pln)}` : '');
+    return el('div', {class: 'deal'}, el('div', {class: 'top'}, el('div', {class: 'nm'}, ok ? el('a', {href: x.url, target: '_blank', rel: 'noopener noreferrer'}, x.title || x.url) : (x.title || 'bez nazwy')), el('b', null, x.price_pln == null ? 'brak ceny' : zl(x.price_pln))),
+      el('div', {class: 'facts'}, info), el('div', {class: 'acts'},
+        el('button', {class: 'btn sm', type: 'button', onclick: () => { $('name').value = x.title || ''; $('buy').value = x.price_pln == null ? '' : x.price_pln; $('sell').value = x.est_sell_pln == null ? '' : x.est_sell_pln; $('url').value = ok ? x.url : ''; calc(); setTab('policz'); window.scrollTo({top: 0, behavior: 'smooth'}); }}, 'Policz'),
+        el('button', {class: 'btn sm', type: 'button', disabled: onList, onclick: () => addDeal({name: x.title || x.url, url: ok ? x.url : '', buy: x.price_pln == null ? null : x.price_pln, sell: x.est_sell_pln == null ? null : x.est_sell_pln})}, onList ? 'Na liście ✓' : 'Na listę')));
+  }));
+}
+
+// ----------------------------------------------------------------- policz
+const kv = (box, items) => box.replaceChildren(...items.map(([v, l, c]) => tile(v, l, c)));
+function comps() {
+  const xs = $('comps').value.split(/[\s,;]+/).map(x => parseFloat(x.replace(',', '.'))).filter(x => x > 0).sort((a, b) => a - b);
+  if (!xs.length) { kv($('compout'), []); return null; }
+  const m = xs.length % 2 ? xs[(xs.length - 1) / 2] : (xs[xs.length / 2 - 1] + xs[xs.length / 2]) / 2;
+  kv($('compout'), [[nf(m) + ' zł', 'mediana (typowa cena)'], [nf(xs[0]) + ' – ' + nf(xs[xs.length - 1]) + ' zł', 'rozrzut'], [String(xs.length), 'liczba cen' + (xs.length < 5 ? ' (mało: wynik niepewny)' : '')]]);
+  return m;
+}
+$('comps').addEventListener('input', () => { const m = comps(); if (m && !$('sell').value) { $('sell').value = Math.round(m); calc(); } });
+const num = id => parseFloat($(id).value) || 0;
+function calc() {
+  const buy = num('buy'), sell = num('sell'), net = sell * (1 - num('fee') / 100), costs = num('ship') + num('oth'), cost = buy + costs, profit = net - cost;
+  const roi = cost > 0 ? profit / cost * 100 : 0, hr = num('hrs') > 0 ? profit / num('hrs') : null;
+  if (!sell || !buy) { kv($('calc'), []); $('verdict').textContent = 'Wpisz cenę zakupu i sprzedaży.'; return null; }
+  kv($('calc'), [[zl(profit), 'zysk po kosztach', profit > 0 ? 'up' : 'down'], [nf(roi, 0) + '%', 'zwrot z zainwestowanych', roi > 0 ? 'up' : 'down'], [hr == null ? 'n/d' : zl(hr), 'za godzinę pracy'], [zl(cost), 'całkowity koszt']]);
+  $('verdict').textContent = profit <= 0 ? 'Przy tych założeniach tracisz. Nie kupuj.' : (roi >= 30 && profit >= 30 && (hr == null || hr >= 20)) ? 'Wygląda opłacalnie, o ile sprzedasz po tej cenie i w rozsądnym czasie. Sprawdź stan przedmiotu i to, jak długo podobne wiszą niesprzedane.' : 'Zysk jest mały wobec czasu lub zainwestowanych pieniędzy. Rozważ negocjację ceny zakupu.';
+  return {name: $('name').value.trim() || 'bez nazwy', url: $('url').value.trim(), buy, sell, costs, fee: num('fee'), hrs: num('hrs')};
+}
+['buy', 'sell', 'fee', 'ship', 'oth', 'hrs', 'name'].forEach(i => $(i).addEventListener('input', calc));
+// Nowy kandydat (z kalkulatora albo z wyników wyszukiwania): wyliczamy zysk po kosztach tak samo jak kalkulator.
+function addDeal(p) {
+  const buy = p.buy == null ? null : p.buy, sell = p.sell == null ? null : p.sell, costs = p.costs || 0, fee = p.fee || 0, cost = (buy || 0) + costs;
+  const profit = buy == null || sell == null ? null : sell * (1 - fee / 100) - cost, round = (v, n) => v == null ? null : Math.round(v * n) / n;
+  S.list.push({t: newId(), name: String(p.name || 'bez nazwy').slice(0, 100), status: 'kandydat', url: okUrl(p.url) ? p.url.slice(0, 300) : '', buy, sell, profit: round(profit, 100), roi: profit != null && cost > 0 ? round(profit / cost * 100, 10) : null,
+    hr: profit != null && p.hrs > 0 ? round(profit / p.hrs, 100) : null, costs, fee, bought_price: null, list_price: null, sold_price: null, fee_paid: null, d_bought: '', d_listed: '', d_sold: '', note: ''});
+  persist('produkty_lista'); renderTabs(); renderDeals(); renderFound(); toast('Dodano do kandydatów. Znajdziesz go w zakładce Transakcje.');
+}
+$('addcand').addEventListener('click', () => {
+  const r = calc(); if (!r) { toast('Wpisz cenę zakupu i sprzedaży.'); return; }
+  if ($('url').value.trim() && !okUrl($('url').value.trim())) { toast('Link musi zaczynać się od http:// lub https://.'); return; }
+  addDeal(r); ['name', 'url', 'buy', 'sell', 'comps'].forEach(i => { $(i).value = ''; }); $('ship').value = '0'; $('oth').value = '0'; kv($('compout'), []); calc();
+});
+
+// ----------------------------------------------------------------- transakcje: potok ofert
+const ORDER = [['kupione', 'Do wystawienia'], ['wystawione', 'Wystawione, czekają na kupca'], ['kandydat', 'Kandydaci'], ['sprzedane', 'Sprzedane'], ['odrzucone', 'Odrzucone']];
+const realized = x => x.sold_price == null ? null : Math.round((x.sold_price - (x.bought_price || 0) - (x.costs || 0) - (x.fee_paid || 0)) * 100) / 100;
+const daysAgo = d => d ? Math.max(0, Math.round((new Date(ymd(new Date()) + 'T12:00:00') - new Date(d + 'T12:00:00')) / 86400000)) : null;
+const ago = n => n == null ? '' : n === 0 ? 'dziś' : n === 1 ? 'wczoraj' : `${n} dni temu`;
+const SORT = {kupione: (a, b) => (a.d_bought || '').localeCompare(b.d_bought || ''), wystawione: (a, b) => (a.d_listed || '').localeCompare(b.d_listed || ''), kandydat: (a, b) => (b.profit ?? -1e9) - (a.profit ?? -1e9), sprzedane: (a, b) => (b.d_sold || '').localeCompare(a.d_sold || ''), odrzucone: (a, b) => b.t - a.t};
+function facts(x) {
+  const tgt = x.list_price ?? x.sell;
+  if (x.status === 'kandydat') return `Kupno ${zl(x.buy)} · cel sprzedaży ${zl(x.sell)} · zysk ${zl(x.profit)}${x.roi != null ? ` (${nf(x.roi)}%)` : ''}${x.fee ? ` · prowizja ${nf(x.fee, 1)}%` : ''}`;
+  if (x.status === 'kupione') return `Kupione za ${zl(x.bought_price)}${x.costs ? ` + koszty ${zl(x.costs)}` : ''}, ${x.d_bought} (${ago(daysAgo(x.d_bought))}) · cel sprzedaży ${zl(tgt)}`;
+  if (x.status === 'wystawione') return `Wystawione za ${zl(x.list_price)}, ${x.d_listed} (${ago(daysAgo(x.d_listed))}) · kupione za ${zl(x.bought_price)}${x.costs ? ` + koszty ${zl(x.costs)}` : ''}`;
+  if (x.status === 'sprzedane') { const r = realized(x), n = x.d_bought && x.d_sold ? Math.round((new Date(x.d_sold) - new Date(x.d_bought)) / 86400000) : null; return `Sprzedane za ${zl(x.sold_price)}, ${x.d_sold} · zysk po kosztach ${zl(r)}${n != null ? ` · ${n} dni od zakupu` : ''}`; }
+  return 'Odrzucone';
+}
+const FIELDS = {
+  bought: [['price', 'Cena zakupu (zł)', x => x.buy], ['costs', 'Dodatkowe koszty (zł)', x => x.costs || 0], ['date', 'Data zakupu']],
+  listed: [['price', 'Cena wystawienia (zł)', x => x.list_price ?? x.sell], ['date', 'Data wystawienia']],
+  sold: [['price', 'Cena sprzedaży (zł)', x => x.list_price ?? x.sell], ['fee', 'Prowizja serwisu (zł)', null, x => `auto (${x.fee || 0}%)`], ['date', 'Data sprzedaży']],
+};
+const TITLE = {bought: 'Zapisz zakup', listed: 'Zapisz wystawienie', sold: 'Zapisz sprzedaż'};
+function dealForm(x, action) {
+  const kids = FIELDS[action].map(([f, label, def, ph]) => { const isDate = f === 'date', v = isDate ? ymd(new Date()) : def ? def(x) : '';
+    return el('label', null, label, el('input', {'data-k': `d${x.t}-${action}-${f}`, 'data-f': f, type: isDate ? 'date' : 'number', min: isDate ? null : '0', step: isDate ? null : '0.01', value: v == null ? '' : String(v), placeholder: ph ? ph(x) : null})); });
+  const form = el('div', {class: 'dform'}, ...kids, el('div', {class: 'go'}, el('button', {class: 'btn p sm', type: 'button', onclick: () => { const p = {}; form.querySelectorAll('input').forEach(i => { if (i.value !== '') p[i.dataset.f] = i.dataset.f === 'date' ? i.value : Number(i.value); }); dealOp(x.t, action, p); }}, TITLE[action]),
+    el('button', {class: 'btn sm', type: 'button', onclick: () => { S.form = null; renderDeals(); }}, 'Anuluj')));
+  form.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); form.querySelector('.btn.p').click(); } });
+  return form;
+}
+function dealRow(x) {
+  const off = S.offline || S.busy, open = a => { S.form = {id: x.t, action: a}; renderDeals(); const i = document.querySelector(`#deal-${x.t} input`); if (i) i.focus(); };
+  const b = (label, fn, cls) => el('button', {class: 'btn sm' + (cls ? ' ' + cls : ''), type: 'button', disabled: off, onclick: fn}, label);
+  const acts = el('div', {class: 'acts'});
+  if (x.status === 'kandydat') acts.append(b('Kupiłem', () => open('bought'), 'p'), b('Odrzuć', () => dealOp(x.t, 'reject')), b('Usuń', () => { if (confirm(`Usunąć ofertę „${x.name}”?`)) dealOp(x.t, 'delete'); }));
+  else if (x.status === 'kupione') acts.append(b('Wystawiłem', () => open('listed'), 'p'), b('Sprzedałem', () => open('sold')), b('Cofnij zakup', () => dealOp(x.t, 'undo')));
+  else if (x.status === 'wystawione') acts.append(b('Sprzedałem', () => open('sold'), 'p'), b('Cofnij wystawienie', () => dealOp(x.t, 'undo')));
+  else if (x.status === 'sprzedane') acts.append(b('Cofnij sprzedaż', () => dealOp(x.t, 'undo')));
+  else acts.append(b('Przywróć', () => dealOp(x.t, 'undo')), b('Usuń', () => { if (confirm(`Usunąć ofertę „${x.name}”?`)) dealOp(x.t, 'delete'); }));
+  const r = x.status === 'sprzedane' ? realized(x) : null;
+  return el('div', {class: 'deal', id: 'deal-' + x.t}, el('div', {class: 'top'}, el('div', {class: 'nm'}, okUrl(x.url) ? el('a', {href: x.url, target: '_blank', rel: 'noopener noreferrer'}, x.name || 'bez nazwy') : (x.name || 'bez nazwy')), r != null ? el('b', {class: r >= 0 ? 'up' : 'down'}, zl(r)) : null),
+    el('div', {class: 'facts'}, facts(x)), acts, S.form && S.form.id === x.t ? dealForm(x, S.form.action) : null);
+}
+function renderDeals() {
+  const kids = [];
+  if (!S.list.length) kids.push(el('p', {class: 'mut'}, 'Brak ofert. Znajdź coś w zakładce „Znajdź” albo policz opłacalność w zakładce „Policz” i dodaj kandydata.'));
+  for (const [st, label] of ORDER) {
+    const xs = S.list.filter(x => x.status === st).sort(SORT[st]); if (!xs.length) continue;
+    if (st === 'odrzucone' && !S.showRejected) { kids.push(el('button', {class: 'btn sm', type: 'button', style: 'margin-top:12px', onclick: () => { S.showRejected = true; renderDeals(); }}, `Pokaż odrzucone (${xs.length})`)); continue; }
+    kids.push(el('h3', null, `${label} (${xs.length})`), ...(st === 'sprzedane' ? xs.slice(0, 20) : xs).map(dealRow));
+    if (st === 'sprzedane' && xs.length > 20) kids.push(el('p', {class: 'note'}, `Pokazuję 20 ostatnich z ${xs.length} sprzedanych.`));
+  }
+  if (S.list.some(x => ACTIVE.includes(x.status) && x.status !== 'kandydat')) kids.push(el('p', {class: 'note'}, 'Zadania z ofert (wystawić, sprawdzić zainteresowanie) czekają w planie dnia: ', el('a', {href: 'alfred.html'}, 'otwórz Dziś'), '.'));
+  rerender($('pipeline'), kids);
+}
+const DONE_MSG = {
+  bought: (d, v) => `Zakup zapisany. Do notatnika dodano koszt ${zl((d.bought_price || 0) + (d.costs || 0))}, a do planu dnia zadanie „Wystawić: ${d.name}” na jutro.`,
+  listed: d => `Wystawione za ${zl(d.list_price)}. Zadanie „Sprawdzić zainteresowanie” zaplanowano za 5 dni.`,
+  sold: d => `Sprzedane! Zysk po kosztach ${zl(realized(d))} (przychód i prowizja są w notatniku, zadania zamknięte).`,
+  reject: () => 'Odrzucone.', undo: () => 'Cofnięto krok: wpisy i zadania, które dodał, zostały usunięte.', delete: () => 'Oferta usunięta.',
+};
+async function dealOp(id, action, payload) {
+  if (S.busy) return; S.busy = true; renderDeals();
+  try {
+    await settle();                                              // najpierw dokończ zapisy w toku, żeby serwer widział aktualny stan
+    const r = await post('deal', {...(payload || {}), id, action});
+    for (const [key, v] of Object.entries(r.values || {})) { const [field, parse] = KEYS[key] || []; if (!field) continue; S[field] = parse(v); UD.adopt(key, v, r.ts[key]); }
+    S.form = null; toast(DONE_MSG[action](r.deal || {}));
+  } catch (e) { toast('Nie zapisano: ' + e.message); }
+  S.busy = false; renderAll(); loadToday();
+}
+
+// ----------------------------------------------------------------- notatnik pieniędzy
+$('date').value = ymd(new Date());
+const setGoalField = () => { if (!$('goal').dataset.d) $('goal').value = S.zar.goal || ''; };
+let gT = null; $('goal').addEventListener('input', () => { S.zar.goal = parseFloat($('goal').value) || null; clearTimeout(gT); gT = setTimeout(() => { delete $('goal').dataset.d; persist('zarobki'); }, 600); });
+$('goal').dataset.k = 'goal';
+$('add').addEventListener('click', () => {
+  const amt = parseFloat($('amt').value), date = $('date').value;
+  if (!(amt > 0) || !date) { $('msg').textContent = ' Podaj kwotę większą od zera i datę.'; return; }
+  S.zar.entries.push({idea: $('idea').value.trim().slice(0, 60), kind: $('kind').value, amt: Math.round(amt * 100) / 100, date, note: $('note').value.trim().slice(0, 100), t: newId(), ref: ''});
+  $('msg').textContent = ''; $('amt').value = ''; $('note').value = ''; persist('zarobki'); renderLedger();
+});
+function renderLedger() {
+  const E = S.zar.entries, by = {}; E.forEach(e => { const k = e.idea || 'bez nazwy'; (by[k] = by[k] || {i: 0, o: 0, n: 0}); by[k][e.kind === 'in' ? 'i' : 'o'] += e.amt; by[k].n++; });
+  const names = Object.keys(by).sort((a, b) => (by[b].i - by[b].o) - (by[a].i - by[a].o)); $('noidea').style.display = names.length ? 'none' : '';
+  $('ideas').replaceChildren(...names.map(n => el('option', {value: n})));
+  const pct = v => (v < 0 ? '−' : '') + nf(Math.abs(v)) + '%', short = d => { const [y, m, dd] = d.split('-'); return y === String(new Date().getFullYear()) ? `${dd}.${m}` : `${dd}.${m}.${y}`; };
+  $('byidea').replaceChildren(...names.map(n => { const v = by[n], p = v.i - v.o; return el('tr', null, el('td', null, n), el('td', {class: 'r hm'}, zl(v.i)), el('td', {class: 'r hm'}, zl(v.o)), el('td', {class: 'r ' + (p >= 0 ? 'up' : 'down')}, zl(p)), el('td', {class: 'r'}, v.o > 0 ? pct(p / v.o * 100) : 'n/d'), el('td', {class: 'r hm'}, String(v.n))); }));
+  $('rows').replaceChildren(...E.slice().sort((a, b) => b.date.localeCompare(a.date) || b.t - a.t).slice(0, 30).map(e => el('div', {class: 'ent'},
+    el('div', {class: 'em'}, el('div', null, el('span', {class: 'mut'}, short(e.date) + ' · '), e.idea || 'bez nazwy'), e.note || e.ref ? el('div', {class: 'note', style: 'margin:0'}, e.note || '', e.ref ? el('span', {class: 'badge', style: 'margin-left:6px'}, 'z oferty') : null) : null),
+    el('b', {class: e.kind === 'in' ? 'up' : 'down'}, (e.kind === 'in' ? '+' : '−') + zl(e.amt)),
+    e.ref ? null : el('button', {class: 'btn sm', type: 'button', 'aria-label': 'Usuń wpis', onclick: () => { S.zar.entries = S.zar.entries.filter(x => x.t !== e.t); persist('zarobki'); renderLedger(); }}, 'Usuń'))));
+}
+$('csv').addEventListener('click', () => {
+  const esc = v => '"' + String(v).replace(/"/g, '""').replace(/^([=+\-@])/, "'$1") + '"';
+  const txt = 'data;pomysl;rodzaj;kwota;notatka\n' + S.zar.entries.map(e => [e.date, e.idea, e.kind === 'in' ? 'przychod' : 'koszt', String(e.amt).replace('.', ','), e.note].map(esc).join(';')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + txt], {type: 'text/csv;charset=utf-8'})); a.download = 'zarobki.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+
+// ----------------------------------------------------------------- pomysły: profil i mentor
+const PF = ['p_cap', 'p_time', 'p_risk', 'p_skills', 'p_goal'];
+const getProfile = () => Object.fromEntries(PF.map(i => [i, $(i).value]));
+function setProfileFields() { PF.forEach(i => { const v = S.profile[i]; if (v != null && v !== '' && !$(i).dataset.d) $(i).value = v; }); }
+let pT = null;
+PF.forEach(i => { $(i).dataset.k = i; $(i).addEventListener('input', () => { clearTimeout(pT); pT = setTimeout(() => { S.profile = getProfile(); PF.forEach(j => delete $(j).dataset.d); persist('mentor_profile').then(() => { $('psync').textContent = S.offline ? 'Serwer niedostępny: profil zapisze się po jego powrocie.' : 'Profil zapisany na serwerze.'; }); }, 700); }); });
+try { S.hist = JSON.parse(lg('mentor_hist')) || []; } catch (e) { S.hist = []; }
+function drawChat() { $('chat').replaceChildren(...S.hist.map(m => el('div', {class: 'm ' + (m.role === 'user' ? 'u' : 'a')}, m.shown || m.content))); ls('mentor_hist', JSON.stringify(S.hist.slice(-20))); }
+let busy = false;
+async function ask(text, search) {
+  if (busy || !text.trim()) return; busy = true; $('st').textContent = search ? 'Mentor przegląda internet (do ok. 2 minut)…' : 'Mentor myśli…';
+  S.hist.push({role: 'user', content: text.trim()}); drawChat();
+  const msgs = S.hist.slice(-20).map(m => ({role: m.role, content: m.content})); while (msgs.length && msgs[0].role !== 'user') msgs.shift();
+  try { S.hist.push({role: 'assistant', content: await AI.run('mentor', msgs, search)}); $('st').textContent = ''; } catch (e) { $('st').textContent = 'Błąd: ' + e.message; S.hist.pop(); }
+  busy = false; drawChat(); loadMeta();
+}
+function renderLimits() { const i = S.ai; $('lim').textContent = i && i.search_limit != null ? `Przeglądy internetu dziś: zostało ${i.search_left} z ${i.search_limit} (wspólny limit dla mentora, Alfreda i szukania ofert). Każdy kosztuje (wyszukiwania są płatne w API).` : ''; }
+$('send').addEventListener('click', () => { const t = $('in').value; $('in').value = ''; ask(t); });
+$('first').addEventListener('click', () => ask('Na podstawie mojego profilu zaproponuj 3 konkretne, legalne pomysły na dodatkowy dochód w mojej okolicy, od najmniej ryzykownego. Jeśli czegoś brakuje w profilu, najpierw zadaj pytania.'));
+$('trend').addEventListener('click', () => ask('Znajdź w internecie aktualne pomysły na dochód, które pasują do mojego profilu i regionu, także trendy z TikToka. Podaj 3 najlepsze: dla każdego dlaczego teraz, kapitał, jak sprawdzić popyt lokalnie przed wydaniem pieniędzy i największe ryzyko.', true));
+$('clear').addEventListener('click', () => { S.hist = []; S.proposal = null; drawChat(); renderProposal(); });
+$('in').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $('send').click(); } });
+$('tasks').addEventListener('click', async () => {
+  if (busy) { toast('Mentor jeszcze odpowiada.'); return; } if (!S.hist.some(m => m.role === 'assistant')) { toast('Najpierw porozmawiaj z mentorem.'); return; }
+  busy = true; $('st').textContent = 'Wybieram zadania z rozmowy…';
+  try {
+    const msgs = [...S.hist.slice(-20).map(m => ({role: m.role, content: m.content})), {role: 'user', content: S.prompts.tasks || ''}]; while (msgs.length && msgs[0].role !== 'user') msgs.shift();
+    const j = JSON.parse(await AI.run('tasks', msgs, false)); $('st').textContent = '';
+    if (!j.tasks.length) toast(j.error || 'Nie znalazłem w tej rozmowie konkretnych zadań.'); else { S.proposal = j.tasks.map(t => ({...t, on: true})); renderProposal(); }
+  } catch (e) { $('st').textContent = 'Błąd: ' + e.message; }
+  busy = false;
+});
+function renderProposal() {
+  const box = $('proposal'); box.replaceChildren(); if (!S.proposal) return;
+  const p = el('div', {class: 'prop'}, el('b', null, 'Proponowane zadania (odznacz zbędne):'));
+  S.proposal.forEach(t => { const cb = el('input', {type: 'checkbox'}); cb.checked = t.on; cb.addEventListener('change', () => { t.on = cb.checked; }); p.append(el('label', null, cb, el('span', null, `${t.text} `, el('span', {class: 'badge'}, `${t.min} min`), ' ', el('span', {class: 'badge'}, t.date)))); });
+  p.append(el('div', {class: 'row', style: 'margin-top:8px'}, el('button', {class: 'btn p sm', type: 'button', onclick: () => { const add = S.proposal.filter(t => t.on); add.forEach(t => S.tasks.push({t: newId(), text: t.text, date: t.date, done: false, top: false, done_ts: null, min: t.min, ref: ''})); S.proposal = null; persist('alfred_tasks'); renderProposal(); toast(`Dodano do planu dnia: ${add.length}. Zobaczysz je w zakładce Dziś.`); }}, 'Dodaj zaznaczone do planu dnia'), el('button', {class: 'btn sm', type: 'button', onclick: () => { S.proposal = null; renderProposal(); }}, 'Anuluj')));
+  box.append(p);
+}
+
+// ----------------------------------------------------------------- start
+function renderAll() { renderBanner(); renderTiles(); renderAttn(); renderTabs(); renderFound(); renderDeals(); renderLedger(); drawChat(); renderProposal(); renderLimits(); }
+async function loadToday() {
+  const t = await soft('today');
+  if (t) { S.today = t; if (S.offline) { S.offline = false; syncAll(); } } else { S.offline = true; retrySoon(); }
+  renderBanner(); renderTiles(); renderAttn(); renderDeals();
+}
+async function loadMeta() { const al = await soft('alfred'); if (al) { S.ai = al.ai; S.prompts = al.prompts || {}; renderLimits(); } }
+(async () => {
+  renderAll();
+  const keys = Object.keys(KEYS), loaded = await Promise.all(keys.map(k => UD.load(k)));
+  keys.forEach((k, i) => { const [f, parse] = KEYS[k]; if (loaded[i].offline) S.offline = true; S[f] = parse(loaded[i].value); });
+  // pierwsze użycie po aktualizacji: przenosimy stare dane z przeglądarki (listę ofert, wpisy, profil), jeśli serwer jeszcze ich nie ma
+  const off = loaded.some(l => l.offline);
+  if (!off) {
+    if (!loaded[keys.indexOf('produkty_lista')].found) { try { const old = JSON.parse(lg('produkty_lista')); if (Array.isArray(old) && old.length) { S.list = old.slice(-500); persist('produkty_lista'); } } catch (e) { /* brak */ } }
+    if (!loaded[keys.indexOf('zarobki')].found) { try { const old = JSON.parse(lg('zarobki_wpisy')); if (Array.isArray(old) && old.length) { S.zar = {entries: old.slice(-2000), goal: parseFloat(lg('zarobki_cel')) || null}; persist('zarobki'); } } catch (e) { /* brak */ } }
+    if (!loaded[keys.indexOf('mentor_profile')].found) { try { const old = JSON.parse(lg('mentor_p_all')); if (old && typeof old === 'object') { S.profile = old; persist('mentor_profile'); } } catch (e) { /* brak */ } }
+  }
+  try { const f = JSON.parse(lg('produkty_found')); if (f && f.o) { S.found = f; if (!$('q').value) { $('q').value = f.q || ''; links(); } } } catch (e) { /* brak */ }
+  setGoalField(); setProfileFields(); calc(); renderAll();
+  await Promise.all([loadToday(), loadMeta()]);
+  const h = location.hash.slice(1);
+  if (TABS.some(t => t[0] === h)) setTab(h, false);
+  else if (S.list.some(x => x.status === 'kupione' || x.status === 'wystawione') || ((S.today && S.today.deals.attention) || []).length) setTab('transakcje', false);
+  renderAll();
+  setInterval(loadToday, 120000);
+})();
+})();
+</script>
+</body>
+</html>

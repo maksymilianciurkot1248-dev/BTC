@@ -15,6 +15,7 @@ Konflikty: każdy zapis ma znacznik czasu (ts, ms). Klient przysyła base_ts, cz
 (zapis z innego urządzenia), zapis jest odrzucany (Conflict) i klient dostaje wersję z serwera. Ostatni zapis nie nadpisuje po cichu cudzego.
 Dane są oczyszczane do znanych pól i rozmiarów: nie da się tu zapisać dowolnej treści.
 """
+import copy
 import datetime
 import json
 import math
@@ -30,7 +31,7 @@ import btc_botcfg as bb  # noqa: E402  (zapis atomowy z prawami 640)
 
 FILE = "userdata.json"
 MAX_BODY = 300 * 1024
-LIMITS = {"zarobki": 256 * 1024, "produkty_lista": 128 * 1024, "mentor_profile": 16 * 1024,
+LIMITS = {"zarobki": 256 * 1024, "produkty_lista": 256 * 1024, "mentor_profile": 16 * 1024,
           "alfred_tasks": 160 * 1024, "alfred_habits": 200 * 1024, "alfred_goals": 32 * 1024, "alfred_journal": 220 * 1024}
 _lock = threading.Lock()
 
@@ -74,20 +75,31 @@ def _clean_zarobki(v):
         except ValueError:
             raise ValueError("zarobki: zła data") from None
         out.append({"idea": _str(e.get("idea"), "idea", 60), "kind": e["kind"], "amt": _num(e.get("amt"), "amt", 0.0, 1e9), "date": date,
-                    "note": _str(e.get("note"), "note", 100), "t": int(_num(e.get("t"), "t", 0, 1e15))})
+                    "note": _str(e.get("note"), "note", 100), "t": int(_num(e.get("t"), "t", 0, 1e15)), "ref": _str(e.get("ref"), "ref", 24)})
     return {"entries": out, "goal": _num(v.get("goal"), "goal", 0.0, 1e9, none_ok=True)}
 
 
+STATUSES = ("kandydat", "kupione", "wystawione", "sprzedane", "odrzucone")
+
+
 def _clean_lista(v):
+    """Oferty do odsprzedaży jako potok: kandydat → kupione → wystawione → sprzedane (albo odrzucone). Stare wpisy bez statusu to kandydaci."""
     if not isinstance(v, list) or len(v) > 500:
         raise ValueError("produkty_lista: oczekiwano listy do 500 pozycji")
     out = []
     for x in v:
         if not isinstance(x, dict):
             raise ValueError("produkty_lista: zła pozycja")
-        out.append({"name": _str(x.get("name"), "name", 100), "buy": _num(x.get("buy"), "buy", -1e9, 1e9, True), "sell": _num(x.get("sell"), "sell", -1e9, 1e9, True),
-                    "profit": _num(x.get("profit"), "profit", -1e9, 1e9, True), "roi": _num(x.get("roi"), "roi", -1e9, 1e9, True), "hr": _num(x.get("hr"), "hr", -1e9, 1e9, True),
-                    "t": int(_num(x.get("t"), "t", 0, 1e15))})
+        status = x.get("status") or "kandydat"
+        if status not in STATUSES:
+            raise ValueError("produkty_lista: zły status")
+        url = _str(x.get("url"), "url", 300)
+        n = lambda k, lo=-1e9, hi=1e9: _num(x.get(k), k, lo, hi, True)
+        out.append({"t": int(_num(x.get("t"), "t", 0, 1e15)), "name": _str(x.get("name"), "name", 100), "status": status, "url": url if url.startswith(("https://", "http://")) else "",
+                    "buy": n("buy"), "sell": n("sell"), "profit": n("profit"), "roi": n("roi"), "hr": n("hr"), "costs": n("costs", 0), "fee": n("fee", 0, 100),
+                    "bought_price": n("bought_price", 0), "list_price": n("list_price", 0), "sold_price": n("sold_price", 0), "fee_paid": n("fee_paid", 0),
+                    "d_bought": _date(x.get("d_bought"), "d_bought", True), "d_listed": _date(x.get("d_listed"), "d_listed", True), "d_sold": _date(x.get("d_sold"), "d_sold", True),
+                    "note": _str(x.get("note"), "note", 200)})
     return out
 
 
@@ -117,7 +129,8 @@ def _clean_tasks(v):
             raise ValueError("alfred_tasks: zadanie bez treści")
         dts = x.get("done_ts")
         out.append({"t": int(_num(x.get("t"), "t", 0, 1e15)), "text": _str(x.get("text"), "text", 200), "date": _date(x.get("date"), "date", True),
-                    "done": x.get("done") is True, "top": x.get("top") is True, "done_ts": int(_num(dts, "done_ts", 0, 1e15)) if dts not in (None, "") else None})
+                    "done": x.get("done") is True, "top": x.get("top") is True, "done_ts": int(_num(dts, "done_ts", 0, 1e15)) if dts not in (None, "") else None,
+                    "min": int(_num(x.get("min"), "min", 1, 600, True)) if x.get("min") not in (None, "") else None, "ref": _str(x.get("ref"), "ref", 24)})
     return out
 
 
@@ -203,3 +216,36 @@ def write(d, key, value, base_ts=None, now_ms=None):
         data["keys"][key] = {"v": clean, "ts": ts}
         bb._atomic_write(_path(d), json.dumps(data, ensure_ascii=False, separators=(",", ":")))
     return ts
+
+
+DEFAULTS = {"zarobki": {"entries": [], "goal": None}, "produkty_lista": [], "mentor_profile": {}, "alfred_tasks": [], "alfred_habits": {"habits": []}, "alfred_goals": [], "alfred_journal": []}
+
+
+def mutate(d, keys, fn, now_ms=None):
+    """Operacja serwera na kilku kluczach naraz (np. zmiana statusu oferty wpisuje też koszt do Zarobków i zadanie do planu).
+    fn(wartości) dostaje kopie wartości kluczy (brakujące: wartości domyślne), zwraca słownik zmian {klucz: nowa wartość} albo {} (nic do zapisu)
+    i może zgłosić ValueError (wtedy nic się nie zapisuje). Zmiany są walidowane i zapisane JEDNYM atomowym zapisem pliku.
+    Zwraca (znaczniki czasu zmienionych kluczy, wszystkie wartości po zmianie)."""
+    for k in keys:
+        if k not in LIMITS:
+            raise ValueError("nieznany klucz")
+    with _lock:
+        data = _load(d)
+        cur = {k: copy.deepcopy((data["keys"].get(k) or {}).get("v", DEFAULTS[k])) for k in keys}
+        changes = fn(copy.deepcopy(cur)) or {}
+        clean = {}
+        for k, v in changes.items():
+            if k not in LIMITS:
+                raise ValueError("nieznany klucz")
+            clean[k] = CLEAN[k](v)
+            if len(json.dumps(clean[k], ensure_ascii=False, separators=(",", ":"))) > LIMITS[k]:
+                raise ValueError("dane za duże")
+        if not clean:
+            return {}, cur
+        now = int(now_ms if now_ms is not None else time.time() * 1000)
+        ts = {}
+        for k, v in clean.items():
+            ts[k] = max(now, (data["keys"].get(k) or {}).get("ts", 0) + 1)
+            data["keys"][k] = {"v": v, "ts": ts[k]}
+        bb._atomic_write(_path(d), json.dumps(data, ensure_ascii=False, separators=(",", ":")))
+    return ts, {**cur, **clean}

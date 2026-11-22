@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Alfred</title>
+<title>Dziś</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="ui.css">
 <script src="ui.js"></script>
@@ -14,180 +14,218 @@
 :root[data-theme="dark"]{--bg:#0A0F16;--card:#111A25;--card2:#16212E;--line:#223142;--ink:#E8EEF4;--muted:#93A1B1;--accent:#F7A234;--bull:#3DDC97;--bear:#FF6B81;--warn:#E6B450}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.5}
-.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
-h1,h2,h3{margin:0} h2{font-size:1.05rem;margin-bottom:4px} h3{font-size:.86rem;color:var(--muted);margin:12px 0 4px;font-weight:600}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 90px}
+h1,h2,h3{margin:0} h2{font-size:1.05rem;margin-bottom:4px} h3{font-size:.84rem;color:var(--muted);margin:12px 0 4px;font-weight:600}
 a{color:var(--accent)} .sub{color:var(--muted);font-size:.85rem;margin:0 0 10px} .note{color:var(--muted);font-size:.8rem;margin:8px 0 0} .mut{color:var(--muted)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
-.hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:20px;padding:18px 22px 14px;margin-bottom:16px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 13%,var(--card)),var(--card) 60%)}
+.hero{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:20px;padding:18px 22px 14px;margin-bottom:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 13%,var(--card)),var(--card) 60%)}
 .hero:before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--accent)}
 .hud{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
 .hello{font-size:1.6rem;font-weight:700;line-height:1.2} .date{color:var(--muted);font-size:.95rem} .date::first-letter{text-transform:uppercase}
 .clock{font-variant-numeric:tabular-nums;font-size:2.6rem;font-weight:300;letter-spacing:.02em;line-height:1}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .chip{display:inline-block;padding:4px 12px;border-radius:999px;font-size:.78rem;border:1px solid var(--line);background:var(--card);color:var(--ink)}
-.chip.ok{border-color:var(--bull);color:var(--bull)} .chip.w{border-color:var(--warn);color:var(--warn)} .chip.bad{border-color:var(--bear);color:var(--bear)}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px} .col{display:flex;flex-direction:column;gap:16px;min-width:0}
-@media (max-width:860px){.cols{grid-template-columns:1fr}}
-.full{margin-bottom:16px}
+.chip.ok{border-color:var(--bull);color:var(--bull)}
+.alert{display:flex;gap:10px;align-items:flex-start;border-radius:12px;padding:8px 14px;font-size:.86rem;margin-bottom:8px;border:1px solid var(--warn);background:color-mix(in srgb,var(--warn) 12%,transparent)}
+.alert.bad{border-color:var(--bear);background:color-mix(in srgb,var(--bear) 12%,transparent)} .alert b{flex:none}
+.next{margin-bottom:14px;border-left:4px solid var(--accent)} .next .lab{font-size:.74rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.next .big{font-size:1.45rem;font-weight:700;line-height:1.25;margin:2px 0} .next .why{color:var(--muted);font-size:.92rem}
+.ask{margin-bottom:14px}
+#chatHist{margin-top:8px}
+.cols{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;margin-bottom:14px} .col{display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (max-width:860px){.cols{grid-template-columns:1fr}.col{display:contents}#plan{order:1}#tasks{order:2}#habits{order:3}#money{order:4}}
 input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--ink);font:inherit;font-size:.9rem}
 textarea{min-height:56px;resize:vertical} label{display:block;font-size:.76rem;color:var(--muted)}
-.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap} .row>.grow{flex:1;min-width:140px}
-.btn{display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:.84rem;cursor:pointer}
-.btn.p{background:var(--accent);border-color:var(--accent);color:#fff} .btn.sm{padding:3px 9px;font-size:.76rem} .btn:disabled{opacity:.5;cursor:default}
-.tabs{display:flex;gap:4px;margin:10px 0 6px} .tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:4px 12px;border-radius:999px;font:inherit;font-size:.78rem;cursor:pointer}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap} .row>.grow{flex:1;min-width:130px}
+.btn{display:inline-block;padding:7px 14px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:.84rem;cursor:pointer;text-decoration:none}
+.btn.p{background:var(--accent);border-color:var(--accent);color:#fff} .btn.sm{padding:3px 10px;font-size:.76rem} .btn:disabled{opacity:.5;cursor:default}
+.tabs{display:flex;gap:4px;margin:8px 0 6px} .tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:4px 12px;border-radius:999px;font:inherit;font-size:.78rem;cursor:pointer}
 .tabs button[aria-pressed=true]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .item{display:flex;gap:10px;align-items:center;padding:7px 2px;border-bottom:1px solid var(--line);font-size:.9rem} .item:last-child{border-bottom:0}
-.item.habit .t{flex:1 1 150px}
-.item input[type=checkbox]{width:18px;height:18px;flex:none;margin:0} .item .t{flex:1;min-width:0;overflow-wrap:anywhere} .item.done .t{text-decoration:line-through;color:var(--muted)}
+.item input[type=checkbox]{width:18px;height:18px;flex:none;margin:0} .item .t{flex:1 1 140px;min-width:0;overflow-wrap:anywhere} .item.done .t{text-decoration:line-through;color:var(--muted)}
 .star{border:0;background:none;color:var(--muted);cursor:pointer;font-size:1.1rem;padding:0 4px} .star.on{color:var(--accent)}
 .x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 4px} .x:hover{color:var(--bear)}
 .badge{font-size:.72rem;padding:1px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap} .badge.late{border-color:var(--bear);color:var(--bear)}
-.ev{display:flex;gap:10px;padding:5px 0;font-size:.88rem;border-bottom:1px dashed var(--line)} .ev:last-child{border-bottom:0}
-.ev .h{flex:none;width:92px;font-variant-numeric:tabular-nums;color:var(--muted)} .ev.past{opacity:.5} .ev.now{border-left:3px solid var(--accent);padding-left:8px;font-weight:600}
-.free{font-size:.8rem;color:var(--bull);margin:4px 0 0}
+.tl{display:flex;gap:10px;padding:6px 8px;font-size:.88rem;border-left:3px solid var(--line);margin:3px 0;align-items:center;flex-wrap:wrap}
+.tl .h{flex:none;width:96px;font-variant-numeric:tabular-nums;color:var(--muted)} .tl .t{flex:1 1 140px;min-width:0;overflow-wrap:anywhere}
+.tl.event{border-left-color:#4C8BF5;background:color-mix(in srgb,#4C8BF5 7%,transparent)} .tl.task{border-left-color:var(--accent)} .tl.past{opacity:.5} .tl.now{border-left-width:5px;font-weight:600}
+.free{font-size:.8rem;color:var(--bull);margin:6px 0 0} .sumline{font-size:.8rem;color:var(--muted);margin:2px 0 6px}
 .dots{display:flex;gap:5px} .dot{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--card2);color:var(--muted);font:inherit;font-size:.68rem;cursor:pointer;padding:0}
 .dot.on{background:var(--bull);border-color:var(--bull);color:#fff} .dot.today{outline:2px solid var(--accent);outline-offset:1px}
 .bar{height:10px;background:var(--card2);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin:6px 0 2px} .bar i{display:block;height:100%;background:var(--bull)}
-.kv{display:flex;gap:10px;flex-wrap:wrap} .kv div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:120px} .kv b{display:block;font-size:1.05rem} .kv span{font-size:.72rem;color:var(--muted)}
-#chat{display:flex;flex-direction:column;gap:8px;margin:10px 0;max-height:480px;overflow-y:auto}
+.kv{display:flex;gap:10px;flex-wrap:wrap} .kv div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:8px 14px;min-width:110px} .kv b{display:block;font-size:1.05rem} .kv span{font-size:.72rem;color:var(--muted)}
+#chat{display:flex;flex-direction:column;gap:8px;margin:10px 0;max-height:340px;overflow-y:auto}
 .m{padding:9px 13px;border-radius:12px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.9rem;max-width:94%} .m.u{align-self:flex-end;background:color-mix(in srgb,var(--accent) 18%,transparent)} .m.a{align-self:flex-start;background:var(--card2);border:1px solid var(--line)}
-.brief{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.92rem;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0}
-.warn{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid var(--warn);border-radius:12px;padding:9px 13px;font-size:.84rem;margin-bottom:12px}
-.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:.84rem;z-index:50;max-width:90vw}
+.brief{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.9rem;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:8px 0 0}
+details.card>summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px} details.card>summary::-webkit-details-marker{display:none} details.card>summary:after{content:"▾";color:var(--muted);flex:none} details.card[open]>summary:after{content:"▴"}
+details.more{margin-bottom:14px} .wk{display:flex;gap:8px;align-items:flex-end;height:96px;margin:8px 0} .wk div{flex:1;text-align:center;font-size:.7rem;color:var(--muted)} .wk i{display:block;background:var(--bull);border-radius:6px 6px 0 0;margin:0 auto;width:70%;min-height:2px}
+.prop{border:1px dashed var(--accent);border-radius:12px;padding:10px 12px;margin-top:8px} .prop label{display:flex;gap:8px;align-items:center;font-size:.88rem;color:var(--ink);padding:3px 0}
+#focus{position:fixed;left:0;right:0;bottom:0;z-index:40;display:none;padding:10px 16px;background:var(--card);border-top:2px solid var(--accent);box-shadow:0 -6px 24px rgba(0,0,0,.18)}
+#focus.on{display:block} #focus .in{max-width:1100px;margin:0 auto;display:flex;gap:12px;align-items:center;flex-wrap:wrap} #focus .tm{font-variant-numeric:tabular-nums;font-size:1.5rem;font-weight:600} #focus.end{background:color-mix(in srgb,var(--accent) 18%,var(--card))}
+.warnbox{background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid var(--warn);border-radius:12px;padding:9px 13px;font-size:.84rem;margin-bottom:12px}
+.toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:12px;font-size:.84rem;z-index:50;max-width:90vw}
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="hero" id="hero">
-  <div class="hud"><div><div class="hello" id="hello">Alfred</div><div class="date" id="date"></div></div><div class="clock" id="clock"></div></div>
+  <div class="hud"><div><div class="hello" id="hello">Dzień dobry</div><div class="date" id="date"></div></div><div class="clock" id="clock"></div></div>
   <div class="chips" id="chips"></div>
 </div>
 <div id="banner"></div>
-
-<section class="card full" id="briefing"></section>
-
+<div id="alerts"></div>
+<section class="card next" id="next"></section>
 <div class="cols">
-  <div class="col">
-    <section class="card" id="agenda"></section>
-    <section class="card" id="tasks"></section>
-  </div>
-  <div class="col">
-    <section class="card" id="habits"></section>
-    <section class="card" id="goals"></section>
-    <section class="card" id="review"></section>
-  </div>
+  <div class="col"><section class="card" id="plan"></section><section class="card" id="habits"></section></div>
+  <div class="col"><section class="card" id="tasks"></section><section class="card" id="money"></section></div>
 </div>
-
-<section class="card full" id="chatcard"></section>
-<section class="card full" id="status"></section>
+<section class="card ask" id="ask"></section>
+<details class="card more" id="more"><summary>Cele, przegląd dnia i tydzień w liczbach</summary><div id="moreBody"></div></details>
+<details class="card more" id="systems"><summary>Systemy i podpowiedzi</summary><div id="sysBody"></div></details>
 </div>
+<div id="focus" role="status"></div>
 <script>
 (() => {
 'use strict';
 const $ = id => document.getElementById(id);
 const el = (t, a, ...k) => { const e = document.createElement(t); for (const [n, v] of Object.entries(a || {})) { if (typeof v === 'function' && n.startsWith('on')) e.addEventListener(n.slice(2), v); else if (v != null && v !== false) e.setAttribute(n, v === true ? '' : v); } for (const c of k) if (c != null && c !== false) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
 const nf = (v, d = 0) => (v == null || Number.isNaN(v)) ? 'n/d' : new Intl.NumberFormat('pl-PL', {minimumFractionDigits: d, maximumFractionDigits: d}).format(v);
-const pad = n => String(n).padStart(2, '0');
 const num = v => nf(v, Number.isInteger(v) ? 0 : 1);
+const zl = v => (v < 0 ? '−' : '') + nf(Math.abs(v), Number.isInteger(v) ? 0 : 2) + ' zł';
+const pad = n => String(n).padStart(2, '0');
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return x; };
 const hm = ts => { const d = new Date(ts * 1000); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const dur = m => m >= 60 ? `${Math.floor(m / 60)} h${m % 60 ? ' ' + m % 60 + ' min' : ''}` : `${m} min`;
 const api = async path => { try { const r = await fetch('api/' + path, {cache: 'no-store'}); return r.ok ? await r.json() : null; } catch (e) { return null; } };
-const post = async (path, body) => { const r = await fetch('api/' + path, {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Requested-With': 'btc-ui'}, body: JSON.stringify(body)}); const j = await r.json(); if (!r.ok) throw new Error(j.error || 'HTTP ' + r.status); return j; };
 const lg = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const ls = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* tryb prywatny */ } };
 let toastT = null;
 const toast = msg => { document.querySelectorAll('.toast').forEach(t => t.remove()); const t = el('div', {class: 'toast', role: 'status'}, msg); document.body.append(t); clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 4500); };
 const MAX_TOP = 3;
+// Przerysowanie karty nie może kasować tego, co użytkownik właśnie wpisuje: wartości pól data-k, które ruszył (data-d), i fokus przechodzą na nowe elementy.
+// Pola nietknięte biorą świeże dane (np. z serwera), więc stary pusty formularz nie nadpisuje wczytanych wartości.
+document.addEventListener('input', ev => { const t = ev.target; if (t && t.dataset && t.dataset.k) t.dataset.d = '1'; });
+const clean = (...els) => els.forEach(e => { delete e.dataset.d; });
+function rerender(box, kids) {
+  const old = {}, ae = document.activeElement, fk = ae && box.contains(ae) ? ae.dataset.k : null;
+  box.querySelectorAll('[data-d="1"]').forEach(e => { old[e.dataset.k] = e.value; });
+  box.replaceChildren(...kids);
+  box.querySelectorAll('[data-k]').forEach(e => { if (e.dataset.k in old) { e.value = old[e.dataset.k]; e.dataset.d = '1'; } });
+  if (fk) { const n = box.querySelector(`[data-k="${fk}"]`); if (n) { n.focus(); try { n.setSelectionRange(n.value.length, n.value.length); } catch (e) { /* pole liczby lub daty nie ma kursora */ } } }
+}
 
 // ----------------------------------------------------------------- stan
-const S = {tasks: [], habits: [], goals: [], journal: [], zar: null, agenda: null, brief: null, ai: null, bot: null, backup: null, prompts: {}, offline: false, taskTab: 'dzis', chat: []};
+const S = {tasks: [], habits: [], goals: [], journal: [], today: null, brief: null, ai: null, prompts: {}, offline: false, tab: 'dzis', taskTab: 'dzis', chat: [], chatOpen: false, focus: null, proposal: null, sys: null};
 const KEYS = {alfred_tasks: ['tasks', v => v || [], v => v], alfred_habits: ['habits', v => (v && v.habits) || [], v => ({habits: v})], alfred_goals: ['goals', v => v || [], v => v], alfred_journal: ['journal', v => v || [], v => v]};
 let uid = 0; const newId = () => Date.now() * 10 + (uid++ % 10);
+let rt = null; const refreshSoon = () => { clearTimeout(rt); rt = setTimeout(loadToday, 250); };
+// Konflikt zapisu (inne urządzenie albo potok ofert na serwerze zmieniły dane) nie gubi niczyich zmian: scalamy po id wersję ostatnio zsynchronizowaną, naszą i serwerową.
+const MERGE = {
+  alfred_tasks: (b, l, r) => UD.merge(b, l, r, 't'), alfred_goals: (b, l, r) => UD.merge(b, l, r, 't'), alfred_journal: (b, l, r) => UD.merge(b, l, r, 'date'),
+  alfred_habits: (b, l, r) => ({habits: UD.merge(b && b.habits, l.habits, r.habits, 'id', (x, y) => ({...x, days: [...new Set([...x.days, ...y.days])].sort()}))}),
+};
 async function persist(key) {
-  const [field, , wrap] = KEYS[key], r = await UD.save(key, wrap(S[field]));
-  if (r.conflict) { S[field] = KEYS[key][1](r.value); renderAll(); toast('Dane zmieniono na innym urządzeniu: wczytano najnowszą wersję. Powtórz ostatnią zmianę, jeśli jej nie widać.'); }
-  else if (r.offline) { S.offline = true; renderBanner(); }
+  const [field, parse, wrap] = KEYS[key];
+  const r = await UD.sync(key, {get: () => wrap(S[field]), merge: MERGE[key], apply: v => { S[field] = parse(v); renderAll(); }});
+  if (r.offline) { S.offline = true; renderBanner(); retrySoon(); }
+  else if (!r.ok && r.conflict) toast('Dane zmieniono na innym urządzeniu: wczytano najnowszą wersję.');
   else if (!r.ok) toast('Błąd zapisu: ' + (r.error || ''));
+  else if (r.merged) toast('Scalono zmiany z innego urządzenia.');
+  refreshSoon();
 }
-
-// ----------------------------------------------------------------- pomocnicze dane
-const monthProfit = () => { const z = S.zar; if (!z || !z.entries) return {profit: null, goal: null}; const m = ymd(new Date()).slice(0, 7); return {profit: z.entries.filter(e => e.date.startsWith(m)).reduce((a, e) => a + (e.kind === 'in' ? e.amt : -e.amt), 0), goal: z.goal || null}; };
-const streak = days => { const ds = new Set(days); let d = new Date(); if (!ds.has(ymd(d))) d = addDays(d, -1); let n = 0; while (ds.has(ymd(d))) { n++; d = addDays(d, -1); } return n; };
+let retryT = null;
+function retrySoon() { clearTimeout(retryT); retryT = setTimeout(loadToday, 20000); }
+const syncAll = () => Object.keys(KEYS).forEach(persist);
 const openTasks = () => S.tasks.filter(t => !t.done);
-const todayTasks = () => { const td = ymd(new Date()); return openTasks().filter(t => t.top || (t.date && t.date <= td)); };      // zadania bez terminu to „kiedyś”: widać je w „Wszystkie otwarte"
-const dayEvents = day => ((S.agenda && S.agenda.events) || []).filter(e => e.day <= day && day <= e.end_day);
-function freeSlots(day, fromNow) {
-  const [y, m, d] = day.split('-').map(Number); let lo = new Date(y, m - 1, d, 8).getTime() / 1000; const hi = new Date(y, m - 1, d, 20).getTime() / 1000;
-  if (fromNow) lo = Math.max(lo, Date.now() / 1000);
-  const busy = dayEvents(day).filter(e => e.busy && !e.all_day && e.e > lo && e.s < hi).map(e => [Math.max(e.s, lo), Math.min(e.e, hi)]).sort((a, b) => a[0] - b[0]);
-  const out = []; let cur = lo; for (const [s, e] of busy) { if (s - cur >= 2700) out.push([cur, s]); cur = Math.max(cur, e); } if (hi - cur >= 2700) out.push([cur, hi]); return out;
-}
+const todayTasks = () => { const td = ymd(new Date()); return openTasks().filter(t => t.top || (t.date && t.date <= td)); };
+const taskById = id => S.tasks.find(t => t.t === id);
+function markDone(t) { t.done = true; t.done_ts = Date.now(); persist('alfred_tasks'); renderTasks(); renderHero(); }
+function toTomorrow(t) { t.date = ymd(addDays(new Date(), 1)); t.top = false; }
 
-// ----------------------------------------------------------------- hero i baner
+// ----------------------------------------------------------------- hero, baner, uwagi
 function renderHero() {
-  const now = new Date(), h = now.getHours();
+  const now = new Date(), h = now.getHours(), T = S.today;
   $('hello').textContent = h < 5 ? 'Dobrej nocy' : h < 18 ? 'Dzień dobry' : 'Dobry wieczór';
   $('date').textContent = now.toLocaleDateString('pl-PL', {weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'});
   $('clock').textContent = `${pad(h)}:${pad(now.getMinutes())}`;
+  const chips = $('chips'); chips.replaceChildren(); const nowS = Date.now() / 1000;
+  const next = T && T.plan.today.timeline.find(e => e.kind === 'event' && e.s > nowS);
+  if (next) { const m = Math.max(1, Math.round((next.s - nowS) / 60)); chips.append(el('span', {class: 'chip'}, `Następne: ${hm(next.s)} ${next.title.slice(0, 36)} (za ${m < 90 ? m + ' min' : Math.round(m / 60) + ' h'})`)); }
+  const tt = todayTasks(); chips.append(el('span', {class: 'chip' + (tt.length ? '' : ' ok')}, tt.length ? `Zadania na dziś: ${tt.length}` : 'Lista na dziś pusta'));
+  if (S.habits.length) { const td = ymd(now), done = S.habits.filter(x => x.days.includes(td)).length; chips.append(el('span', {class: 'chip' + (done === S.habits.length ? ' ok' : '')}, `Nawyki: ${done}/${S.habits.length}`)); }
+  const m = T && T.money; if (m && m.goal && m.profit_month != null) chips.append(el('span', {class: 'chip' + (m.profit_month >= m.goal ? ' ok' : '')}, `Zarobki w miesiącu: ${nf(m.profit_month / m.goal * 100)}% celu`));
 }
-function renderChips() {
-  const chips = $('chips'); chips.replaceChildren(); const now = Date.now() / 1000;
-  const next = ((S.agenda && S.agenda.events) || []).find(e => !e.all_day && e.s > now);
-  if (S.agenda && S.agenda.configured) chips.append(el('span', {class: 'chip'}, next ? `Następne: ${hm(next.s)} ${next.title.slice(0, 40)} (za ${Math.max(1, Math.round((next.s - now) / 60)) < 90 ? Math.max(1, Math.round((next.s - now) / 60)) + ' min' : Math.round((next.s - now) / 3600) + ' h'})` : 'Brak kolejnych wydarzeń'));
-  const tt = todayTasks(); chips.append(el('span', {class: 'chip' + (tt.length ? '' : ' ok')}, tt.length ? `Do zrobienia dziś: ${tt.length}` : 'Lista na dziś pusta'));
-  if (S.habits.length) { const td = ymd(new Date()), done = S.habits.filter(h => h.days.includes(td)).length; chips.append(el('span', {class: 'chip' + (done === S.habits.length ? ' ok' : '')}, `Nawyki: ${done}/${S.habits.length}`)); }
-  const mp = monthProfit(); if (mp.profit != null && mp.goal) chips.append(el('span', {class: 'chip' + (mp.profit >= mp.goal ? ' ok' : '')}, `Zarobki w miesiącu: ${nf(mp.profit / mp.goal * 100)}% celu`));
-}
-function renderBanner() {
-  const b = $('banner'); b.replaceChildren();
-  if (S.offline) b.append(el('div', {class: 'warn'}, 'Serwer niedostępny: pracujesz na kopii z tej przeglądarki, zmiany zapiszą się na serwerze po powrocie połączenia.'));
+function renderBanner() { $('banner').replaceChildren(...(S.offline ? [el('div', {class: 'warnbox'}, 'Serwer niedostępny: pracujesz na kopii z tej przeglądarki, a plan dnia i alerty wymagają połączenia. Zmiany zapiszą się same, gdy serwer wróci (strona ponawia próbę co 20 s).')] : [])); }
+function renderAlerts() {
+  const box = $('alerts'); box.replaceChildren(); const list = ((S.today && S.today.alerts) || []).filter(a => a.level !== 'info').slice(0, 4);
+  list.forEach(a => box.append(el('div', {class: 'alert' + (a.level === 'bad' ? ' bad' : '')}, el('b', null, a.level === 'bad' ? 'Pilne:' : 'Uwaga:'), el('span', null, a.text))));
 }
 
-// ----------------------------------------------------------------- briefing
-function renderBriefing() {
-  const box = $('briefing'), b = S.brief;
-  const when = b && b.ts ? new Date(b.ts * 1000).toLocaleString('pl-PL', {day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'}) : '';
-  const kids = [el('h2', null, 'Briefing Alfreda'), el('p', {class: 'sub'}, 'Poranny briefing powstaje codziennie o 7:00 z kalendarza, zadań, nawyków i celów (wysyłam go też na Telegram). Możesz poprosić o świeży w każdej chwili.')];
-  if (b && b.text) { kids.push(el('div', {class: 'brief'}, b.text)); kids.push(el('p', {class: 'note'}, `${b.kind === 'plain' ? 'Wersja bez AI (złożona z danych). ' : ''}${when}${b.live ? ' (na prośbę)' : ''}`)); }
-  else kids.push(el('p', {class: 'mut'}, 'Jeszcze nie ma briefingu. Pierwszy powstanie jutro o 7:00 albo poproś o niego teraz.'));
-  kids.push(el('div', {class: 'row'}, el('button', {class: 'btn p', type: 'button', onclick: () => ask('morning', 'Briefing na dziś')}, 'Briefing teraz'), el('button', {class: 'btn', type: 'button', onclick: () => ask('tomorrow', 'Plan na jutro')}, 'Plan na jutro'),
-    el('button', {class: 'btn', type: 'button', onclick: () => ask('week', 'Przegląd tygodnia')}, 'Przegląd tygodnia')));
+// ----------------------------------------------------------------- następny krok i briefing
+function renderNext() {
+  const box = $('next'), T = S.today;
+  if (!T) { box.replaceChildren(el('div', {class: 'lab'}, 'Następny krok'), el('div', {class: 'big'}, S.offline ? 'Plan dnia wymaga połączenia z serwerem' : 'Ładuję plan…')); return; }
+  const n = T.next_step, kids = [el('div', {class: 'lab'}, 'Następny krok'), el('div', {class: 'big'}, n.title), el('div', {class: 'why'}, n.why)], row = el('div', {class: 'row', style: 'margin-top:10px'});
+  const t = n.t != null ? taskById(n.t) : null;
+  if (n.kind === 'task' && t) {
+    row.append(el('button', {class: 'btn p', type: 'button', onclick: () => focusStart(t, Math.min(25, n.min || 25))}, `Start ${Math.min(25, n.min || 25)} min`), el('button', {class: 'btn', type: 'button', onclick: () => markDone(t)}, 'Zrobione'),
+      el('button', {class: 'btn', type: 'button', onclick: () => { toTomorrow(t); persist('alfred_tasks'); renderTasks(); toast('Przeniesione na jutro.'); }}, 'Później'));
+  } else if (n.kind === 'plan') row.append(el('button', {class: 'btn p', type: 'button', onclick: () => { const i = $('tnew'); i.scrollIntoView({behavior: 'smooth', block: 'center'}); i.focus(); }}, 'Dodaj zadanie'));
+  else if (n.kind === 'overload') row.append(el('button', {class: 'btn p', type: 'button', onclick: moveOverflow}, 'Przenieś te zadania na jutro'));
+  else if (n.kind === 'review') row.append(el('button', {class: 'btn p', type: 'button', onclick: () => { $('more').open = true; $('more').scrollIntoView({behavior: 'smooth', block: 'start'}); }}, 'Otwórz przegląd dnia'));
+  else if (n.kind === 'rest') row.append(el('button', {class: 'btn', type: 'button', onclick: () => { S.tab = 'jutro'; renderPlan(); $('plan').scrollIntoView({behavior: 'smooth'}); }}, 'Zobacz jutro'));
+  row.append(el('button', {class: 'btn', type: 'button', onclick: () => { const i = $('cin'); i.scrollIntoView({behavior: 'smooth', block: 'center'}); i.focus(); }}, 'Zapytaj Alfreda'));
+  kids.push(row);
+  const b = S.brief;
+  if (b && b.text) { const d = el('details', {style: 'margin-top:10px'}, el('summary', {class: 'mut', style: 'cursor:pointer;font-size:.84rem'}, `Briefing z ${new Date(b.ts * 1000).toLocaleString('pl-PL', {day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'})}${b.kind === 'plain' ? ' (bez AI)' : ''}`), el('div', {class: 'brief'}, b.text)); if (S.briefOpen === undefined ? new Date().getHours() < 12 : S.briefOpen) d.open = true; d.addEventListener('toggle', () => { S.briefOpen = d.open; }); kids.push(d); }
   box.replaceChildren(...kids);
 }
+function moveOverflow() {
+  const un = S.today.plan.today.unscheduled; let n = 0;
+  un.forEach(u => { const t = taskById(u.t); if (t) { toTomorrow(t); n++; } });
+  persist('alfred_tasks'); renderTasks(); toast(n ? `Przeniesiono na jutro: ${n}.` : 'Nic do przeniesienia.');
+}
 
-// ----------------------------------------------------------------- kalendarz
-function renderAgenda() {
-  const box = $('agenda'), A = S.agenda, kids = [el('h2', null, 'Kalendarz'), el('p', {class: 'sub'}, 'Najbliższe dni z Twojego kalendarza (tylko odczyt) i wolne okna 8:00-20:00.')];
-  if (!A || !A.configured) {
-    kids.push(el('p', {class: 'mut'}, 'Kalendarz nie jest podłączony.'));
-    kids.push(el('details', null, el('summary', null, 'Jak podłączyć Kalendarz Google'), el('ol', {class: 'sub', style: 'padding-left:18px'},
-      el('li', null, 'Kalendarz Google (komputer) → Ustawienia → wybierz swój kalendarz → „Integrowanie kalendarza”.'), el('li', null, 'Skopiuj „Tajny adres w formacie iCal”. To sekret: nie wklejaj go do żadnych rozmów ani wiadomości.'),
-      el('li', null, 'Na serwerze wpisz go do pliku alfred.env (linia AGENDA_ICS_URLS=Nazwa|adres) i odczekaj do 15 minut. Szczegóły: vps/INSTRUKCJA_VPS.md, sekcja „Alfred”.'))));
-    box.replaceChildren(...kids); return;
+// ----------------------------------------------------------------- plan dnia
+function renderPlan() {
+  const box = $('plan'), T = S.today, kids = [el('h2', null, 'Plan dnia'), el('p', {class: 'sub'}, 'Kalendarz i zadania ułożone w wolnych oknach. To propozycja: niczego nie zmienia w Twoim kalendarzu.')];
+  const tabs = el('div', {class: 'tabs', role: 'group'}); [['dzis', 'Dziś'], ['jutro', 'Jutro']].forEach(([k, l]) => tabs.append(el('button', {type: 'button', 'aria-pressed': S.tab === k ? 'true' : 'false', onclick: () => { S.tab = k; renderPlan(); }}, l))); kids.push(tabs);
+  if (!T) { kids.push(el('p', {class: 'mut'}, S.offline ? 'Brak połączenia z serwerem.' : 'Ładuję…')); box.replaceChildren(...kids); return; }
+  const P = T.plan[S.tab === 'dzis' ? 'today' : 'tomorrow'], now = Date.now() / 1000, isToday = S.tab === 'dzis';
+  const noCal = T.alerts.find(a => a.where === 'agenda' && a.level === 'info');
+  if (P.all_day.length) kids.push(el('div', {class: 'chips', style: 'margin:0 0 6px'}, ...P.all_day.map(a => el('span', {class: 'chip'}, 'cały dzień: ' + a.title))));
+  const s = P.summary; kids.push(el('div', {class: 'sumline'}, `Zajęte ${dur(s.busy_min)} · zadania ${dur(s.planned_min)} · wolne ${dur(s.free_min)}` + (s.overloaded ? ' · nie wszystko się mieści' : '')));
+  if (!P.timeline.length) kids.push(el('p', {class: 'mut'}, isToday ? 'Na dziś nic zaplanowanego. Dodaj zadania z czasem (po prawej).' : 'Na jutro nic zaplanowanego.'));
+  P.timeline.forEach(it => {
+    const past = isToday && it.e < now, cur = isToday && it.s <= now && now < it.e, row = el('div', {class: `tl ${it.kind}${past ? ' past' : ''}${cur ? ' now' : ''}`}, el('span', {class: 'h'}, `${hm(it.s)}-${hm(it.e)}`));
+    if (it.kind === 'event') row.append(el('span', {class: 't'}, it.title, it.loc ? el('span', {class: 'mut'}, ' · ' + it.loc) : null));
+    else {
+      row.append(el('span', {class: 't'}, it.top ? '★ ' : '', it.title, it.late ? el('span', {class: 'badge late', style: 'margin-left:6px'}, 'zaległe') : null, el('span', {class: 'badge', style: 'margin-left:6px'}, `${it.min} min`)));
+      const t = taskById(it.t);
+      if (t && isToday) { row.append(el('button', {class: 'btn sm p', type: 'button', onclick: () => focusStart(t, Math.min(25, it.min))}, 'Start'), el('button', {class: 'btn sm', type: 'button', 'aria-label': 'Zrobione: ' + it.title, onclick: () => markDone(t)}, '✓')); }
+    }
+    kids.push(row);
+  });
+  if (P.unscheduled.length) {
+    kids.push(el('h3', null, `Nie mieści się (${P.unscheduled.length})`));
+    P.unscheduled.forEach(u => { const t = taskById(u.t); kids.push(el('div', {class: 'item'}, el('span', {class: 't'}, u.title, el('span', {class: 'badge', style: 'margin-left:6px'}, `${u.min} min`)), isToday && t ? el('button', {class: 'btn sm', type: 'button', onclick: () => { toTomorrow(t); persist('alfred_tasks'); renderTasks(); }}, 'Na jutro') : null)); });
   }
-  const age = A.age_s; if (!A.ok || (age != null && age > 6 * 3600)) kids.push(el('div', {class: 'warn'}, (A.calendars || []).filter(c => !c.ok).map(c => `${c.name}: ${c.error}`).join('; ') || (A.error || '') || `Dane kalendarza są sprzed ${nf(age / 3600, 1)} h.`));
-  const now = Date.now() / 1000; let any = false;
-  for (let i = 0; i < 5; i++) {
-    const dt = addDays(new Date(), i), day = ymd(dt), evs = dayEvents(day); if (!evs.length && i > 1) continue; any = any || evs.length > 0;
-    const title = i === 0 ? 'Dziś' : i === 1 ? 'Jutro' : dt.toLocaleDateString('pl-PL', {weekday: 'long', day: 'numeric', month: 'long'});
-    kids.push(el('h3', null, `${title} (${evs.length})`));
-    if (!evs.length) kids.push(el('p', {class: 'note'}, 'Brak wydarzeń: dzień dla Ciebie.'));
-    evs.sort((a, b) => (b.all_day - a.all_day) || a.s - b.s).forEach(e => kids.push(el('div', {class: 'ev' + (i === 0 && !e.all_day && e.e < now ? ' past' : '') + (i === 0 && !e.all_day && e.s <= now && now < e.e ? ' now' : '')},
-      el('span', {class: 'h'}, e.all_day ? 'cały dzień' : `${hm(e.s)}-${hm(e.e)}`), el('span', null, e.title, e.loc ? el('span', {class: 'mut'}, ' · ' + e.loc) : null, S.agenda.calendars && S.agenda.calendars.length > 1 ? el('span', {class: 'mut'}, ' · ' + e.cal) : null))));
-    if (i < 2) { const fs = freeSlots(day, i === 0); kids.push(el('p', {class: 'free'}, fs.length ? 'Wolne: ' + fs.map(([a, b]) => `${hm(a)}-${hm(b)}`).join(', ') : 'Brak wolnych okien (min. 45 min).')); }
-  }
-  kids.push(el('p', {class: 'note'}, `Dane z ${A.age_s != null ? nf(A.age_s / 60) + ' min temu' : 'nieznanego czasu'}. Google nie podaje, jak szybko zmiany pojawiają się w adresie iCal: nowe wydarzenie może mieć opóźnienie.`));
+  if (P.free.length) kids.push(el('p', {class: 'free'}, 'Wolne: ' + P.free.map(([a, b]) => `${hm(a)}-${hm(b)}`).join(', ')));
+  if (noCal) kids.push(el('details', {style: 'margin-top:8px'}, el('summary', {class: 'mut', style: 'cursor:pointer;font-size:.84rem'}, 'Podłącz Kalendarz Google, żeby plan znał Twoje wydarzenia'),
+    el('ol', {class: 'sub', style: 'padding-left:18px'}, el('li', null, 'Kalendarz Google (komputer) → Ustawienia → wybierz kalendarz → „Integrowanie kalendarza”.'), el('li', null, 'Skopiuj „Tajny adres w formacie iCal” (to sekret: nie wklejaj go do rozmów).'), el('li', null, 'Na serwerze wpisz go do alfred.env (AGENDA_ICS_URLS). Szczegóły: vps/INSTRUKCJA_VPS.md, sekcja „Alfred”.'))));
   box.replaceChildren(...kids);
 }
 
 // ----------------------------------------------------------------- zadania
 function renderTasks() {
-  const box = $('tasks'), td = ymd(new Date()), kids = [el('h2', null, 'Zadania i priorytety'), el('p', {class: 'sub'}, `Najwyżej ${MAX_TOP} priorytety (gwiazdka). Reszta czeka na wolne okna.`)];
-  const inp = el('input', {id: 'tnew', placeholder: 'Nowe zadanie', maxlength: '200', 'aria-label': 'Nowe zadanie', class: 'grow'}), dt = el('input', {type: 'date', value: td, 'aria-label': 'Termin', style: 'width:auto'});
-  const add = () => { const text = inp.value.trim(); if (!text) return; S.tasks.push({t: newId(), text, date: dt.value || '', done: false, top: false, done_ts: null}); persist('alfred_tasks'); renderTasks(); renderChips(); $('tnew').focus(); };
+  const box = $('tasks'), td = ymd(new Date()), late = openTasks().filter(t => t.date && t.date < td), kids = [el('h2', null, 'Zadania'), el('p', {class: 'sub'}, `Czas (min) pozwala ułożyć je w wolnych oknach. Najwyżej ${MAX_TOP} priorytety (gwiazdka).`)];
+  const inp = el('input', {id: 'tnew', 'data-k': 'tnew', placeholder: 'Nowe zadanie', maxlength: '200', 'aria-label': 'Nowe zadanie', class: 'grow'}), dt = el('input', {type: 'date', 'data-k': 'tdate', value: td, 'aria-label': 'Termin', style: 'width:auto'});
+  const mins = el('select', {'data-k': 'tmin', 'aria-label': 'Szacowany czas', style: 'width:auto'}, ...[10, 15, 20, 30, 45, 60, 90, 120, 180, 240].map(m => el('option', {value: String(m)}, dur(m)))); mins.value = '30';
+  const add = () => { const text = inp.value.trim(); if (!text) return; S.tasks.push({t: newId(), text, date: dt.value || '', done: false, top: false, done_ts: null, min: Number(mins.value), ref: ''}); inp.value = ''; clean(inp); persist('alfred_tasks'); renderTasks(); renderHero(); $('tnew').focus(); };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
-  kids.push(el('div', {class: 'row'}, inp, dt, el('button', {class: 'btn p', type: 'button', onclick: add}, 'Dodaj')));
+  kids.push(el('div', {class: 'row'}, inp, mins, dt, el('button', {class: 'btn p', type: 'button', onclick: add}, 'Dodaj')));
+  if (late.length) kids.push(el('div', {class: 'row', style: 'margin-top:8px'}, el('span', {class: 'badge late'}, `zaległe: ${late.length}`), el('button', {class: 'btn sm', type: 'button', onclick: () => { late.forEach(t => { t.date = td; }); persist('alfred_tasks'); renderTasks(); }}, 'Przenieś na dziś')));
   const tabs = el('div', {class: 'tabs', role: 'group'}); [['dzis', 'Na dziś'], ['wszystkie', 'Wszystkie otwarte'], ['zrobione', 'Zrobione']].forEach(([k, l]) => tabs.append(el('button', {type: 'button', 'aria-pressed': S.taskTab === k ? 'true' : 'false', onclick: () => { S.taskTab = k; renderTasks(); }}, l)));
   kids.push(tabs);
   let list = S.taskTab === 'dzis' ? todayTasks() : S.taskTab === 'wszystkie' ? openTasks() : S.tasks.filter(t => t.done).sort((a, b) => (b.done_ts || 0) - (a.done_ts || 0)).slice(0, 30);
@@ -195,128 +233,190 @@ function renderTasks() {
   if (!list.length) kids.push(el('p', {class: 'mut'}, S.taskTab === 'zrobione' ? 'Nic jeszcze nie zrobione.' : 'Pusto. Dodaj trzy rzeczy, które dziś naprawdę mają się wydarzyć.'));
   list.forEach(t => {
     const cb = el('input', {type: 'checkbox', 'aria-label': 'Zrobione: ' + t.text}); cb.checked = t.done;
-    cb.addEventListener('change', () => { t.done = cb.checked; t.done_ts = t.done ? Date.now() : null; persist('alfred_tasks'); renderTasks(); renderChips(); });
+    cb.addEventListener('change', () => { t.done = cb.checked; t.done_ts = t.done ? Date.now() : null; persist('alfred_tasks'); renderTasks(); renderHero(); });
     const star = el('button', {class: 'star' + (t.top ? ' on' : ''), type: 'button', 'aria-label': t.top ? 'Zdejmij priorytet' : 'Ustaw priorytet', 'aria-pressed': t.top ? 'true' : 'false', title: 'Priorytet'}, t.top ? '★' : '☆');
     star.addEventListener('click', () => { if (!t.top && openTasks().filter(x => x.top).length >= MAX_TOP) { toast(`Priorytety to maksymalnie ${MAX_TOP}: zdejmij jeden, żeby dodać nowy.`); return; } t.top = !t.top; persist('alfred_tasks'); renderTasks(); });
-    const del = el('button', {class: 'x', type: 'button', 'aria-label': 'Usuń zadanie', title: 'Usuń'}, '×'); del.addEventListener('click', () => { S.tasks = S.tasks.filter(x => x.t !== t.t); persist('alfred_tasks'); renderTasks(); renderChips(); });
-    kids.push(el('div', {class: 'item' + (t.done ? ' done' : '')}, cb, star, el('span', {class: 't'}, t.text), t.date ? el('span', {class: 'badge' + (!t.done && t.date < td ? ' late' : '')}, t.date === td ? 'dziś' : t.date) : null, del));
+    const del = el('button', {class: 'x', type: 'button', 'aria-label': 'Usuń zadanie', title: 'Usuń'}, '×'); del.addEventListener('click', () => { S.tasks = S.tasks.filter(x => x.t !== t.t); persist('alfred_tasks'); renderTasks(); renderHero(); });
+    kids.push(el('div', {class: 'item' + (t.done ? ' done' : '')}, cb, star, el('span', {class: 't'}, t.text, t.ref ? el('span', {class: 'badge', style: 'margin-left:6px', title: 'Zadanie z potoku ofert (Zarabiaj)'}, 'oferta') : null), t.min ? el('span', {class: 'badge'}, `${t.min} min`) : null,
+      t.date ? el('span', {class: 'badge' + (!t.done && t.date < td ? ' late' : '')}, t.date === td ? 'dziś' : t.date) : null, del));
   });
-  box.replaceChildren(...kids);
+  rerender(box, kids);
 }
 
 // ----------------------------------------------------------------- nawyki
 function renderHabits() {
-  const box = $('habits'), td = ymd(new Date()), kids = [el('h2', null, 'Nawyki'), el('p', {class: 'sub'}, 'Mała rzecz codziennie. Kliknij dzień, żeby odhaczyć (ostatnie 7 dni).')];
-  const inp = el('input', {placeholder: 'Nowy nawyk, np. Ruch 30 min', maxlength: '60', 'aria-label': 'Nowy nawyk', class: 'grow'});
-  const add = () => { const name = inp.value.trim(); if (!name) return; if (S.habits.length >= 30) { toast('Najwyżej 30 nawyków.'); return; } S.habits.push({id: String(newId()), name, days: []}); persist('alfred_habits'); renderHabits(); renderChips(); };
+  const box = $('habits'), kids = [el('h2', null, 'Nawyki'), el('p', {class: 'sub'}, 'Mała rzecz codziennie. Kliknij dzień, żeby odhaczyć.')];
+  const streak = days => { const ds = new Set(days); let d = new Date(); if (!ds.has(ymd(d))) d = addDays(d, -1); let n = 0; while (ds.has(ymd(d))) { n++; d = addDays(d, -1); } return n; };
+  const inp = el('input', {'data-k': 'hnew', placeholder: 'Nowy nawyk, np. Ruch 30 min', maxlength: '60', 'aria-label': 'Nowy nawyk', class: 'grow'});
+  const add = () => { const name = inp.value.trim(); if (!name) return; if (S.habits.length >= 30) { toast('Najwyżej 30 nawyków.'); return; } S.habits.push({id: String(newId()), name, days: []}); inp.value = ''; clean(inp); persist('alfred_habits'); renderHabits(); renderHero(); };
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') add(); });
-  kids.push(el('div', {class: 'row'}, inp, el('button', {class: 'btn p', type: 'button', onclick: add}, 'Dodaj')));
   if (!S.habits.length) kids.push(el('p', {class: 'mut'}, 'Brak nawyków. Zacznij od jednego, który zajmie mniej niż 5 minut.'));
   S.habits.forEach(h => {
     const dots = el('div', {class: 'dots'});
     for (let i = 6; i >= 0; i--) {
       const d = addDays(new Date(), -i), key = ymd(d), on = h.days.includes(key), b = el('button', {class: 'dot' + (on ? ' on' : '') + (i === 0 ? ' today' : ''), type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': `${h.name}: ${d.toLocaleDateString('pl-PL', {weekday: 'long', day: 'numeric', month: 'long'})}`}, d.toLocaleDateString('pl-PL', {weekday: 'narrow'}));
-      b.addEventListener('click', () => { h.days = on ? h.days.filter(x => x !== key) : [...h.days, key].sort(); persist('alfred_habits'); renderHabits(); renderChips(); }); dots.append(b);
+      b.addEventListener('click', () => { h.days = on ? h.days.filter(x => x !== key) : [...h.days, key].sort(); persist('alfred_habits'); renderHabits(); renderHero(); }); dots.append(b);
     }
-    const del = el('button', {class: 'x', type: 'button', 'aria-label': 'Usuń nawyk ' + h.name, title: 'Usuń'}, '×'); del.addEventListener('click', () => { if (confirm(`Usunąć nawyk „${h.name}” razem z historią?`)) { S.habits = S.habits.filter(x => x.id !== h.id); persist('alfred_habits'); renderHabits(); renderChips(); } });
+    const del = el('button', {class: 'x', type: 'button', 'aria-label': 'Usuń nawyk ' + h.name, title: 'Usuń'}, '×'); del.addEventListener('click', () => { if (confirm(`Usunąć nawyk „${h.name}” razem z historią?`)) { S.habits = S.habits.filter(x => x.id !== h.id); persist('alfred_habits'); renderHabits(); renderHero(); } });
     const st = streak(h.days);
-    kids.push(el('div', {class: 'item habit', style: 'flex-wrap:wrap'}, el('span', {class: 't'}, h.name, el('span', {class: 'mut'}, st ? ` · seria ${st} ${st === 1 ? 'dzień' : 'dni'}` : ' · bez serii')), dots, del));
+    kids.push(el('div', {class: 'item', style: 'flex-wrap:wrap'}, el('span', {class: 't'}, h.name, el('span', {class: 'mut'}, st ? ` · seria ${st} ${st === 1 ? 'dzień' : 'dni'}` : ' · bez serii')), dots, del));
   });
+  kids.push(el('div', {class: 'row', style: 'margin-top:8px'}, inp, el('button', {class: 'btn sm', type: 'button', onclick: add}, 'Dodaj nawyk')));
+  rerender(box, kids);
+}
+
+// ----------------------------------------------------------------- pieniądze (z Zarabiaj)
+function renderMoney() {
+  const box = $('money'), T = S.today, kids = [el('h2', null, 'Pieniądze'), el('p', {class: 'sub'}, 'Odsprzedaż i inne dochody. Zadania z ofert (wystawić, sprawdzić) są w planie dnia.')];
+  if (!T) { box.replaceChildren(...kids, el('p', {class: 'mut'}, 'Brak danych.')); return; }
+  const m = T.money, st = T.deals.stats, c = st.counts, inProg = c.kupione + c.wystawione;
+  if (m.goal && m.profit_month != null) { kids.push(el('div', null, el('b', null, zl(m.profit_month)), el('span', {class: 'mut'}, ` w tym miesiącu, cel ${zl(m.goal)}`)), el('div', {class: 'bar'}, el('i', {style: `width:${Math.max(0, Math.min(100, m.profit_month / m.goal * 100))}%`}))); }
+  else if (m.profit_month != null) kids.push(el('div', null, el('b', null, zl(m.profit_month)), el('span', {class: 'mut'}, ' w tym miesiącu (ustaw cel w Zarabiaj)')));
+  if (inProg || st.sold_n) kids.push(el('div', {class: 'kv', style: 'margin-top:8px'}, el('div', null, el('b', null, String(inProg)), el('span', null, 'ofert w toku')), el('div', null, el('b', null, zl(st.invested)), el('span', null, 'zamrożone')), el('div', null, el('b', null, zl(st.expected_profit)), el('span', null, 'oczekiwany zysk'))));
+  else kids.push(el('p', {class: 'mut'}, 'Nic w toku. Zacznij od jednej oferty: Zarabiaj → Znajdź.'));
+  T.deals.attention.slice(0, 3).forEach(a => kids.push(el('div', {class: 'alert' + (a.level === 'info' ? '' : ''), style: 'margin:8px 0 0'}, el('b', null, a.level === 'warn' ? 'Uwaga:' : 'Do decyzji:'), el('span', null, a.text))));
+  kids.push(el('div', {class: 'row', style: 'margin-top:10px'}, el('a', {class: 'btn p', href: 'zarabiaj.html#transakcje'}, 'Otwórz Zarabiaj')));
   box.replaceChildren(...kids);
 }
 
-// ----------------------------------------------------------------- cele
-function renderGoals() {
-  const box = $('goals'), kids = [el('h2', null, 'Cele'), el('p', {class: 'sub'}, 'Kilka celów z liczbą i terminem. Cel „Zarobki” sam liczy postęp z notatnika Zarobki (zysk w tym miesiącu).')];
-  const name = el('input', {placeholder: 'Cel, np. Przeczytać 3 książki', maxlength: '100', 'aria-label': 'Nowy cel', class: 'grow'}), kind = el('select', {'aria-label': 'Rodzaj celu', style: 'width:auto'}, el('option', {value: 'manual'}, 'Ręczny'), el('option', {value: 'zarobki'}, 'Zarobki (auto)'));
-  const target = el('input', {type: 'number', min: '0', step: 'any', placeholder: 'Cel (liczba)', 'aria-label': 'Wartość docelowa', style: 'width:110px'}), unit = el('input', {placeholder: 'jedn.', maxlength: '12', 'aria-label': 'Jednostka', style: 'width:70px'}), due = el('input', {type: 'date', 'aria-label': 'Termin celu', style: 'width:auto'});
-  const add = () => { const n = name.value.trim(); if (!n) return; if (S.goals.length >= 30) { toast('Najwyżej 30 celów.'); return; } S.goals.push({t: newId(), name: n, kind: kind.value, target: target.value === '' ? null : Number(target.value), current: kind.value === 'manual' ? 0 : null, unit: unit.value.trim(), due: due.value || ''}); persist('alfred_goals'); renderGoals(); };
-  kids.push(el('div', {class: 'row'}, name, kind, target, unit, due, el('button', {class: 'btn p', type: 'button', onclick: add}, 'Dodaj')));
+// ----------------------------------------------------------------- cele, przegląd, tydzień
+function renderMore() {
+  const box = $('moreBody'), td = ymd(new Date()), T = S.today, kids = [];
+  // cele
+  kids.push(el('h2', {style: 'margin-top:12px'}, 'Cele'), el('p', {class: 'sub'}, 'Kilka celów z liczbą i terminem. Cel „Zarobki” sam liczy postęp z Zarabiaj (zysk w tym miesiącu).'));
+  const name = el('input', {'data-k': 'gname', placeholder: 'Cel, np. Przeczytać 3 książki', maxlength: '100', 'aria-label': 'Nowy cel', class: 'grow'}), kind = el('select', {'data-k': 'gkind', 'aria-label': 'Rodzaj celu', style: 'width:auto'}, el('option', {value: 'manual'}, 'Ręczny'), el('option', {value: 'zarobki'}, 'Zarobki (auto)'));
+  const target = el('input', {'data-k': 'gtarget', type: 'number', min: '0', step: 'any', placeholder: 'Cel (liczba)', 'aria-label': 'Wartość docelowa', style: 'width:110px'}), unit = el('input', {'data-k': 'gunit', placeholder: 'jedn.', maxlength: '12', 'aria-label': 'Jednostka', style: 'width:70px'}), due = el('input', {'data-k': 'gdue', type: 'date', 'aria-label': 'Termin celu', style: 'width:auto'});
+  const addGoal = () => { const n = name.value.trim(); if (!n) return; if (S.goals.length >= 30) { toast('Najwyżej 30 celów.'); return; } S.goals.push({t: newId(), name: n, kind: kind.value, target: target.value === '' ? null : Number(target.value), current: kind.value === 'manual' ? 0 : null, unit: unit.value.trim(), due: due.value || ''}); name.value = target.value = unit.value = due.value = ''; kind.value = 'manual'; clean(name, target, unit, due, kind); persist('alfred_goals'); renderMore(); };
+  kids.push(el('div', {class: 'row'}, name, kind, target, unit, due, el('button', {class: 'btn p', type: 'button', onclick: addGoal}, 'Dodaj')));
   if (!S.goals.length) kids.push(el('p', {class: 'mut'}, 'Brak celów. Jeden dobry cel z terminem wystarczy na start.'));
-  const mp = monthProfit();
+  const mp = T ? T.money : {profit_month: null, goal: null};
   S.goals.forEach(g => {
-    const auto = g.kind === 'zarobki', cur = auto ? mp.profit : g.current, tgt = auto ? (g.target || mp.goal) : g.target, pct = cur != null && tgt ? Math.max(0, Math.min(100, cur / tgt * 100)) : 0, unitTxt = auto ? 'zł' : g.unit;
+    const auto = g.kind === 'zarobki', cur = auto ? mp.profit_month : g.current, tgt = auto ? (g.target || mp.goal) : g.target, pct = cur != null && tgt ? Math.max(0, Math.min(100, cur / tgt * 100)) : 0, ut = auto ? 'zł' : g.unit;
     const left = g.due ? Math.ceil((new Date(g.due + 'T23:59:59') - new Date()) / 86400000) : null;
-    const del = el('button', {class: 'x', type: 'button', 'aria-label': 'Usuń cel ' + g.name, title: 'Usuń'}, '×'); del.addEventListener('click', () => { if (confirm(`Usunąć cel „${g.name}”?`)) { S.goals = S.goals.filter(x => x.t !== g.t); persist('alfred_goals'); renderGoals(); } });
-    const row = el('div', {class: 'row'}, el('span', {class: 'grow'}, el('b', null, g.name), el('span', {class: 'mut'}, ` · ${cur == null ? 'brak danych' : num(cur)}${tgt ? ' z ' + num(tgt) : ''} ${unitTxt}`.trimEnd() + (left != null ? (left >= 0 ? ` · zostało ${left} dni` : ` · termin minął ${-left} dni temu`) : ''))), del);
-    if (!auto) { const c = el('input', {type: 'number', step: 'any', value: g.current == null ? '' : String(g.current), 'aria-label': 'Aktualny postęp: ' + g.name, style: 'width:90px'}); c.addEventListener('change', () => { g.current = c.value === '' ? null : Number(c.value); persist('alfred_goals'); renderGoals(); }); row.insertBefore(c, del); }
+    const del = el('button', {class: 'x', type: 'button', 'aria-label': 'Usuń cel ' + g.name, title: 'Usuń'}, '×'); del.addEventListener('click', () => { if (confirm(`Usunąć cel „${g.name}”?`)) { S.goals = S.goals.filter(x => x.t !== g.t); persist('alfred_goals'); renderMore(); } });
+    const row = el('div', {class: 'row'}, el('span', {class: 'grow'}, el('b', null, g.name), el('span', {class: 'mut'}, ` · ${cur == null ? 'brak danych' : num(cur)}${tgt ? ' z ' + num(tgt) : ''} ${ut}`.trimEnd() + (left != null ? (left >= 0 ? ` · zostało ${left} dni` : ` · termin minął ${-left} dni temu`) : ''))), del);
+    if (!auto) { const c = el('input', {type: 'number', step: 'any', value: g.current == null ? '' : String(g.current), 'aria-label': 'Aktualny postęp: ' + g.name, style: 'width:90px'}); c.addEventListener('change', () => { g.current = c.value === '' ? null : Number(c.value); persist('alfred_goals'); renderMore(); }); row.insertBefore(c, del); }
     kids.push(el('div', {style: 'padding:8px 0;border-bottom:1px solid var(--line)'}, row, el('div', {class: 'bar'}, el('i', {style: `width:${pct}%`}))));
   });
-  box.replaceChildren(...kids);
-}
-
-// ----------------------------------------------------------------- przegląd dnia
-function renderReview() {
-  const box = $('review'), td = ymd(new Date()), cur = S.journal.find(e => e.date === td) || {wins: '', lesson: '', tomorrow: ''};
-  const f = (id, label, ph, v) => el('label', {style: 'margin-top:8px'}, label, el('textarea', {id, placeholder: ph, maxlength: '500'}, v));
-  const kids = [el('h2', null, 'Wieczorny przegląd'), el('p', {class: 'sub'}, 'Dwie minuty przed snem: co poszło, czego się nauczyłeś, co jutro jako pierwsze. To buduje rozwój najszybciej.'),
-    f('r1', 'Co poszło dobrze?', 'np. zrobiłem raport przed 11:00', cur.wins), f('r2', 'Czego się nauczyłem?', 'np. praca w blokach bez telefonu działa', cur.lesson), f('r3', 'Co jutro jako pierwsze?', 'np. zadzwonić do klienta', cur.tomorrow)];
+  // przegląd dnia
+  const cur = S.journal.find(e => e.date === td) || {wins: '', lesson: '', tomorrow: ''};
+  const f = (id, label, ph, v) => el('label', {style: 'margin-top:8px'}, label, el('textarea', {id, 'data-k': `${id}-${td}`, placeholder: ph, maxlength: '500'}, v));
+  kids.push(el('h2', {style: 'margin-top:18px'}, 'Wieczorny przegląd'), el('p', {class: 'sub'}, 'Dwie minuty przed snem: co poszło, czego się nauczyłeś, co jutro jako pierwsze.'),
+    f('r1', 'Co poszło dobrze?', 'np. zrobiłem raport przed 11:00', cur.wins), f('r2', 'Czego się nauczyłem?', 'np. praca w blokach bez telefonu działa', cur.lesson), f('r3', 'Co jutro jako pierwsze?', 'np. zadzwonić do klienta', cur.tomorrow));
   const save = el('button', {class: 'btn p', type: 'button'}, S.journal.some(e => e.date === td) ? 'Zaktualizuj przegląd' : 'Zapisz przegląd');
-  save.addEventListener('click', () => { const e = {date: td, wins: $('r1').value.trim(), lesson: $('r2').value.trim(), tomorrow: $('r3').value.trim()}; if (!e.wins && !e.lesson && !e.tomorrow) { toast('Wpisz choć jedną rzecz.'); return; } S.journal = [...S.journal.filter(x => x.date !== td), e].sort((a, b) => a.date.localeCompare(b.date)).slice(-120); persist('alfred_journal'); renderReview(); toast('Przegląd zapisany.'); });
-  const help = el('button', {class: 'btn', type: 'button'}, 'Pomóż mi (Alfred)'); help.addEventListener('click', () => ask('review', 'Pomóż mi z przeglądem dnia'));
-  kids.push(el('div', {class: 'row', style: 'margin-top:10px'}, save, help));
+  save.addEventListener('click', () => { const e = {date: td, wins: $('r1').value.trim(), lesson: $('r2').value.trim(), tomorrow: $('r3').value.trim()}; if (!e.wins && !e.lesson && !e.tomorrow) { toast('Wpisz choć jedną rzecz.'); return; } S.journal = [...S.journal.filter(x => x.date !== td), e].sort((a, b) => a.date.localeCompare(b.date)).slice(-120); clean($('r1'), $('r2'), $('r3')); persist('alfred_journal'); renderMore(); toast('Przegląd zapisany.'); });
+  kids.push(el('div', {class: 'row', style: 'margin-top:10px'}, save, el('button', {class: 'btn', type: 'button', onclick: () => ask('review', 'Pomóż mi z przeglądem dnia')}, 'Pomóż mi (Alfred)')));
   const prev = S.journal.filter(e => e.date !== td).slice(-3).reverse();
   if (prev.length) { kids.push(el('h3', null, 'Poprzednie przeglądy')); prev.forEach(e => kids.push(el('div', {class: 'note', style: 'margin:4px 0'}, el('b', null, e.date + ': '), [e.wins && 'dobrze: ' + e.wins, e.lesson && 'nauka: ' + e.lesson, e.tomorrow && 'jutro: ' + e.tomorrow].filter(Boolean).join(' · ')))); }
-  box.replaceChildren(...kids);
+  // tydzień
+  if (T) {
+    const w = T.week, max = Math.max(3, ...w.days.map(x => x.tasks_done));
+    kids.push(el('h2', {style: 'margin-top:18px'}, 'Tydzień w liczbach'), el('div', {class: 'wk', 'aria-label': 'Zrobione zadania w ostatnich 7 dniach'}, ...w.days.map(x => el('div', null, el('i', {style: `height:${Math.round(x.tasks_done / max * 72)}px`, title: `${x.date}: ${x.tasks_done}`}), String(x.tasks_done), el('br'), new Date(x.date + 'T12:00:00').toLocaleDateString('pl-PL', {weekday: 'short'})))),
+      el('p', {class: 'note'}, `Zrobione zadania: ${w.tasks_done}` + (w.habit_rate != null ? ` · nawyki wykonane w ${w.habit_rate}% dni` : '') + (w.best_streak ? ` · najdłuższa seria: ${w.best_streak} dni` : '')),
+      el('div', {class: 'row'}, el('button', {class: 'btn sm', type: 'button', onclick: () => ask('week', 'Przegląd tygodnia')}, 'Poproś Alfreda o przegląd tygodnia')));
+  }
+  rerender(box, kids);
 }
 
-// ----------------------------------------------------------------- czat z Alfredem (rola "alfred"), głos
+// ----------------------------------------------------------------- pytaj Alfreda (rola „alfred”), zamiana rozmowy na zadania, głos
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition, canSpeak = 'speechSynthesis' in window;
 let busy = false, speakOn = lg('alfred_speak') === '1';
 try { S.chat = JSON.parse(lg('alfred_chat')) || []; } catch (e) { S.chat = []; }
-function drawChat() { const c = $('chat'); if (!c) return; c.replaceChildren(...S.chat.map(m => el('div', {class: 'm ' + (m.role === 'user' ? 'u' : 'a')}, m.shown || m.content))); c.scrollTop = c.scrollHeight; ls('alfred_chat', JSON.stringify(S.chat.slice(-30))); }
-function speak(text) { if (!canSpeak || !speakOn) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text.slice(0, 1500)); u.lang = 'pl-PL'; speechSynthesis.speak(u); } catch (e) { /* głos jest dodatkiem: błąd syntezy nie może zasłonić odpowiedzi */ } }
-function renderChatCard() {
-  const box = $('chatcard'); const inp = el('textarea', {id: 'cin', placeholder: 'Zapytaj Alfreda: co dziś najważniejsze? Jak zmieścić trening? Co zrobić z celem, który stoi?', 'aria-label': 'Wiadomość do Alfreda', maxlength: '4000'});
+function drawChat() {
+  const c = $('chat'); if (!c) return; c.replaceChildren(...S.chat.map(m => el('div', {class: 'm ' + (m.role === 'user' ? 'u' : 'a')}, m.shown || m.content)));
+  const show = S.chat.length > 0 && S.chatOpen, hist = $('chatHist'); c.style.display = show ? '' : 'none'; c.scrollTop = c.scrollHeight; ls('alfred_chat', JSON.stringify(S.chat.slice(-30)));
+  hist.style.display = S.chat.length && !S.chatOpen ? '' : 'none'; hist.textContent = `Pokaż poprzednią rozmowę (${S.chat.length})`;
+  const tools = $('chatTools'); if (tools) tools.style.display = show && S.chat.some(m => m.role === 'assistant') ? '' : 'none';
+}
+function speak(text) { if (!canSpeak || !speakOn) return; try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text.slice(0, 1500)); u.lang = 'pl-PL'; speechSynthesis.speak(u); } catch (e) { /* głos jest dodatkiem */ } }
+function renderAsk() {
+  const box = $('ask'), inp = el('input', {id: 'cin', placeholder: 'Zapytaj Alfreda: co dziś najważniejsze? jak zmieścić trening? co z celem, który stoi?', 'aria-label': 'Wiadomość do Alfreda', maxlength: '4000', class: 'grow'});
   const send = el('button', {class: 'btn p', type: 'button'}, 'Wyślij'); send.addEventListener('click', () => { const t = inp.value; inp.value = ''; ask(null, t); });
-  inp.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); send.click(); } });
-  const row = el('div', {class: 'row'}, send);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') send.click(); });
+  const row = el('div', {class: 'row'}, inp, send);
   if (SR) { const mic = el('button', {class: 'btn', type: 'button', title: 'Powiedz zamiast pisać (w Chrome rozpoznawanie mowy korzysta z usług Google)'}, 'Mów'); mic.addEventListener('click', () => { const r = new SR(); r.lang = 'pl-PL'; r.interimResults = false; mic.textContent = 'Słucham…'; r.onresult = ev => { inp.value = (inp.value + ' ' + ev.results[0][0].transcript).trim(); }; r.onend = () => { mic.textContent = 'Mów'; }; r.onerror = () => { mic.textContent = 'Mów'; toast('Nie udało się rozpoznać mowy (zezwól na mikrofon lub użyj klawiatury).'); }; try { r.start(); } catch (e) { mic.textContent = 'Mów'; } }); row.append(mic); }
-  if (canSpeak) { const lab = el('label', {style: 'display:inline-flex;gap:6px;align-items:center;font-size:.82rem;color:var(--ink)'}); const cb = el('input', {type: 'checkbox', style: 'width:16px;height:16px'}); cb.checked = speakOn; cb.addEventListener('change', () => { speakOn = cb.checked; ls('alfred_speak', speakOn ? '1' : '0'); if (!speakOn) speechSynthesis.cancel(); }); lab.append(cb, 'Czytaj odpowiedzi na głos'); row.append(lab); }
-  const clear = el('button', {class: 'btn sm', type: 'button'}, 'Wyczyść rozmowę'); clear.addEventListener('click', () => { S.chat = []; drawChat(); }); row.append(clear);
-  const quick = el('div', {class: 'row', style: 'margin-bottom:6px'}); [['morning', 'Briefing'], ['tomorrow', 'Plan na jutro'], ['week', 'Przegląd tygodnia'], ['review', 'Przegląd dnia']].forEach(([k, l]) => quick.append(el('button', {class: 'btn sm', type: 'button', onclick: () => ask(k, l)}, l)));
-  const radar = el('button', {class: 'btn sm', type: 'button', title: 'Szuka w internecie (płatne wyszukiwanie, dobowy limit)'}, 'Radar narzędzi (szuka w internecie)'); radar.addEventListener('click', () => ask('radar', 'Radar narzędzi i pomysłów', true)); quick.append(radar);
-  box.replaceChildren(el('h2', null, 'Alfred'), el('p', {class: 'sub'}, 'Zna Twój kalendarz, zadania, nawyki, cele i wyniki z notatnika. Nie zmienia niczego sam: podpowiada, a Ty decydujesz.'), quick, el('div', {id: 'chat', 'aria-live': 'polite'}), inp, row, el('p', {class: 'note', id: 'cst'}, ''), el('p', {class: 'note'}, 'Rozmowy są wysyłane do API Claude (Twoje konto). Treści wydarzeń z kalendarza trafiają tylko jako tytuły i miejsca, bez opisów.'));
-  drawChat();
+  const quick = el('div', {class: 'row', style: 'margin-top:8px'}); [['morning', 'Briefing teraz'], ['tomorrow', 'Plan na jutro'], ['week', 'Przegląd tygodnia']].forEach(([k, l]) => quick.append(el('button', {class: 'btn sm', type: 'button', onclick: () => ask(k, l)}, l)));
+  quick.append(el('button', {class: 'btn sm', type: 'button', title: 'Szuka w internecie (płatne wyszukiwanie, dobowy limit)', onclick: () => ask('radar', 'Radar narzędzi i pomysłów', true)}, 'Radar narzędzi (szuka w internecie)'));
+  const tools = el('div', {class: 'row', id: 'chatTools', style: 'display:none;margin-top:4px'}, el('button', {class: 'btn sm p', type: 'button', onclick: chatToTasks}, 'Zamień rozmowę na zadania'), el('button', {class: 'btn sm', type: 'button', onclick: () => { S.chat = []; S.proposal = null; drawChat(); renderProposal(); }}, 'Wyczyść'));
+  if (canSpeak) { const lab = el('label', {style: 'display:inline-flex;gap:6px;align-items:center;font-size:.8rem;color:var(--ink);margin-left:auto'}), cb = el('input', {type: 'checkbox', style: 'width:16px;height:16px'}); cb.checked = speakOn; cb.addEventListener('change', () => { speakOn = cb.checked; ls('alfred_speak', speakOn ? '1' : '0'); if (!speakOn) { try { speechSynthesis.cancel(); } catch (e) { /* brak */ } } }); lab.append(cb, 'Czytaj odpowiedzi na głos'); quick.append(lab); }
+  box.replaceChildren(el('h2', null, 'Zapytaj Alfreda'), row, quick, el('button', {class: 'btn sm', id: 'chatHist', type: 'button', onclick: () => { S.chatOpen = true; drawChat(); }}), el('div', {id: 'chat', 'aria-live': 'polite'}), el('div', {id: 'proposal'}), tools, el('p', {class: 'note', id: 'cst'}, ''));
+  drawChat(); renderProposal();
 }
 async function ask(promptKey, label, search) {
   if (busy) { toast('Alfred jeszcze odpowiada.'); return; }
   const text = promptKey ? (S.prompts[promptKey] || '') : label; if (!text.trim()) { toast(promptKey ? 'Prompt niedostępny: odśwież stronę.' : ''); return; }
-  busy = true; const cst = $('cst'); cst.textContent = search ? 'Alfred przeszukuje internet (do ok. 2 minut)…' : 'Alfred myśli…';
-  S.chat.push({role: 'user', content: text, shown: promptKey ? `▸ ${label}` : text}); drawChat(); $('chatcard').scrollIntoView({behavior: 'smooth', block: 'nearest'});
+  busy = true; S.chatOpen = true; const cst = $('cst'); cst.textContent = search ? 'Alfred przeszukuje internet (do ok. 2 minut)…' : 'Alfred myśli…';
+  S.chat.push({role: 'user', content: text, shown: promptKey ? `▸ ${label}` : text}); drawChat(); $('ask').scrollIntoView({behavior: 'smooth', block: 'nearest'});
   try {
     const msgs = S.chat.slice(-20).map(m => ({role: m.role, content: m.content})); while (msgs.length && msgs[0].role !== 'user') msgs.shift();
-    const {id} = await post('ai/chat', {messages: msgs, role: 'alfred', search: !!search}); let r, t0 = Date.now();
-    do { await new Promise(ok => setTimeout(ok, 1500)); const x = await fetch('api/ai/chat?id=' + id, {cache: 'no-store'}); r = await x.json(); } while (r.status === 'run' && Date.now() - t0 < 180000);
-    if (r.status !== 'done') throw new Error(r.error || 'brak odpowiedzi w 3 minuty');
-    S.chat.push({role: 'assistant', content: r.text}); cst.textContent = ''; speak(r.text);
-    if (promptKey === 'morning') { S.brief = {date: ymd(new Date()), ts: Math.floor(Date.now() / 1000), kind: 'ai', text: r.text, live: true}; renderBriefing(); }
+    const reply = await AI.run('alfred', msgs, !!search);
+    S.chat.push({role: 'assistant', content: reply}); cst.textContent = ''; speak(reply);
+    if (promptKey === 'morning') { S.brief = {date: ymd(new Date()), ts: Math.floor(Date.now() / 1000), kind: 'ai', text: reply}; renderNext(); }
   } catch (e) { cst.textContent = 'Błąd: ' + e.message; S.chat.pop(); }
   busy = false; drawChat(); loadMeta();
 }
-
-// ----------------------------------------------------------------- status
-function renderStatus() {
-  const box = $('status'), st = (S.bot && S.bot.status) || null, B = S.backup, A = S.agenda, ai = S.ai;
-  const tile = (v, l, s, cls) => el('div', null, el('b', {class: cls || ''}, v), el('span', null, l), s ? el('small', {class: 'mut', style: 'display:block'}, s) : null);
-  const ago = s => s == null ? 'n/d' : s < 5400 ? Math.round(s / 60) + ' min temu' : s < 172800 ? Math.round(s / 3600) + ' h temu' : Math.round(s / 86400) + ' dni temu';
-  const tiles = [];
-  tiles.push(st ? tile(st.equity != null ? nf(st.equity, 0) + ' USDT' : 'n/d', `bot (${st.mode || '?'})`, st.pnl_today != null ? `dziś ${st.pnl_today >= 0 ? '+' : '−'}${nf(Math.abs(st.pnl_today), 2)} USDT` : '') : tile('n/d', 'bot', 'brak danych'));
-  tiles.push(B && B.ts ? tile(B.age_s == null ? 'brak' : ago(B.age_s), 'kopia zapasowa', B.ok === false ? 'ostatnia próba nieudana' : '', B.age_s != null && B.age_s > 36 * 3600 ? 'bad' : '') : tile('nie ma', 'kopia zapasowa', 'Dysk Google nie podłączony', 'mut'));
-  tiles.push(A && A.configured ? tile(A.age_s == null ? 'brak' : ago(A.age_s), 'kalendarz', A.ok ? `${(A.events || []).length} wydarzeń` : 'są błędy', A.ok ? '' : 'bad') : tile('nie ma', 'kalendarz', 'nie podłączony', 'mut'));
-  tiles.push(ai ? tile(ai.ready ? 'działa' : 'wyłączony', 'Alfred (AI)', ai.search_limit != null ? `przeglądy internetu dziś: ${ai.search_left}/${ai.search_limit}` : '', ai.ready ? 'up' : 'bad') : tile('n/d', 'Alfred (AI)', ''));
-  box.replaceChildren(el('h2', null, 'Systemy'), el('div', {class: 'kv', style: 'margin-top:8px'}, ...tiles), el('p', {class: 'note'}, 'Szczegóły bota: zakładka Bot. Kopia zapasowa i kalendarz: instrukcja serwera.'));
+async function chatToTasks() {
+  if (busy) { toast('Alfred jeszcze odpowiada.'); return; }
+  busy = true; const cst = $('cst'); cst.textContent = 'Alfred wybiera zadania z rozmowy…';
+  try {
+    const msgs = [...S.chat.slice(-20).map(m => ({role: m.role, content: m.content})), {role: 'user', content: S.prompts.tasks || ''}]; while (msgs.length && msgs[0].role !== 'user') msgs.shift();
+    const j = JSON.parse(await AI.run('tasks', msgs, false)); cst.textContent = '';
+    if (!j.tasks.length) toast(j.error || 'Alfred nie znalazł konkretnych zadań w tej rozmowie.');
+    else { S.proposal = j.tasks.map(t => ({...t, on: true})); renderProposal(); }
+  } catch (e) { cst.textContent = 'Błąd: ' + e.message; }
+  busy = false;
+}
+function renderProposal() {
+  const box = $('proposal'); if (!box) return; box.replaceChildren(); if (!S.proposal) return;
+  const p = el('div', {class: 'prop'}, el('b', null, 'Proponowane zadania (odznacz zbędne):'));
+  S.proposal.forEach(t => { const cb = el('input', {type: 'checkbox', style: 'width:16px;height:16px;flex:none'}); cb.checked = t.on; cb.addEventListener('change', () => { t.on = cb.checked; }); p.append(el('label', null, cb, el('span', null, `${t.text} `, el('span', {class: 'badge'}, `${t.min} min`), ' ', el('span', {class: 'badge'}, t.date)))); });
+  p.append(el('div', {class: 'row', style: 'margin-top:8px'}, el('button', {class: 'btn p sm', type: 'button', onclick: () => { const add = S.proposal.filter(t => t.on); add.forEach(t => S.tasks.push({t: newId(), text: t.text, date: t.date, done: false, top: false, done_ts: null, min: t.min, ref: ''})); S.proposal = null; persist('alfred_tasks'); renderTasks(); renderProposal(); renderHero(); toast(`Dodano do planu: ${add.length}.`); }}, 'Dodaj zaznaczone do planu'), el('button', {class: 'btn sm', type: 'button', onclick: () => { S.proposal = null; renderProposal(); }}, 'Anuluj')));
+  box.append(p);
 }
 
-function renderAll() { renderHero(); renderChips(); renderBanner(); renderBriefing(); renderAgenda(); renderTasks(); renderHabits(); renderGoals(); renderReview(); renderStatus(); }
-async function loadMeta() { const [ag, al, bot, bk] = await Promise.all([api('agenda'), api('alfred'), api('bot'), api('backup')]); S.agenda = ag; if (al) { S.ai = al.ai; S.prompts = al.prompts || {}; if (al.briefing && al.briefing.text && !(S.brief && S.brief.live)) S.brief = al.briefing; } S.bot = bot; S.backup = bk; renderChips(); renderBriefing(); renderAgenda(); renderStatus(); }
+// ----------------------------------------------------------------- tryb skupienia
+let focusT = null;
+function focusStart(t, mins) { S.focus = {t: t.t, title: t.text, end: Date.now() + mins * 60000, mins, over: false}; clearInterval(focusT); focusT = setInterval(renderFocus, 1000); renderFocus(); }
+function focusStop() { S.focus = null; clearInterval(focusT); renderFocus(); }
+function renderFocus() {
+  const box = $('focus'), f = S.focus; if (!f) { box.className = ''; box.replaceChildren(); document.title = 'Dziś'; return; }
+  const left = Math.max(0, Math.round((f.end - Date.now()) / 1000)), txt = `${pad(Math.floor(left / 60))}:${pad(left % 60)}`;
+  if (left === 0 && !f.over) { f.over = true; toast('Czas minął. Zrobione?'); }
+  document.title = left ? `⏱ ${txt} · ${f.title.slice(0, 30)}` : 'Czas minął · Dziś';
+  box.className = 'on' + (f.over ? ' end' : '');
+  const t = taskById(f.t);
+  box.replaceChildren(el('div', {class: 'in'}, el('span', {class: 'tm'}, f.over ? 'Koniec' : txt), el('span', {style: 'flex:1;min-width:120px'}, 'Skupienie: ', el('b', null, f.title)),
+    t ? el('button', {class: 'btn p', type: 'button', onclick: () => { markDone(t); focusStop(); }}, 'Zrobione') : null, f.over ? el('button', {class: 'btn', type: 'button', onclick: () => focusStart(t || {t: f.t, text: f.title}, 10)}, '+10 min') : null, el('button', {class: 'btn', type: 'button', onclick: focusStop}, 'Zakończ')));
+}
+
+// ----------------------------------------------------------------- systemy (leniwie)
+async function renderSystems() {
+  const box = $('sysBody'); box.replaceChildren(el('p', {class: 'mut'}, 'Ładuję…'));
+  const [bot, bk, ag] = await Promise.all([api('bot'), api('backup'), api('agenda')]); const st = bot && bot.status;
+  const ago = s => s == null ? 'n/d' : s < 5400 ? Math.round(s / 60) + ' min temu' : s < 172800 ? Math.round(s / 3600) + ' h temu' : Math.round(s / 86400) + ' dni temu';
+  const tile = (v, l, s, c) => el('div', null, el('b', {class: c || ''}, v), el('span', null, l), s ? el('small', {class: 'mut', style: 'display:block'}, s) : null);
+  const tiles = [st ? tile(st.equity != null ? nf(st.equity) + ' USDT' : 'n/d', `bot (${st.mode || '?'})`, st.pnl_today != null ? `dziś ${st.pnl_today >= 0 ? '+' : '−'}${nf(Math.abs(st.pnl_today), 2)} USDT` : '') : tile('n/d', 'bot', 'brak danych'),
+    bk && bk.ts ? tile(bk.age_s == null ? 'brak' : ago(bk.age_s), 'kopia zapasowa', bk.ok === false ? 'ostatnia próba nieudana' : '') : tile('nie ma', 'kopia zapasowa', 'Dysk Google nie podłączony', 'mut'),
+    ag && ag.configured ? tile(ag.age_s == null ? 'brak' : ago(ag.age_s), 'kalendarz', ag.ok ? `${(ag.events || []).length} wydarzeń` : 'są błędy') : tile('nie ma', 'kalendarz', 'nie podłączony', 'mut'),
+    S.ai ? tile(S.ai.ready ? 'działa' : 'wyłączony', 'Alfred (AI)', S.ai.search_limit != null ? `przeglądy internetu dziś: ${S.ai.search_left}/${S.ai.search_limit}` : '') : tile('n/d', 'Alfred (AI)', '')];
+  const kids = [el('div', {class: 'kv', style: 'margin-top:8px'}, ...tiles)];
+  const info = ((S.today && S.today.alerts) || []).filter(a => a.level === 'info'); if (info.length) { kids.push(el('h3', null, 'Podpowiedzi')); info.forEach(a => kids.push(el('p', {class: 'note', style: 'margin:3px 0'}, '• ' + a.text))); }
+  kids.push(el('p', {class: 'note'}, 'Szczegóły bota: zakładka Bot. Kopia zapasowa i kalendarz: instrukcja serwera.'));
+  box.replaceChildren(...kids);
+}
+
+// ----------------------------------------------------------------- start
+function renderAll() { renderHero(); renderBanner(); renderAlerts(); renderNext(); renderPlan(); renderTasks(); renderHabits(); renderMoney(); renderMore(); }
+async function loadToday() { const t = await api('today'); if (t) { S.today = t; if (S.offline) { S.offline = false; syncAll(); } } else { S.offline = true; retrySoon(); } renderBanner(); renderHero(); renderAlerts(); renderNext(); renderPlan(); renderMoney(); renderMore(); }
+async function loadMeta() { const al = await api('alfred'); if (al) { S.ai = al.ai; S.prompts = al.prompts || {}; const sb = al.briefing; if (sb && sb.text && !(S.brief && S.brief.ts >= (sb.ts || 0))) S.brief = sb; renderNext(); } }
 (async () => {
-  renderChatCard(); renderAll();
+  renderAsk(); renderAll();
   const loaded = await Promise.all(Object.keys(KEYS).map(k => UD.load(k)));
   Object.keys(KEYS).forEach((k, i) => { S[KEYS[k][0]] = KEYS[k][1](loaded[i].value); if (loaded[i].offline) S.offline = true; });
-  const z = await UD.load('zarobki'); S.zar = z.value;
-  renderAll(); await loadMeta();
-  setInterval(() => { renderHero(); renderChips(); }, 30000);
+  if (new Date().getHours() >= 19) $('more').open = true;
+  renderAll(); await Promise.all([loadToday(), loadMeta()]);
+  $('systems').addEventListener('toggle', () => { if ($('systems').open) renderSystems(); });
+  setInterval(() => { renderHero(); }, 30000); setInterval(loadToday, 120000);
 })();
 })();
 </script>

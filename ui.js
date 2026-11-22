@@ -152,54 +152,84 @@ function auto() {
 
 /* ---- nawigacja: jeden pasek na wszystkich stronach, menu rozwijane, motyw, zwijanie sekcji ---- */
 const NAV = [
-  {href: 'index.html', label: 'Panel', hint: 'Bitcoin na żywo'},
-  {href: 'alfred.html', label: 'Alfred', hint: 'Plan dnia, kalendarz, nawyki i asystent'},
-  {label: 'Analiza', items: [
-    {href: 'rynki.html', label: 'Rynki', hint: 'Waluty, złoto, surowce, spółki'},
-    {href: 'sytuacje.html', label: 'Sytuacje', hint: 'Co wpływa na kierunek ruchu'},
-    {href: 'badania.html', label: 'Badania', hint: 'Statystyka i testy na historii'}]},
-  {label: 'Handel', items: [
+  {href: 'alfred.html', label: 'Dziś', hint: 'Plan dnia, kalendarz, zadania, nawyki i asystent'},
+  {href: 'zarabiaj.html', label: 'Zarabiaj', hint: 'Pomysły, oferty, transakcje i wyniki'},
+  {href: 'bot.html', label: 'Bot', hint: 'Automat handlujący: status, wyniki, ustawienia'},
+  {label: 'Rynek', items: [
+    {href: 'index.html', label: 'Panel Bitcoin', hint: 'Bitcoin na żywo'},
+    {href: 'bybit.html', label: 'Mój Bybit', hint: 'Saldo, pozycje i statystyki Twojego konta'},
     {href: 'okazje.html', label: 'Okazje', hint: 'Skaner okazji i raport pozycji'},
     {href: 'strategie.html', label: 'Strategie', hint: 'Portfele od ochronnego do agresywnego'},
-    {href: 'bot.html', label: 'Bot', hint: 'Automat: status, statystyki, ustawienia'},
-    {href: 'produkty.html', label: 'Produkty', hint: 'Oferty w okolicy i kalkulator odsprzedaży'},
-    {href: 'mentor.html', label: 'Mentor', hint: 'Doradca biznesowy: pomysły na dochód'},
-    {href: 'zarobki.html', label: 'Zarobki', hint: 'Przychody, koszty i cel miesięczny'}]},
-  {href: 'bybit.html', label: 'Mój Bybit', hint: 'Saldo, pozycje i statystyki Twojego konta'},
-  {href: 'kalkulator.html', label: 'Kalkulator', hint: 'Wielkość pozycji i ryzyko'},
+    {href: 'rynki.html', label: 'Rynki', hint: 'Waluty, złoto, surowce, spółki'},
+    {href: 'sytuacje.html', label: 'Sytuacje', hint: 'Co wpływa na kierunek ruchu'},
+    {href: 'badania.html', label: 'Badania', hint: 'Statystyka i testy na historii'},
+    {href: 'kalkulator.html', label: 'Kalkulator', hint: 'Wielkość pozycji i ryzyko'}]},
 ];
 const THEMES = [['auto', 'Auto'], ['light', 'Jasny'], ['dark', 'Ciemny']];
 const sget = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const sset = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* tryb prywatny */ } };
-// Dane użytkownika zapisywane na serwerze (api/userdata) z kopią w przeglądarce. Zapis ze starej wersji (inne urządzenie zdążyło zapisać) daje konflikt:
-// dostajesz wersję z serwera i nic nie jest po cichu nadpisane. Gdy serwer jest niedostępny, strona działa na kopii lokalnej (offline: true).
+// Dane użytkownika zapisywane na serwerze (api/userdata) z kopią w przeglądarce. Zapis ze starej wersji (inne urządzenie albo serwer zdążyły zapisać) daje konflikt:
+// nic nie jest po cichu nadpisane, a UD.sync scala trzy wersje (ostatnia zsynchronizowana, nasza, serwerowa), więc zmiany z obu stron zostają.
+// Gdy serwer jest niedostępny, strona działa na kopii lokalnej (offline: true).
 const UD = {
-  _ts: {},
+  _ts: {}, _base: {}, _q: {},
+  _clone(v) { return v === undefined ? v : JSON.parse(JSON.stringify(v)); },
   async load(key) {
     try {
       const r = await fetch('api/userdata?key=' + encodeURIComponent(key), {cache: 'no-store'});
-      if (r.ok) { const j = await r.json(); this._ts[key] = j.ts || 0; if (j.found) { sset('ud_' + key, JSON.stringify(j.value)); return {value: j.value, found: true, offline: false}; } return {value: null, found: false, offline: false}; }
+      if (r.ok) { const j = await r.json(); this._ts[key] = j.ts || 0; this._base[key] = j.found ? this._clone(j.value) : null; if (j.found) { sset('ud_' + key, JSON.stringify(j.value)); return {value: j.value, found: true, offline: false}; } return {value: null, found: false, offline: false}; }
     } catch (e) { /* serwer niedostępny */ }
     let v = null; try { v = JSON.parse(sget('ud_' + key)); } catch (e) { v = null; }
+    this._base[key] = this._clone(v);
     return {value: v, found: v != null, offline: true};
   },
-  _q: {},
-  // Zapisy tego samego klucza idą jeden po drugim (każdy z aktualnym base_ts), więc szybkie kolejne zmiany nie kłócą się ze sobą.
-  save(key, value) {
+  // Zapis zrobiony przez serwer (np. zmiana statusu oferty zmienia kilka kluczy naraz): przyjmujemy nowe wartości i znaczniki czasu bez ponownego pobierania.
+  adopt(key, value, ts) { this._ts[key] = ts; this._base[key] = this._clone(value); sset('ud_' + key, JSON.stringify(value)); },
+  // Jedno żądanie zapisu. Konflikt: zwraca wersję z serwera i ostatnią zsynchronizowaną (base).
+  async _put(key, value) {
+    const sent = JSON.stringify(value); sset('ud_' + key, sent);
+    try {
+      const r = await fetch('api/userdata', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Requested-With': 'btc-ui'}, body: JSON.stringify({key, value, base_ts: this._ts[key] || 0})});
+      const j = await r.json();
+      if (r.status === 409) { const base = this._base[key]; this._ts[key] = j.ts; sset('ud_' + key, JSON.stringify(j.value)); return {ok: false, conflict: true, value: j.value, base}; }
+      if (!r.ok) return {ok: false, error: j.error || ('HTTP ' + r.status)};
+      this._ts[key] = j.ts; this._base[key] = JSON.parse(sent); return {ok: true};
+    } catch (e) { return {ok: false, offline: true}; }
+  },
+  // Zapis stanu strony z automatycznym scalaniem przy konflikcie. Zapisy tego samego klucza idą jeden po drugim, a stan lokalny jest czytany dopiero w chwili zapisu (get),
+  // więc szybkie kolejne zmiany nie kłócą się ze sobą. merge(base, local, remote) zwraca scaloną wartość (bez niego wygrywa wersja serwera), apply(wartość) podmienia stan strony.
+  sync(key, {get, merge, apply}) {
     const run = async () => {
-      sset('ud_' + key, JSON.stringify(value));
-      try {
-        const r = await fetch('api/userdata', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Requested-With': 'btc-ui'}, body: JSON.stringify({key, value, base_ts: this._ts[key] || 0})});
-        const j = await r.json();
-        if (r.status === 409) { this._ts[key] = j.ts; sset('ud_' + key, JSON.stringify(j.value)); return {ok: false, conflict: true, value: j.value}; }
-        if (!r.ok) return {ok: false, error: j.error || ('HTTP ' + r.status)};
-        this._ts[key] = j.ts; return {ok: true};
-      } catch (e) { return {ok: false, offline: true}; }
+      let base = null;
+      for (let i = 0; i < 4; i++) {
+        const r = await this._put(key, get());
+        if (!r.conflict) return i ? {...r, merged: true} : r;
+        const cur = merge ? merge(base || r.base, get(), r.value) : r.value; base = r.value; apply(cur);
+        if (!merge) return {ok: false, conflict: true, value: r.value};
+        if (JSON.stringify(cur) === JSON.stringify(r.value)) { this._base[key] = this._clone(r.value); return {ok: true, merged: true}; }
+      }
+      return {ok: false, conflict: true};
     };
     const p = (this._q[key] || Promise.resolve()).then(run, run);
     this._q[key] = p.catch(() => {});
     return p;
   },
+  // Zapis bez scalania (stary interfejs): konflikt zwraca wersję z serwera.
+  save(key, value) { return this.sync(key, {get: () => value, apply: () => {}}); },
+};
+// Scalanie list po id: base = wersja z ostatniej synchronizacji, local = nasza, remote = z serwera. Dodane u nas zostają, usunięte u nas znikają,
+// zmienione u nas wygrywają (both(l, r) może połączyć zmiany po obu stronach), wszystko inne bierzemy z serwera.
+UD.merge = (base, local, remote, id, both) => {
+  const J = JSON.stringify, B = new Map((base || []).map(x => [x[id], J(x)])), L = new Map(local.map(x => [x[id], x])), R = new Set(remote.map(x => x[id])), out = [];
+  for (const r of remote) {
+    const k = r[id];
+    if (!B.has(k)) { out.push(r); continue; }
+    if (!L.has(k)) continue;
+    const l = L.get(k), lch = J(l) !== B.get(k), rch = J(r) !== B.get(k);
+    out.push(lch && rch && both ? both(l, r) : lch ? l : r);
+  }
+  for (const l of local) if (!R.has(l[id]) && !B.has(l[id])) out.push(l);
+  return out;
 };
 // Podsumowanie wyników z notatnika zarobków dla mentora (jedno zdanie po polsku).
 UD.zarobkiSummary = v => {
@@ -210,6 +240,18 @@ UD.zarobkiSummary = v => {
   const lines = Object.keys(by).sort((a, b) => (by[b].i - by[b].o) - (by[a].i - by[a].o)).slice(0, 8).map(n => `${n}: przychód ${r0(by[n].i)} zł, koszt ${r0(by[n].o)} zł, zysk ${r0(by[n].i - by[n].o)} zł`);
   return `Moje dotychczasowe wyniki: zysk w tym miesiącu ${r0(profit)} zł` + (goal > 0 ? ` (cel ${r0(goal)} zł)` : '') + '. Pomysły: ' + lines.join('; ') + '.';
 };
+// Wspólny klient asystenta AI (kolejka zadań usługi btc-ai): AI.run(rola, wiadomości, czy_wyszukiwać) zwraca tekst odpowiedzi albo zgłasza błąd.
+const AI = {
+  async run(role, messages, search) {
+    const r0 = await fetch('api/ai/chat', {method: 'POST', headers: {'Content-Type': 'application/json', 'X-Requested-With': 'btc-ui'}, body: JSON.stringify({messages, role, search: !!search})});
+    const j0 = await r0.json(); if (!r0.ok) throw new Error(j0.error || ('HTTP ' + r0.status));
+    let r, t0 = Date.now();
+    do { await new Promise(ok => setTimeout(ok, 1500)); const x = await fetch('api/ai/chat?id=' + j0.id, {cache: 'no-store'}); r = await x.json(); } while (r.status === 'run' && Date.now() - t0 < 180000);
+    if (r.status !== 'done') throw new Error(r.error || 'brak odpowiedzi w 3 minuty');
+    return r.text;
+  },
+};
+window.AI = AI;
 window.UD = UD;
 function here() { const p = location.pathname.split('/').pop() || 'index.html'; return p === '' ? 'index.html' : p; }
 function applyTheme(t) { if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); else document.documentElement.setAttribute('data-theme', 'auto'); }
@@ -217,7 +259,7 @@ applyTheme(sget('btc-theme'));
 function navbar() {
   if (document.querySelector('.ui-nav')) return;
   const cur = here(), nav = html('nav', 'ui-nav'); nav.setAttribute('aria-label', 'Główna nawigacja');
-  const inner = html('div', 'ui-nav-in'), brand = html('a', 'ui-brand'); brand.href = 'index.html'; brand.append(logo(), html('span', '', 'BTC Analiza'));
+  const inner = html('div', 'ui-nav-in'), brand = html('a', 'ui-brand'); brand.href = 'alfred.html'; brand.append(logo(), html('span', '', 'BTC Analiza'));
   const burger = html('button', 'ui-burger'); burger.type = 'button'; burger.setAttribute('aria-label', 'Menu'); burger.setAttribute('aria-expanded', 'false');
   burger.append(el('svg', {viewBox: '0 0 24 24', class: 'ui-ico'}, el('path', {d: 'M4 7h16M4 12h16M4 17h16'})));
   const tabs = html('div', 'ui-tabs');

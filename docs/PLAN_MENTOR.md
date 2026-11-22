@@ -1,6 +1,6 @@
 # Plan: mentor biznesowy z aktualnymi pomysłami z internetu i TikToka
 
-Stan na 19.11.2026. Dziś mentor (`mentor.html`, rola `mentor` w `btc_ai.py`) rozmawia na podstawie wiedzy modelu i profilu użytkownika. Nie widzi sieci, więc nie zna bieżących trendów.
+Stan na 19.11.2026. Dziś mentor (zakładka Pomysły na stronie `zarabiaj.html`, dawniej `mentor.html`; rola `mentor` w `btc_ai.py`) rozmawia na podstawie wiedzy modelu i profilu użytkownika. Nie widzi sieci, więc nie zna bieżących trendów.
 Cel: żeby sam znajdował aktualne pomysły, oceniał je pod Twój profil i region (między Dębicą a Rzeszowem) i pilnował, żebyś testował je małym kosztem.
 
 ## 1. Co jest możliwe, a co nie (sprawdzone założenia)
@@ -11,7 +11,7 @@ Cel: żeby sam znajdował aktualne pomysły, oceniał je pod Twój profil i regi
 | TikTok, bezpośrednio | nie polecam | Brak otwartego API do trendów dla zwykłego konta (API badawcze jest ograniczone do uprawnionych badaczy). Scraping łamie regulamin, jest blokowany i psuje się co kilka tygodni |
 | TikTok, pośrednio | tak | Artykuły i zestawienia o trendach TikToka znajdowane wyszukiwaniem w sieci; publiczne strony trendów TikTok Creative Center (do sprawdzenia, czy regulamin pozwala na automatyczny odczyt); Ty wklejasz link lub opis filmu, a mentor ocenia pomysł |
 | YouTube, Reddit, Google Trends | częściowo | Oficjalne API (YouTube Data API, Reddit API) wymagają kluczy i mają limity. Google Trends nie ma stabilnego oficjalnego API dla wszystkich, więc zaczynam od wyszukiwania w sieci |
-| OLX, Allegro Lokalnie | nie automatycznie | Brak otwartego API ofert; zostają linki wyszukiwań ze strony Produkty |
+| OLX, Allegro Lokalnie | nie automatycznie | Brak otwartego API ofert; zostają linki wyszukiwań w zakładce Znajdź strony Zarabiaj (dawniej Produkty) |
 
 Zasada: nie budujemy niczego, co łamie regulamin serwisu albo wymaga ukrywania, że to robot.
 
@@ -34,7 +34,7 @@ Zasada: nie budujemy niczego, co łamie regulamin serwisu albo wymaga ukrywania,
 - Reguła zapisana z góry: pomysł, który po zaplanowanym teście (np. 4 tygodnie, budżet X zł) nie dał sprzedaży, mentor oznacza jako nieudany i nie proponuje wariantu bez nowego argumentu.
 
 ### Etap D: sprawdzenie popytu lokalnego (1 sesja)
-- Połączenie ze stroną Produkty: dla pomysłu „handel produktem” mentor podaje frazy do wyszukania i kryteria (ile ofert, rozrzut cen, jak długo wiszą). Wyniki wpisujesz ręcznie albo wklejasz; kalkulator liczy marżę.
+- Połączenie z zakładkami Znajdź i Policz: dla pomysłu „handel produktem” mentor podaje frazy do wyszukania i kryteria (ile ofert, rozrzut cen, jak długo wiszą). Wyniki wpisujesz ręcznie albo wklejasz; kalkulator liczy marżę.
 - Gotowe, gdy: z pomysłu da się jednym kliknięciem przejść do kalkulatora z wypełnioną frazą.
 
 ### Etap E (opcjonalny, po 2 miesiącach): oficjalne API

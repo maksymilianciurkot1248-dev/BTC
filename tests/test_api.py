@@ -158,5 +158,23 @@ for k,v in (("alfred_tasks",[{"t":1,"text":"Raport","date":"2026-11-23","done":F
     code,r=call('/api/userdata?key='+k); assert code==200 and r['found'], (k,r)
 code,r=call('/api/userdata','POST',{"key":"alfred_tasks","value":[{"t":1,"text":"","date":"","done":False,"top":False}],"base_ts":0},X); assert code in (400,409), r
 print('alfred http ok')
+# --- „Dziś” i potok ofert przez HTTP
+code,r=call('/api/today'); assert code==200 and set(r)>={'plan','next_step','alerts','week','deals','money','habits','date'} and r['next_step']['kind'] in ('plan','rest','review','task','now_event','soon','overload') and r['next_step']['title'] and r['plan']['today']['timeline'] is not None, r
+p0=r['money']['profit_month'] or 0
+DEAL={"t":17900000000001,"name":"Rower Kross","status":"kandydat","buy":300,"sell":450,"fee":10}
+code,r=call('/api/userdata','POST',{"key":"produkty_lista","value":[DEAL],"base_ts":0},X); assert code==200, r
+ts_l=r['ts']
+code,r=call('/api/deal','POST',{"id":DEAL["t"],"action":"bought","price":280,"costs":20},X); assert code==200 and r['deal']['status']=='kupione' and set(r['ts'])=={'produkty_lista','zarobki','alfred_tasks'} and next(e for e in r['values']['zarobki']['entries'] if e['ref'].endswith('b'))['amt']==300, r
+code,r2=call('/api/userdata?key=zarobki'); assert code==200 and r2['found'] and any(e['ref']==f"d{DEAL['t']}b" for e in r2['value']['entries']), r2
+code,r3=call('/api/userdata?key=alfred_tasks'); assert code==200 and any(t['text']=='Wystawić: Rower Kross' and t['min']==20 and t['ref']==f"d{DEAL['t']}" for t in r3['value']), r3
+code,r4=call('/api/userdata','POST',{"key":"produkty_lista","value":[DEAL],"base_ts":ts_l},X); assert code==409 and r4['value'][0]['status']=='kupione', r4      # klient ze starą wersją nie nadpisze zmiany serwera
+code,r=call('/api/today'); assert any(a['where']=='deals' for a in r['alerts']) is False and r['money']['profit_month']==p0-300.0 and r['deals']['stats']['invested']==300.0, r
+code,r=call('/api/deal','POST',{"id":DEAL["t"],"action":"sold","price":450},X); assert code==200 and r['deal']['fee_paid']==45.0 and any(e['ref'].endswith('f') for e in r['values']['zarobki']['entries']), r
+code,r=call('/api/deal','POST',{"id":DEAL["t"],"action":"undo"},X); assert code==200 and r['deal']['status']=='wystawione' or r['deal']['status']=='kupione', r
+code,r=call('/api/deal','POST',{"id":12345,"action":"bought"},X); assert code==400, r
+code,r=call('/api/deal','POST',{"id":DEAL["t"],"action":"zjedz"},X); assert code==400, r
+code,r=call('/api/deal','POST',{"id":"17900000000001","action":"bought"},X); assert code==400, r
+code,r=call('/api/deal','POST',{"id":DEAL["t"],"action":"undo"}); assert code==403, r
+print('today/deal http ok')
 srv.shutdown(); stop.set();
 print('api ok')
